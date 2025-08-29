@@ -2,7 +2,7 @@
 // login user
 // logout user
 
-import { asyncHandler } from "../utils/AsyncHandler.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
 import prisma from "../config/db.config.js";
 import { ApiError } from "../utils/ApiError.js";
 import bcrypt from "bcrypt";
@@ -82,6 +82,7 @@ const createUser = asyncHandler(async (req, res) => {
     throw new ApiError(500, "Something went wrong while registering the user");
   }
 
+  res.redirect(`${process.env.CLIENT_URL}/dashboard`);
   return res
     .status(201)
     .json(new ApiResponse(201, CreatedUser, "✅ User Created Successfully"));
@@ -291,11 +292,33 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
   }
 });
 
+const getMe = asyncHandler(async (req, res) => {
+  const userId = req.user.id;
+
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      id: true,
+      username: true,
+      email: true,
+      name: true,
+      createdAt: true,
+    },
+  });
+
+  if (!user) {
+    throw new ApiError(404, "User not found");
+  }
+
+  return res.status(200).json(new ApiResponse(200, user, "✅ User fetched successfully"));
+});
+
 export {
   createUser,
   updatePassword,
   LoginUser,
   LoggedOutUser,
   refreshAccessToken,
-  generateAccessandRefreshTokens
+  generateAccessandRefreshTokens,
+  getMe
 };

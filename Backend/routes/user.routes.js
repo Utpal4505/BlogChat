@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createUser, LoggedOutUser, LoginUser, refreshAccessToken, updatePassword } from "../controllers/user.controllers.js";
+import { createUser, getMe, LoggedOutUser, LoginUser, refreshAccessToken, updatePassword } from "../controllers/user.controllers.js";
 import { verifyJWT } from "../middlewares/auth.middlewares.js";
 import { onBoardUser } from "../controllers/onboard.controllers.js";
 
@@ -12,5 +12,6 @@ router.route("/logout").post(verifyJWT, LoggedOutUser);
 router.route("/refresh-token").post(verifyJWT, refreshAccessToken);
 router.route("/change-password").post(verifyJWT, updatePassword);
 router.route("/onboarding").post(verifyJWT, onBoardUser);
+router.route("/me").get(verifyJWT, getMe);
 
 export default router;

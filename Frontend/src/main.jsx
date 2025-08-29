@@ -6,6 +6,7 @@ import Login from '../pages/Login.jsx'
 import SignUp from '../pages/SignUp.jsx'
 import Onboarding from '../pages/Onboarding.jsx'
 import Dashboard from '../pages/dashboard.jsx'
+import { AuthProvider } from '../context/AuthContext.jsx'
 
 const router = createBrowserRouter([
   {
@@ -35,6 +36,8 @@ const router = createBrowserRouter([
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
+    <AuthProvider>
     <RouterProvider router={router} />
+    </AuthProvider>
   </StrictMode>,
 )

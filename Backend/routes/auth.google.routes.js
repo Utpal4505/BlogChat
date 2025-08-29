@@ -1,10 +1,11 @@
 import { Router } from "express";
 import passport from "passport";
 import jwt from "jsonwebtoken";
-import { asyncHandler } from "../utils/AsyncHandler.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import prisma from "../config/db.config.js";
 import { generateAccessandRefreshTokens } from "../controllers/user.controllers.js";
+import { ApiResponse } from "../utils/ApiResponse.js";
 
 const router = Router();
 const options = {
@@ -73,19 +74,19 @@ router.get(
       const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
       const user = await prisma.user.findUnique({
         where: { id: decoded.id },
+        select: {
+          id: true,
+          email: true,
+          username: true,
+          name: true,
+          createdAt: true,
+        },
       });
 
 
       if (!user) throw new ApiError(404, "User not found");
 
-      return res.json({
-        success: true,
-        user: {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-        },
-      });
+      return res.status(200).json(new ApiResponse(200, user, "✅ User fetched successfully"));
     } catch (error) {
       throw new ApiError(401, "Invalid token");
     }
