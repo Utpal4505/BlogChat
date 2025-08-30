@@ -11,6 +11,27 @@ const api = axios.create({
   withCredentials: true, // important for cookies
 });
 
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    // Agar backend se response aaya hai
+    if (error.response) {
+      const { message, errors } = error.response.data;
+
+      return Promise.reject({
+        message: message || "Something went wrong",
+        errors: errors || [],
+      });
+    }
+
+    // Agar network error / server down ho
+    return Promise.reject({
+      message: "Network error. Please try again later.",
+      errors: [],
+    });
+  }
+);
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);

@@ -3,14 +3,24 @@ import { Link, useNavigate } from "react-router-dom";
 import { FaUserAlt } from "react-icons/fa";
 import { MdBadge, MdEmail } from "react-icons/md";
 import { AuthContext } from "../context/AuthContext";
+import { AlertCircle, Shield, ShieldAlert, ShieldCheck } from "lucide-react";
+import PasswordInput from "../components/PasswordStrengthCheck";
+import toast from "react-hot-toast";
+
+// exporting password label for sumbit checker
+import { GetStrength } from "../components/PasswordStrengthCheck";
 
 function SignUp() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [fullname, setFullname] = useState("");
   const [email, setEmail] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  const [errors, setErrors] = useState({}); // { username: "...", password: "..." }
+  const [generalError, setGeneralError] = useState(""); // top-level errors like "Invalid Credentials"
+  const strength = GetStrength(password);
+  const isStrong = strength.label === "Strong";
 
   const { register, loginWithGoogle } = useContext(AuthContext);
   const navigate = useNavigate();
@@ -26,10 +36,53 @@ function SignUp() {
         username,
         email,
       });
-      navigate("/dashboard")
+      navigate("/dashboard");
     } catch (err) {
       console.log("Registration error", err);
-      alert(err.message || "Signup failed");
+
+      // Normalize Error (be defensive)
+      let Error = null;
+      if (err?.response?.data) {
+        Error = err.response.data;
+      } else if (err?.data) {
+        Error = err.data;
+      } else {
+        Error = err;
+      }
+
+      // If backend returns a string (HTML or plain message)
+      if (typeof Error === "string") {
+        // Try to extract short message if it's HTML (simple strip tags) — fallback to raw string
+        const stripped = Error.replace(/<\/?[^>]+(>|$)/g, "").trim();
+        setGeneralError(stripped || "Login failed");
+      }
+      // If backend returns structured object { message, errors }
+      else if (Error && typeof Error === "object") {
+        // Field-level errors array -> map to object
+        if (Array.isArray(Error.errors) && Error.errors.length > 0) {
+          const fieldErrors = {};
+          Error.errors.forEach((e) => {
+            // Expecting { field: 'username'|'password', message: '...' }
+            if (e.field) fieldErrors[e.field] = e.message || e;
+          });
+          setErrors(fieldErrors);
+        }
+
+        // If there's a top-level message, show it
+        if (Error.message) {
+          setGeneralError(Error.message);
+        } else if (Error.error) {
+          setGeneralError(Error.error);
+        } else if (err?.message) {
+          setGeneralError(err.message);
+        } else {
+          setGeneralError("Login failed. Please try again.");
+        }
+      } else if (err?.message) {
+        setGeneralError(err.message);
+      } else {
+        setGeneralError("Login failed. Please try again.");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -63,6 +116,14 @@ function SignUp() {
 
         <div className="w-full max-w-sm sm:max-w-md relative z-10">
           <div className="bg-white/85 backdrop-blur-xl rounded-2xl sm:rounded-3xl shadow-xl sm:shadow-2xl p-4 sm:p-6 lg:p-8 border border-white/20">
+            {/* general error */}
+            {generalError && (
+              <div className="flex items-center gap-2 mb-4 p-3 text-sm text-red-700 bg-red-100 rounded-lg border border-red-300">
+                <AlertCircle size={18} />
+                <span>{generalError}</span>
+              </div>
+            )}
+
             <div className="text-center mb-4 sm:mb-6">
               <h1
                 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-1 sm:mb-2 bg-gradient-to-r bg-clip-text text-transparent"
@@ -148,7 +209,9 @@ function SignUp() {
                   value={fullname}
                   onChange={(e) => setFullname(e.target.value)}
                   required
-                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 lg:py-3.5 pt-5 sm:pt-6 border-2 rounded-xl sm:rounded-2xl focus:outline-none transition-all duration-300 peer placeholder-transparent bg-white/50 backdrop-blur-sm text-sm sm:text-base"
+                  className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 lg:py-3.5 pt-5 sm:pt-6 border-2 rounded-xl sm:rounded-2xl focus:outline-none transition-all duration-300 peer placeholder-transparent bg-white/50 backdrop-blur-sm text-sm sm:text-base ${
+                    errors.fullname ? "border-red-500" : "border-gray-400"
+                  }`}
                   style={{
                     borderColor: fullname ? "#5C7B8A" : "#E5E7EB",
                     color: "#1A1F1D",
@@ -166,6 +229,9 @@ function SignUp() {
                 >
                   FullName
                 </label>
+                {errors.fullname && (
+                  <p className="text-xs text-red-500 mt-1">{errors.fullname}</p>
+                )}
                 <div className="absolute inset-y-0 bottom-[5px] right-[10px] flex items-center pr-3 sm:pr-4">
                   <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full transition-all duration-300">
                     {fullname ? (
@@ -185,7 +251,9 @@ function SignUp() {
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   required
-                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 lg:py-3.5 pt-5 sm:pt-6 border-2 rounded-xl sm:rounded-2xl focus:outline-none transition-all duration-300 peer placeholder-transparent bg-white/50 backdrop-blur-sm text-sm sm:text-base"
+                  className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 lg:py-3.5 pt-5 sm:pt-6 border-2 rounded-xl sm:rounded-2xl focus:outline-none transition-all duration-300 peer placeholder-transparent bg-white/50 backdrop-blur-sm text-sm sm:text-base ${
+                    errors.username ? "border-red-500" : "border-gray-300"
+                  }`}
                   style={{
                     borderColor: username ? "#5C7B8A" : "#E5E7EB",
                     color: "#1A1F1D",
@@ -203,6 +271,9 @@ function SignUp() {
                 >
                   Username
                 </label>
+                {errors.username && (
+                  <p className="text-xs text-red-500 mt-1">{errors.username}</p>
+                )}
                 <div className="absolute inset-y-0 right-2 flex items-center pr-3 sm:pr-4">
                   <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full transition-all duration-300">
                     {username ? (
@@ -221,7 +292,9 @@ function SignUp() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 lg:py-3.5 pt-5 sm:pt-6 border-2 rounded-xl sm:rounded-2xl focus:outline-none transition-all duration-300 peer placeholder-transparent bg-white/50 backdrop-blur-sm text-sm sm:text-base"
+                  className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 lg:py-3.5 pt-5 sm:pt-6 border-2 rounded-xl sm:rounded-2xl focus:outline-none transition-all duration-300 peer placeholder-transparent bg-white/50 backdrop-blur-sm text-sm sm:text-base ${
+                    errors.email ? "border-red-500" : "border-gray-300"
+                  }`}
                   style={{
                     borderColor: email ? "#5C7B8A" : "#E5E7EB",
                     color: "#1A1F1D",
@@ -239,6 +312,9 @@ function SignUp() {
                 >
                   Email
                 </label>
+                {errors.email && (
+                  <p className="text-xs text-red-500 mt-1">{errors.email}</p>
+                )}
                 <div className="absolute inset-y-0 bottom-[5px] right-[10px] flex items-center pr-3 sm:pr-4">
                   <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full transition-all duration-300">
                     {email ? (
@@ -252,72 +328,19 @@ function SignUp() {
 
               {/* Compact Password Field */}
               <div className="relative">
-                <input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 lg:py-3.5 pt-5 sm:pt-6 pr-10 sm:pr-12 border-2 rounded-xl sm:rounded-2xl focus:outline-none transition-all duration-300 peer placeholder-transparent bg-white/50 backdrop-blur-sm text-sm sm:text-base"
-                  style={{
-                    borderColor: password ? "#5C7B8A" : "#E5E7EB",
-                    color: "#1A1F1D",
-                    fontFamily: "Manrope, sans-serif",
-                  }}
-                  placeholder="Password"
-                />
-                <label
-                  htmlFor="password"
-                  className="absolute left-3 sm:left-4 top-1.5 sm:top-2 text-xs font-semibold transition-all duration-300 pointer-events-none"
-                  style={{
-                    color: password ? "#5C7B8A" : "#7B7F95",
-                    fontFamily: "Manrope, sans-serif",
-                  }}
-                >
-                  Password
-                </label>
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 flex items-center pr-3 sm:pr-4 hover:scale-110 transition-transform duration-200"
-                >
-                  <svg
-                    className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 hover:text-gray-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    {showPassword ? (
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L8.464 8.464M14.12 14.12l1.415 1.415M14.12 14.12L18.364 18.364"
-                      />
-                    ) : (
-                      <>
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                        />
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                        />
-                      </>
-                    )}
-                  </svg>
-                </button>
+                <PasswordInput password={password} setPassword={setPassword} />
               </div>
 
               {/* register button  */}
               <button
                 type="submit"
                 disabled={isLoading}
+                onClick={(e) => {
+                  if (!isStrong) {
+                    e.preventDefault();
+                    toast.error("Password must be strong to continue ⚡");
+                  }
+                }}
                 className="w-full flex justify-center items-center cursor-pointer py-2.5 sm:py-3 lg:py-3.5 px-4 border border-transparent rounded-xl sm:rounded-2xl shadow-lg text-white font-semibold hover:shadow-xl focus:outline-none transition-all duration-300 relative overflow-hidden group disabled:opacity-70 mt-4 sm:mt-6"
                 style={{
                   background:

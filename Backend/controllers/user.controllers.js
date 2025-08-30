@@ -81,8 +81,6 @@ const createUser = asyncHandler(async (req, res) => {
   if (!CreatedUser) {
     throw new ApiError(500, "Something went wrong while registering the user");
   }
-
-  res.redirect(`${process.env.CLIENT_URL}/dashboard`);
   return res
     .status(201)
     .json(new ApiResponse(201, CreatedUser, "✅ User Created Successfully"));

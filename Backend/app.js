@@ -5,6 +5,7 @@ import userRouter from "./routes/user.routes.js";
 import authRouter from "./routes/auth.google.routes.js";
 import cors from "cors";
 import passport from "./config/passport.gauth.config.js";
+import { errorHandler } from "./middlewares/error.middlewares.js";
 
 const app = express();
 
@@ -26,5 +27,8 @@ app.use(cookieParser());
 app.use("/api/v1/healthcheck", healthcheck);
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/auth", authRouter);
+
+//api error
+app.use(errorHandler);
 
 export { app };
