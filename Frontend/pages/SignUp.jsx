@@ -1,11 +1,12 @@
-import React, { useContext, useState } from "react";
+import React, { useCallback, useContext, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { FaUserAlt } from "react-icons/fa";
+import { FaCheck, FaTimes, FaUserAlt } from "react-icons/fa";
 import { MdBadge, MdEmail } from "react-icons/md";
 import { AuthContext } from "../context/AuthContext";
 import { AlertCircle, Shield, ShieldAlert, ShieldCheck } from "lucide-react";
 import PasswordInput from "../components/PasswordStrengthCheck";
 import toast from "react-hot-toast";
+import { debounce } from "lodash";
 
 // exporting password label for sumbit checker
 import { GetStrength } from "../components/PasswordStrengthCheck";
@@ -16,25 +17,188 @@ function SignUp() {
   const [fullname, setFullname] = useState("");
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-
+  const [checking, setChecking] = useState(false);
+  const [usernameTouched, setUsernameTouched] = useState(false);
   const [errors, setErrors] = useState({}); // { username: "...", password: "..." }
   const [generalError, setGeneralError] = useState(""); // top-level errors like "Invalid Credentials"
+
   const strength = GetStrength(password);
   const isStrong = strength.label === "Strong";
 
-  const { register, loginWithGoogle } = useContext(AuthContext);
+  const { register, loginWithGoogle, checkUsernameAvailability } =
+    useContext(AuthContext);
   const navigate = useNavigate();
+
+  //check username availability
+  const [usernameAvailable, setUsernameAvailable] = useState(null);
+  const usernameRegex = /^[a-z0-9_]{3,20}$/;
+
+  // Debounced backend check
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const checkAvailabilityDebounced = useCallback(
+    debounce(async (name) => {
+      if (!name || !usernameRegex.test(name)) {
+        setUsernameAvailable(null);
+        return;
+      }
+
+      setChecking(true);
+      try {
+        const data = await checkUsernameAvailability(name);
+        if (data.message === "Username is already taken") {
+          if (usernameRegex.test(name)) {
+            setUsernameAvailable(false);
+          }
+        } else {
+          if (usernameRegex.test(name)) {
+            setUsernameAvailable(true);
+          }
+        }
+      } catch (err) {
+        console.error("Error checking username:", err);
+        setUsernameAvailable(null);
+      } finally {
+        setChecking(false);
+      }
+    }, 1000),
+    []
+  );
+
+  //username UI
+  let usernameBorderClass = "border-gray-300";
+  if (errors.username) usernameBorderClass = "border-red-500";
+  else if (usernameTouched && usernameAvailable === true)
+    usernameBorderClass = "border-green-400";
+  else if (usernameTouched && usernameAvailable === false)
+    usernameBorderClass = "border-red-400";
+
+  // Call this on every input change
+  const handleUsernameChange = (e) => {
+    const value = e.target.value.toLowerCase().trim(); // lowercase enforcement
+    setUsername(value);
+
+    // Format validation first
+    if (!usernameRegex.test(value)) {
+      setErrors((prev) => ({
+        ...prev,
+        username: "3-20 characters, _ & numbers only",
+      }));
+      setUsernameAvailable(null);
+      return;
+    } else {
+      setErrors((prev) => ({ ...prev, username: null }));
+    }
+
+    // Debounced availability check
+    checkAvailabilityDebounced(value);
+  };
+
+  //Checking Fullname
+  const fullnameRegex = /^[a-zA-Z\s]{3,20}$/;
+
+  //For fullname
+  const handleFullnamechange = (e) => {
+    const value = e.target.value.trim();
+    setFullname(value);
+
+    // Fullname validation moved here to avoid conditional hook call
+    if (!fullnameRegex.test(value)) {
+      setErrors((prev) => ({
+        ...prev,
+        fullname: "Please fill correct fullname",
+      }));
+    } else {
+      setErrors((prev) => ({ ...prev, fullname: null }));
+    }
+  };
+
+  //Checking email
+  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+  //For Email
+  const handleEmailChange = (e) => {
+    const value = e.target.value.toLowerCase().trim();
+    setEmail(value);
+
+    // Email validation moved here to avoid conditional hook call
+    if (!emailRegex.test(value)) {
+      setErrors((prev) => ({
+        ...prev,
+        email: "Please fill correct email",
+      }));
+    } else {
+      setErrors((prev) => ({ ...prev, email: null }));
+    }
+  };
+
+  useEffect(() => {
+    return () => checkAvailabilityDebounced.cancel();
+  }, [checkAvailabilityDebounced]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
 
+    //clear errors
+    setErrors({});
+    setGeneralError("");
+
+    // Fullname validation moved here to avoid conditional hook call
+    if (!fullnameRegex.test(fullname)) {
+      setErrors((prev) => ({
+        ...prev,
+        fullname: "Please fill correct fullname",
+      }));
+      setIsLoading(false);
+      return;
+    }
+
+    // Email validation moved here to avoid conditional hook call
+    if (!emailRegex.test(email)) {
+      setErrors((prev) => ({
+        ...prev,
+        email: "Please fill correct email",
+      }));
+      setIsLoading(false);
+      return;
+    }
+
+    // Format validation first
+    if (!usernameRegex.test(username)) {
+      setErrors((prev) => ({
+        ...prev,
+        username: "3-20 characters, _ & numbers only",
+      }));
+      setIsLoading(false);
+      return;
+    }
+
+    if (!isStrong) {
+      toast.error("Please choose a stronger password!");
+      setIsLoading(false);
+      return;
+    }
+
+    if (usernameAvailable === false) {
+      setErrors((prev) => ({
+        ...prev,
+        username: "This username is already taken",
+      }));
+      setIsLoading(false);
+      return;
+    }
+
+    const firstErrorField = Object.keys(errors)[0];
+    if (firstErrorField) {
+      document.getElementById(firstErrorField)?.focus();
+    }
+
     try {
       await register({
-        name: fullname,
+        name: fullname.trim(),
         password,
-        username,
-        email,
+        username: username.trim(),
+        email: email.trim(),
       });
       navigate("/dashboard");
     } catch (err) {
@@ -207,13 +371,12 @@ function SignUp() {
                   id="fullname"
                   type="text"
                   value={fullname}
-                  onChange={(e) => setFullname(e.target.value)}
+                  onChange={handleFullnamechange}
                   required
                   className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 lg:py-3.5 pt-5 sm:pt-6 border-2 rounded-xl sm:rounded-2xl focus:outline-none transition-all duration-300 peer placeholder-transparent bg-white/50 backdrop-blur-sm text-sm sm:text-base ${
-                    errors.fullname ? "border-red-500" : "border-gray-400"
+                    errors.fullname ? "border-red-500" : "border-[#5C7B8A]"
                   }`}
                   style={{
-                    borderColor: fullname ? "#5C7B8A" : "#E5E7EB",
                     color: "#1A1F1D",
                     fontFamily: "Manrope, sans-serif",
                   }}
@@ -223,7 +386,7 @@ function SignUp() {
                   htmlFor="fullname"
                   className="absolute left-3 sm:left-4 top-1.5 sm:top-2 text-xs font-semibold transition-all duration-300 pointer-events-none"
                   style={{
-                    color: fullname ? "5C7B8A" : "#7B7F95",
+                    color: fullname ? "#5C7B8A" : "#7B7F95",
                     fontFamily: "Manrope, sans-serif",
                   }}
                 >
@@ -232,7 +395,11 @@ function SignUp() {
                 {errors.fullname && (
                   <p className="text-xs text-red-500 mt-1">{errors.fullname}</p>
                 )}
-                <div className="absolute inset-y-0 bottom-[5px] right-[10px] flex items-center pr-3 sm:pr-4">
+                <div
+                  className={`absolute inset-y-0  right-[10px] flex items-center pr-3 sm:pr-4 ${
+                    errors.fullname ? "bottom-8" : "bottom-[5px]"
+                  }`}
+                >
                   <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full transition-all duration-300">
                     {fullname ? (
                       <MdBadge className="flex items-center text-[#5c7b8a] text-xl" />
@@ -249,13 +416,11 @@ function SignUp() {
                   id="username"
                   type="text"
                   value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  onChange={handleUsernameChange}
+                  onFocus={() => setUsernameTouched(true)}
                   required
-                  className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 lg:py-3.5 pt-5 sm:pt-6 border-2 rounded-xl sm:rounded-2xl focus:outline-none transition-all duration-300 peer placeholder-transparent bg-white/50 backdrop-blur-sm text-sm sm:text-base ${
-                    errors.username ? "border-red-500" : "border-gray-300"
-                  }`}
+                  className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 lg:py-3.5 pt-5 sm:pt-6 border-2 rounded-xl sm:rounded-2xl focus:outline-none transition-all duration-300 peer placeholder-transparent bg-white/50 backdrop-blur-sm text-sm sm:text-base ${usernameBorderClass}`}
                   style={{
-                    borderColor: username ? "#5C7B8A" : "#E5E7EB",
                     color: "#1A1F1D",
                     fontFamily: "Manrope, sans-serif",
                   }}
@@ -271,18 +436,47 @@ function SignUp() {
                 >
                   Username
                 </label>
-                {errors.username && (
-                  <p className="text-xs text-red-500 mt-1">{errors.username}</p>
-                )}
-                <div className="absolute inset-y-0 right-2 flex items-center pr-3 sm:pr-4">
-                  <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full transition-all duration-300">
-                    {username ? (
-                      <FaUserAlt className="flex items-center text-[#5c7b8a]" />
-                    ) : (
-                      ""
+
+                {/* Icon & Loader */}
+                <div className="absolute inset-y-0 bottom-[14px] right-3 flex items-center">
+                  {checking && (
+                    <div className="w-4 h-4 border-2 border-gray-300 border-t-transparent rounded-full animate-spin"></div>
+                  )}
+                  {!checking &&
+                    username &&
+                    usernameTouched &&
+                    usernameAvailable !== null &&
+                    username.length > 0 && (
+                      <>
+                        {usernameAvailable ? (
+                          <FaCheck className="text-green-500 w-4 h-4" />
+                        ) : (
+                          <FaTimes className="text-red-500 w-5 h-5" />
+                        )}
+                      </>
                     )}
-                  </div>
                 </div>
+
+                {username &&
+                  !errors.username &&
+                  usernameTouched &&
+                  usernameAvailable !== null &&
+                  !checking && (
+                    <p
+                      className={`text-xs mt-1 transition-opacity ${
+                        usernameAvailable ? "text-green-500" : "text-red-500"
+                      }`}
+                    >
+                      {usernameAvailable
+                        ? "Great! This username is available 🎉"
+                        : "Oops! Someone else has this username 😅"}
+                    </p>
+                  )}
+
+                {/* Field errors */}
+                {errors.username && (
+                  <p className="text-xs mt-1 text-red-500">{errors.username}</p>
+                )}
               </div>
 
               <div className="relative">
@@ -290,13 +484,12 @@ function SignUp() {
                   id="email"
                   type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={handleEmailChange}
                   required
                   className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 lg:py-3.5 pt-5 sm:pt-6 border-2 rounded-xl sm:rounded-2xl focus:outline-none transition-all duration-300 peer placeholder-transparent bg-white/50 backdrop-blur-sm text-sm sm:text-base ${
-                    errors.email ? "border-red-500" : "border-gray-300"
+                    errors.email ? "border-red-500" : "border-[#5C7B8A]"
                   }`}
                   style={{
-                    borderColor: email ? "#5C7B8A" : "#E5E7EB",
                     color: "#1A1F1D",
                     fontFamily: "Manrope, sans-serif",
                   }}
@@ -315,7 +508,11 @@ function SignUp() {
                 {errors.email && (
                   <p className="text-xs text-red-500 mt-1">{errors.email}</p>
                 )}
-                <div className="absolute inset-y-0 bottom-[5px] right-[10px] flex items-center pr-3 sm:pr-4">
+                <div
+                  className={`absolute inset-y-0 right-[10px] flex items-center pr-3 sm:pr-4 ${
+                    errors.email ? "bottom-7" : "bottom-[5px]"
+                  }`}
+                >
                   <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full transition-all duration-300">
                     {email ? (
                       <MdEmail className="flex items-center text-[#5c7b8a] text-xl" />
@@ -335,12 +532,6 @@ function SignUp() {
               <button
                 type="submit"
                 disabled={isLoading}
-                onClick={(e) => {
-                  if (!isStrong) {
-                    e.preventDefault();
-                    toast.error("Password must be strong to continue ⚡");
-                  }
-                }}
                 className="w-full flex justify-center items-center cursor-pointer py-2.5 sm:py-3 lg:py-3.5 px-4 border border-transparent rounded-xl sm:rounded-2xl shadow-lg text-white font-semibold hover:shadow-xl focus:outline-none transition-all duration-300 relative overflow-hidden group disabled:opacity-70 mt-4 sm:mt-6"
                 style={{
                   background:

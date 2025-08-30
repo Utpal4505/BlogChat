@@ -6,6 +6,7 @@ import authRouter from "./routes/auth.google.routes.js";
 import cors from "cors";
 import passport from "./config/passport.gauth.config.js";
 import { errorHandler } from "./middlewares/error.middlewares.js";
+import { checkUsernameAvailability} from "./controllers/usernameCheck.middlewares.js"
 
 const app = express();
 

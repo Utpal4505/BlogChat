@@ -52,6 +52,27 @@ export const AuthProvider = ({ children }) => {
     fetchUser();
   }, []);
 
+  //onboard user
+  const onBoardUser = async ({ username, password }) => {
+    try {
+      const { data } = await api.post("/onboarding", { username, password });
+      setUser(data.user);
+      return data;
+    } catch (err) {
+      throw err.response?.data || err.message;
+    }
+  };
+
+  //check-username availability
+  const checkUsernameAvailability = async (username) => {
+    try {
+      const { data } = await api.post("/username-check", { username });
+      return data;
+    } catch (err) {
+      throw err.response?.data || err.message;
+    }
+  };
+
   // ✅ Register
   const register = async ({ name, email, username, password }) => {
     try {
@@ -96,7 +117,7 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider
-      value={{ user, loading, login, loginWithGoogle, register, logout, fetchUser }}
+      value={{ user, loading, login, loginWithGoogle, register, logout, fetchUser, checkUsernameAvailability, onBoardUser }}
     >
       {children}
     </AuthContext.Provider>
