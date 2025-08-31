@@ -5,10 +5,10 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import prisma from "../config/db.config.js";
 
 export const onBoardUser = asyncHandler(async (req, res) => {
-  const { username, password } = req.body;
+  const { username, password, bio } = req.body;
 
   //checking required
-  if (!username || !password) {
+  if (!username || !password || !bio) {
     throw new ApiError(400, "⚠️ All Fields are required");
   }
 
@@ -19,7 +19,7 @@ export const onBoardUser = asyncHandler(async (req, res) => {
   });
 
   if (user) {
-    throw new ApiError(409, "User already exist");
+    throw new ApiError(409, "User already exist please choose another username or login");
   }
 
   // get user from req.user
@@ -34,6 +34,7 @@ export const onBoardUser = asyncHandler(async (req, res) => {
     data: {
       username: username,
       password: hashedPassword,
+      bio: bio,
     },
     select: {
       id: true,

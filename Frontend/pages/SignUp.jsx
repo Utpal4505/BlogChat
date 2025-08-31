@@ -4,34 +4,19 @@ import { FaCheck, FaTimes, FaUserAlt } from "react-icons/fa";
 import { MdBadge, MdEmail } from "react-icons/md";
 import { AuthContext } from "../context/AuthContext";
 import { AlertCircle, Shield, ShieldAlert, ShieldCheck } from "lucide-react";
-import PasswordInput from "../components/PasswordStrengthCheck";
-import toast from "react-hot-toast";
 import { debounce } from "lodash";
 
-// exporting password label for sumbit checker
-import { GetStrength } from "../components/PasswordStrengthCheck";
 
 function SignUp() {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
   const [fullname, setFullname] = useState("");
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [checking, setChecking] = useState(false);
-  const [usernameTouched, setUsernameTouched] = useState(false);
   const [errors, setErrors] = useState({}); // { username: "...", password: "..." }
   const [generalError, setGeneralError] = useState(""); // top-level errors like "Invalid Credentials"
-
-  const strength = GetStrength(password);
-  const isStrong = strength.label === "Strong";
 
   const { register, loginWithGoogle, checkUsernameAvailability } =
     useContext(AuthContext);
   const navigate = useNavigate();
-
-  //check username availability
-  const [usernameAvailable, setUsernameAvailable] = useState(null);
-  const usernameRegex = /^[a-z0-9_]{3,20}$/;
 
   // Debounced backend check
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -63,35 +48,6 @@ function SignUp() {
     }, 1000),
     []
   );
-
-  //username UI
-  let usernameBorderClass = "border-gray-300";
-  if (errors.username) usernameBorderClass = "border-red-500";
-  else if (usernameTouched && usernameAvailable === true)
-    usernameBorderClass = "border-green-400";
-  else if (usernameTouched && usernameAvailable === false)
-    usernameBorderClass = "border-red-400";
-
-  // Call this on every input change
-  const handleUsernameChange = (e) => {
-    const value = e.target.value.toLowerCase().trim(); // lowercase enforcement
-    setUsername(value);
-
-    // Format validation first
-    if (!usernameRegex.test(value)) {
-      setErrors((prev) => ({
-        ...prev,
-        username: "3-20 characters, _ & numbers only",
-      }));
-      setUsernameAvailable(null);
-      return;
-    } else {
-      setErrors((prev) => ({ ...prev, username: null }));
-    }
-
-    // Debounced availability check
-    checkAvailabilityDebounced(value);
-  };
 
   //Checking Fullname
   const fullnameRegex = /^[a-zA-Z\s]{3,20}$/;
@@ -163,31 +119,6 @@ function SignUp() {
       return;
     }
 
-    // Format validation first
-    if (!usernameRegex.test(username)) {
-      setErrors((prev) => ({
-        ...prev,
-        username: "3-20 characters, _ & numbers only",
-      }));
-      setIsLoading(false);
-      return;
-    }
-
-    if (!isStrong) {
-      toast.error("Please choose a stronger password!");
-      setIsLoading(false);
-      return;
-    }
-
-    if (usernameAvailable === false) {
-      setErrors((prev) => ({
-        ...prev,
-        username: "This username is already taken",
-      }));
-      setIsLoading(false);
-      return;
-    }
-
     const firstErrorField = Object.keys(errors)[0];
     if (firstErrorField) {
       document.getElementById(firstErrorField)?.focus();
@@ -196,11 +127,9 @@ function SignUp() {
     try {
       await register({
         name: fullname.trim(),
-        password,
-        username: username.trim(),
         email: email.trim(),
       });
-      navigate("/dashboard");
+      navigate("/onboarding");
     } catch (err) {
       console.log("Registration error", err);
 
@@ -410,75 +339,6 @@ function SignUp() {
                 </div>
               </div>
 
-              {/* Compact Username Field */}
-              <div className="relative">
-                <input
-                  id="username"
-                  type="text"
-                  value={username}
-                  onChange={handleUsernameChange}
-                  onFocus={() => setUsernameTouched(true)}
-                  required
-                  className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 lg:py-3.5 pt-5 sm:pt-6 border-2 rounded-xl sm:rounded-2xl focus:outline-none transition-all duration-300 peer placeholder-transparent bg-white/50 backdrop-blur-sm text-sm sm:text-base ${usernameBorderClass}`}
-                  style={{
-                    color: "#1A1F1D",
-                    fontFamily: "Manrope, sans-serif",
-                  }}
-                  placeholder="Username"
-                />
-                <label
-                  htmlFor="username"
-                  className="absolute left-3 sm:left-4 top-1.5 sm:top-2 text-xs font-semibold transition-all duration-300 pointer-events-none"
-                  style={{
-                    color: username ? "#5C7B8A" : "#7B7F95",
-                    fontFamily: "Manrope, sans-serif",
-                  }}
-                >
-                  Username
-                </label>
-
-                {/* Icon & Loader */}
-                <div className="absolute inset-y-0 bottom-[14px] right-3 flex items-center">
-                  {checking && (
-                    <div className="w-4 h-4 border-2 border-gray-300 border-t-transparent rounded-full animate-spin"></div>
-                  )}
-                  {!checking &&
-                    username &&
-                    usernameTouched &&
-                    usernameAvailable !== null &&
-                    username.length > 0 && (
-                      <>
-                        {usernameAvailable ? (
-                          <FaCheck className="text-green-500 w-4 h-4" />
-                        ) : (
-                          <FaTimes className="text-red-500 w-5 h-5" />
-                        )}
-                      </>
-                    )}
-                </div>
-
-                {username &&
-                  !errors.username &&
-                  usernameTouched &&
-                  usernameAvailable !== null &&
-                  !checking && (
-                    <p
-                      className={`text-xs mt-1 transition-opacity ${
-                        usernameAvailable ? "text-green-500" : "text-red-500"
-                      }`}
-                    >
-                      {usernameAvailable
-                        ? "Great! This username is available 🎉"
-                        : "Oops! Someone else has this username 😅"}
-                    </p>
-                  )}
-
-                {/* Field errors */}
-                {errors.username && (
-                  <p className="text-xs mt-1 text-red-500">{errors.username}</p>
-                )}
-              </div>
-
               <div className="relative">
                 <input
                   id="email"
@@ -521,11 +381,6 @@ function SignUp() {
                     )}
                   </div>
                 </div>
-              </div>
-
-              {/* Compact Password Field */}
-              <div className="relative">
-                <PasswordInput password={password} setPassword={setPassword} />
               </div>
 
               {/* register button  */}

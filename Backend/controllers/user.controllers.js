@@ -45,8 +45,8 @@ const createUser = asyncHandler(async (req, res) => {
   // for normal signup
   console.log("Creating user:", req.body);
 
-  const { email, username, name, password } = req.body;
-  if (!email || !username || !name || !password) {
+  const { email, name } = req.body;
+  if (!email || !name) {
     return res.status(400).json({ message: "All fields are required" });
   }
   const existingUser = await prisma.user.findUnique({
@@ -59,10 +59,8 @@ const createUser = asyncHandler(async (req, res) => {
     throw new ApiError(409, "User with this email already exists");
   }
 
-  const hashedPassword = await bcrypt.hash(password, 10);
-
   const newUser = await prisma.user.create({
-    data: { email, username, name, password: hashedPassword },
+    data: { email, name },
   });
 
   const CreatedUser = await prisma.user.findUnique({
@@ -79,7 +77,7 @@ const createUser = asyncHandler(async (req, res) => {
   });
 
   if (!CreatedUser) {
-    throw new ApiError(500, "Something went wrong while registering the user");
+    throw new ApiError(500, "Something went wrong while registering the user please try again");
   }
   return res
     .status(201)
@@ -144,13 +142,13 @@ const LoginUser = asyncHandler(async (req, res) => {
   });
 
   if (!user) {
-    throw new ApiError(404, "User not found");
+    throw new ApiError(404, "User not found please register");
   }
 
   const isPasswordMatch = await bcrypt.compare(password, user.password);
 
   if (!isPasswordMatch) {
-    throw new ApiError(401, "⚠️ Invalid Credentials");
+    throw new ApiError(401, "⚠️ Incorrect Password");
   }
 
   const { accessToken, refreshToken } = await generateAccessandRefreshTokens(
@@ -180,7 +178,7 @@ const LoginUser = asyncHandler(async (req, res) => {
   if (!savedRefreshToken) {
     throw new ApiError(
       500,
-      "⚠️ Something went wrong while saving refresh token"
+      "⚠️ Something went wrong while saving refresh token please try again"
     );
   }
 

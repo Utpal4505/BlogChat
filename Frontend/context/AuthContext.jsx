@@ -53,9 +53,9 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   //onboard user
-  const onBoardUser = async ({ username, password }) => {
+  const onBoardUser = async ({ username, password, bio }) => {
     try {
-      const { data } = await api.post("/onboarding", { username, password });
+      const { data } = await api.post("/onboarding", { username, password, bio });
       setUser(data.user);
       return data;
     } catch (err) {

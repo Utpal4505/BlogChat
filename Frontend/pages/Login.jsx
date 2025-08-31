@@ -24,7 +24,7 @@ const LoginPage = () => {
     setGeneralError("");
 
     try {
-      await login({ username, password }); // call backend login
+      await login({ username: username.trim().toLowerCase(), password }); // call backend login
       navigate("/dashboard");
     } catch (err) {
       console.error("Login error raw:", err);
