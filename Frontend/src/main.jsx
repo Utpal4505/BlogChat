@@ -7,6 +7,7 @@ import SignUp from '../pages/SignUp.jsx'
 import Onboarding from '../pages/Onboarding.jsx'
 import Dashboard from '../pages/dashboard.jsx'
 import { AuthProvider } from '../context/AuthContext.jsx'
+import VerificationForm from '../pages/EmailVerification.jsx'
 
 const router = createBrowserRouter([
   {
@@ -29,6 +30,10 @@ const router = createBrowserRouter([
         path: "dashboard",
         element: <Dashboard />
       },
+      {
+        path: "email-verification",
+        element: <VerificationForm />
+      }
 
     ]
   },

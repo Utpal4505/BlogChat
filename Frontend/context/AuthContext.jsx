@@ -52,10 +52,25 @@ export const AuthProvider = ({ children }) => {
     fetchUser();
   }, []);
 
-  //onboard user
-  const onBoardUser = async ({ username, password, bio }) => {
+  const verifyOTP = async ({verificationId, otp}) => {
     try {
-      const { data } = await api.post("/onboarding", { username, password, bio });
+      const { data } = await api.post("/verifyOTP", { verificationId , otp });
+      setUser(data.user);
+      return data;
+    } catch (err) {
+      throw err.response?.data || err.message;
+    }
+  };
+
+  //onboard user
+  const onBoardUser = async ({ username, password, bio, email }) => {
+    try {
+      const { data } = await api.post("/onboarding", {
+        username,
+        password,
+        bio,
+        email,
+      });
       setUser(data.user);
       return data;
     } catch (err) {
@@ -74,13 +89,11 @@ export const AuthProvider = ({ children }) => {
   };
 
   // ✅ Register
-  const register = async ({ name, email, username, password }) => {
+  const register = async ({ name, email }) => {
     try {
       const { data } = await api.post("/register", {
         name,
         email,
-        username,
-        password,
       });
       setUser(data.user);
       return data;
@@ -117,7 +130,18 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider
-      value={{ user, loading, login, loginWithGoogle, register, logout, fetchUser, checkUsernameAvailability, onBoardUser }}
+      value={{
+        user,
+        loading,
+        login,
+        loginWithGoogle,
+        register,
+        logout,
+        fetchUser,
+        checkUsernameAvailability,
+        onBoardUser,
+        verifyOTP,
+      }}
     >
       {children}
     </AuthContext.Provider>

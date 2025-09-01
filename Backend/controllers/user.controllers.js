@@ -8,6 +8,8 @@ import { ApiError } from "../utils/ApiError.js";
 import bcrypt from "bcrypt";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import jwt from "jsonwebtoken";
+import { sanitizeInput } from "../utils/HtmlSanitize.js";
+import { sendVerificationMail } from "../service/email.service.js";
 
 const options = {
   httpOnly: true,
@@ -41,56 +43,56 @@ const generateAccessandRefreshTokens = async (user) => {
 };
 
 const createUser = asyncHandler(async (req, res) => {
-  //Logic for creating user
-  // for normal signup
-  console.log("Creating user:", req.body);
+  try {
+    let { email, name } = req.body;
+    if (!email || !name) throw new ApiError(400, "All fields are required");
 
-  const { email, name } = req.body;
-  if (!email || !name) {
-    return res.status(400).json({ message: "All fields are required" });
+    email = sanitizeInput(email).trim();
+    name = sanitizeInput(name).trim();
+
+    const existingUser = await prisma.user.findUnique({ where: { email } });
+    if (existingUser)
+      throw new ApiError(409, "User with this email already exists");
+
+    // OTP generate
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpExpiry = new Date(Date.now() + 5 * 60 * 1000);
+
+    // save to emailVerification table
+    const newUser = await prisma.emailVerification.create({
+      data: {
+        email: email,
+        otp: otp,
+        otpExpiry: otpExpiry,
+        name: name
+      },
+    });
+
+    await sendVerificationMail(email, otp);
+
+    return res.status(200).json({
+      message: "✅ OTP sent to email",
+      verificationId: newUser.id,
+    });
+  } catch (error) {
+    console.error("Error occurred while creating user:", error);
+    return res.status(500).json({
+      message: "⚠️ Something went wrong",
+    });
   }
-  const existingUser = await prisma.user.findUnique({
-    where: {
-      email: email,
-    },
-  });
-
-  if (existingUser) {
-    throw new ApiError(409, "User with this email already exists");
-  }
-
-  const newUser = await prisma.user.create({
-    data: { email, name },
-  });
-
-  const CreatedUser = await prisma.user.findUnique({
-    where: {
-      id: newUser.id,
-    },
-    select: {
-      id: true,
-      email: true,
-      username: true,
-      name: true,
-      createdAt: true,
-    },
-  });
-
-  if (!CreatedUser) {
-    throw new ApiError(500, "Something went wrong while registering the user please try again");
-  }
-  return res
-    .status(201)
-    .json(new ApiResponse(201, CreatedUser, "✅ User Created Successfully"));
 });
 
 const updatePassword = asyncHandler(async (req, res) => {
   //Logic for updating password
-  const { username, oldPassword, newPassword } = req.body;
+  let { username, oldPassword, newPassword } = req.body;
 
   if (!username || !oldPassword || !newPassword) {
     throw new ApiError(400, "All fields are required");
   }
+
+  username = sanitizeInput(username);
+  oldPassword = oldPassword.trim();
+  newPassword = newPassword.trim();
 
   if (oldPassword === newPassword) {
     throw new ApiError(400, "New password must be different from old password");
@@ -129,11 +131,14 @@ const updatePassword = asyncHandler(async (req, res) => {
 
 const LoginUser = asyncHandler(async (req, res) => {
   // get user data from frontend
-  const { username, password } = req.body;
+  let { username, password } = req.body;
 
   if (!username || !password) {
     throw new ApiError(400, "All fields are required");
   }
+
+  username = sanitizeInput(username);
+  password = password.trim();
 
   const user = await prisma.user.findUnique({
     where: {
@@ -258,7 +263,9 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
     }
 
     // ✅ Generate new tokens
-    const { accessToken, refreshToken } = await generateAccessandRefreshTokens(user);
+    const { accessToken, refreshToken } = await generateAccessandRefreshTokens(
+      user
+    );
 
     // ❌ Old refresh token delete
     await prisma.token.deleteMany({ where: { userId: user.id } });
@@ -306,7 +313,73 @@ const getMe = asyncHandler(async (req, res) => {
     throw new ApiError(404, "User not found");
   }
 
-  return res.status(200).json(new ApiResponse(200, user, "✅ User fetched successfully"));
+  return res
+    .status(200)
+    .json(new ApiResponse(200, user, "✅ User fetched successfully"));
+});
+
+const verifyOTP = asyncHandler(async (req, res) => {  
+  try {
+    const { verificationId, otp } = req.body;
+
+    if (!verificationId || !otp) {
+      throw new ApiError(400, "All fields are required");
+    }
+
+    const user = await prisma.emailVerification.findUnique({
+      where: { id: Number(verificationId) },
+    });
+
+    if (!user) {
+      throw new ApiError(404, "User not found");
+    }
+
+    if (user.otp !== otp) {
+      throw new ApiError(400, "⚠️ Invalid OTP");
+    }
+
+    if (user.otpExpiry < new Date()) {
+      throw new ApiError(400, "⚠️ OTP Expired");
+    }
+
+    const newUser = await prisma.user.create({
+      data: {
+        email: user.email,
+        name: user.name,
+        isVerified: true,
+      },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        createdAt: true,
+      },
+    });
+
+    if (!newUser) {
+      throw new ApiError(500, "⚠️ Something went wrong while creating user");
+    }
+
+    const deletedVerification = await prisma.emailVerification.delete({
+      where: { id: Number(verificationId) },
+    });
+
+    return res
+      .status(201)
+      .json(
+        new ApiResponse(
+          201,
+          newUser,
+          "✅ User verified & registered successfully"
+        )
+      );
+  } catch (error) {
+    throw new ApiError(
+      500,
+      "⚠️ Something went wrong while verifying OTP",
+      error.message
+    );
+  }
 });
 
 export {
@@ -316,5 +389,6 @@ export {
   LoggedOutUser,
   refreshAccessToken,
   generateAccessandRefreshTokens,
-  getMe
+  getMe,
+  verifyOTP,
 };

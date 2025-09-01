@@ -1,5 +1,5 @@
 import React, { useCallback, useContext, useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { AlertCircle } from "lucide-react";
 import { AuthContext } from "../context/AuthContext";
 import PasswordInput, {
@@ -16,6 +16,8 @@ function Onboarding() {
   const [password, setPassword] = useState("");
   const [checking, setChecking] = useState(false);
   const [usernameTouched, setUsernameTouched] = useState(false);
+  const location = useLocation();
+  const email = location.state?.email;
 
   // NEW: error states
   const [errors, setErrors] = useState({}); // { username: "...", password: "..." }
@@ -149,7 +151,7 @@ function Onboarding() {
 
     // --- NO ERRORS, SUBMIT FORM ---
     try {
-      await onBoardUser({ username: username.trim().toLowerCase(), password, bio: bio.trim() });
+      await onBoardUser({ username: username.trim().toLowerCase(), password, bio: bio.trim(), email });
 
       navigate("/dashboard");
     } catch (err) {

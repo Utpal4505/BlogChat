@@ -54,7 +54,7 @@ function SignUp() {
 
   //For fullname
   const handleFullnamechange = (e) => {
-    const value = e.target.value.trim();
+    const value = e.target.value;
     setFullname(value);
 
     // Fullname validation moved here to avoid conditional hook call
@@ -125,11 +125,11 @@ function SignUp() {
     }
 
     try {
-      await register({
+      const data = await register({
         name: fullname.trim(),
         email: email.trim(),
       });
-      navigate("/onboarding");
+      navigate("/email-verification", { state: { verificationId: data.verificationId, email } });
     } catch (err) {
       console.log("Registration error", err);
 

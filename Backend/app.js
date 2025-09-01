@@ -7,6 +7,8 @@ import cors from "cors";
 import passport from "./config/passport.gauth.config.js";
 import { errorHandler } from "./middlewares/error.middlewares.js";
 import { checkUsernameAvailability} from "./controllers/usernameCheck.middlewares.js"
+import { globalLimiter } from "./middlewares/rateLimiters.middlewares.js";
+import helmet from 'helmet'
 
 const app = express();
 
@@ -17,12 +19,14 @@ app.use(
   })
 );
 
-app.use(passport.initialize());
+app.use(helmet());
 
+app.use(passport.initialize());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json({ limit: "16kb" }));
 app.use(express.static("public"));
 app.use(cookieParser());
+app.use(globalLimiter)
 
 //Importing and Using Routes
 app.use("/api/v1/healthcheck", healthcheck);

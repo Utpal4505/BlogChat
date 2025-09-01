@@ -53,6 +53,15 @@ model User {
   deletedAt             DateTime?
 }
 
+model EmailVerification {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  name      String
+  otp       String
+  otpExpiry DateTime
+  createdAt DateTime @default(now())
+}
+
 model Post {
   id           Int         @id @default(autoincrement())
   author       User        @relation("authorPosts", fields: [authorId], references: [id])
