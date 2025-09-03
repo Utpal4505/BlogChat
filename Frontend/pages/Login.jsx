@@ -360,8 +360,7 @@ const LoginPage = () => {
                   </span>
                 </label>
 
-                <a
-                  href="#"
+                <Link to="/forgot-password"
                   className="text-xs sm:text-sm font-semibold hover:scale-105 transition-all duration-200"
                   style={{
                     color: "#5C7B8A",
@@ -369,7 +368,7 @@ const LoginPage = () => {
                   }}
                 >
                   Forgot?
-                </a>
+                </Link>
               </div>
 
               <button

@@ -55,7 +55,7 @@ model User {
 
 model EmailVerification {
   id        Int      @id @default(autoincrement())
-  email     String   @unique
+  email     String  
   name      String
   otp       String
   otpExpiry DateTime

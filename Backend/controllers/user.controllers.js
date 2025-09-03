@@ -51,8 +51,12 @@ const createUser = asyncHandler(async (req, res) => {
     name = sanitizeInput(name).trim();
 
     const existingUser = await prisma.user.findUnique({ where: { email } });
-    if (existingUser)
-      throw new ApiError(409, "User with this email already exists");
+    if (existingUser) {
+      // User already exists, handle accordingly
+      return res.status(409).json({
+        message: "⚠️ User with this email already exists",
+      });
+    }
 
     // OTP generate
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
@@ -64,7 +68,7 @@ const createUser = asyncHandler(async (req, res) => {
         email: email,
         otp: otp,
         otpExpiry: otpExpiry,
-        name: name
+        name: name,
       },
     });
 
@@ -318,7 +322,7 @@ const getMe = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, user, "✅ User fetched successfully"));
 });
 
-const verifyOTP = asyncHandler(async (req, res) => {  
+const verifyOTP = asyncHandler(async (req, res) => {
   try {
     const { verificationId, otp } = req.body;
 
@@ -382,6 +386,88 @@ const verifyOTP = asyncHandler(async (req, res) => {
   }
 });
 
+const resetPasswordOTP = asyncHandler(async (req, res) => {
+  console.log(req.body);
+  
+  const { email } = req.body;  
+
+  if (!email) {
+    return res.status(400).json({ message: "Email is required" });
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { email },
+  });
+
+  if (!user) {
+    return res.status(404).json({ message: "User not found" });
+  }
+
+  // OTP generate
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  const otpExpiry = new Date(Date.now() + 5 * 60 * 1000);
+
+  // save to emailVerification table
+  const newUser = await prisma.emailVerification.create({
+    data: {
+      email: email,
+      otp: otp,
+      otpExpiry: otpExpiry,
+      name: user.name,
+    },
+  });
+
+  await sendVerificationMail(email, otp);
+
+  return res.status(200).json({
+      message: "✅Password Reset OTP sent to email",
+      verificationId: newUser.id,
+    });
+});
+
+const verifyResetPassword = asyncHandler(async (req, res) => {
+  const { verificationId, otp, newPassword } = req.body;
+
+  if (!verificationId || !otp || !newPassword) {
+    return res.status(400).json({ message: "All fields are required" });
+  }
+
+  const user = await prisma.emailVerification.findUnique({
+    where: { id: Number(verificationId) },
+  });
+
+  if (!user) {
+    return res.status(404).json({ message: "User not found" });
+  }
+
+  if (user.otp !== otp) {
+    return res.status(400).json({ message: "⚠️ Invalid OTP" });
+  }
+
+  if (user.otpExpiry < new Date()) {
+    return res.status(400).json({ message: "⚠️ OTP Expired" });
+  }
+
+  const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+  const updatedUser = await prisma.user.update({
+    where: { email: user.email },
+    data: { password: hashedPassword },
+  });
+
+  if (!updatedUser) {
+    return res.status(500).json({ message: "⚠️ Something went wrong while updating password" }); 
+  }
+
+  await prisma.emailVerification.delete({
+    where: { id: Number(verificationId) },
+  });
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, "✅ Password reset successfully"));
+});
+
 export {
   createUser,
   updatePassword,
@@ -391,4 +477,6 @@ export {
   generateAccessandRefreshTokens,
   getMe,
   verifyOTP,
+  resetPasswordOTP,
+  verifyResetPassword
 };

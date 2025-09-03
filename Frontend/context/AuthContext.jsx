@@ -40,7 +40,7 @@ export const AuthProvider = ({ children }) => {
   const fetchUser = async () => {
     try {
       const { data } = await api.get("/me");
-      setUser(data.user);
+      setUser(data.data);
     } catch {
       setUser(null);
     } finally {
@@ -106,7 +106,7 @@ export const AuthProvider = ({ children }) => {
   const login = async ({ username, password }) => {
     try {
       const { data } = await api.post("/login", { username, password });
-      setUser(data.user);
+      setUser(data.data.loginnedUser); 
       return data;
     } catch (err) {
       throw err.response?.data || err;
@@ -128,6 +128,28 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const resetPasswordOTP = async ( email ) => {
+    try {
+      const { data } = await api.post("/resetOTPsent", { email });
+      return data;
+    } catch (err) {
+      throw err.response?.data || err;
+    }
+  };
+
+  const verifyResetPassword = async ({ verificationId, otp, newPassword }) => {
+    try {
+      const { data } = await api.post("/reset-password", {
+        verificationId,
+        otp,
+        newPassword,
+      });
+      return data;
+    } catch (err) {
+      throw err.response?.data || err;
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -141,6 +163,8 @@ export const AuthProvider = ({ children }) => {
         checkUsernameAvailability,
         onBoardUser,
         verifyOTP,
+        resetPasswordOTP,
+        verifyResetPassword,
       }}
     >
       {children}

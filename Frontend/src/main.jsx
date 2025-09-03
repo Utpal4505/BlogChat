@@ -8,6 +8,10 @@ import Onboarding from '../pages/Onboarding.jsx'
 import Dashboard from '../pages/dashboard.jsx'
 import { AuthProvider } from '../context/AuthContext.jsx'
 import VerificationForm from '../pages/EmailVerification.jsx'
+import ForgetPassword from '../pages/ForgetPassword.jsx'
+import PasswordVerify from '../pages/PasswordVerify.jsx'
+import NewPassword from '../pages/NewPassword.jsx'
+import ProtectedRoute from '../utils/ProtectedRoute.jsx'
 
 const router = createBrowserRouter([
   {
@@ -23,16 +27,35 @@ const router = createBrowserRouter([
         element: <SignUp />
       },
       {
-        path: "onboarding",
-        element: <Onboarding />
-      },
-      {
-        path: "dashboard",
-        element: <Dashboard />
-      },
-      {
         path: "email-verification",
         element: <VerificationForm />
+      },
+      {
+        path: "forgot-password",
+        element: <ForgetPassword />
+      },
+      {
+        path: "verifyOTP",
+        element: <PasswordVerify />
+      },
+      {
+        path: "NewPassword",
+        element: <NewPassword />
+      },
+
+      //Protected Routes
+      {
+        element: <ProtectedRoute />,
+        children: [
+          {
+            path: "onboarding",
+            element: <Onboarding />
+          },
+          {
+            path: "dashboard",
+            element: <Dashboard />
+          }
+        ]
       }
 
     ]
