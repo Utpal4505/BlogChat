@@ -250,12 +250,12 @@ function ForgetPassword() {
                     ></path>
                   </svg>
                   <span className="text-sm sm:text-base">
-                    Creating account…
+                    Processing...
                   </span>
                 </>
               ) : (
                 <>
-                  <span className="text-sm sm:text-base">Register</span>
+                  <span className="text-sm sm:text-base">Forget Password</span>
                   <svg
                     className="ml-2 w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform duration-200"
                     fill="none"

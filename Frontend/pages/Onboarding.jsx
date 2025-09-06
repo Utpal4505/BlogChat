@@ -151,7 +151,12 @@ function Onboarding() {
 
     // --- NO ERRORS, SUBMIT FORM ---
     try {
-      await onBoardUser({ username: username.trim().toLowerCase(), password, bio: bio.trim(), email });
+      await onBoardUser({
+        username: username.trim().toLowerCase(),
+        password,
+        bio: bio.trim(),
+        email,
+      });
 
       navigate("/dashboard");
     } catch (err) {
@@ -390,9 +395,7 @@ function Onboarding() {
               <div className="flex justify-center items-center">
                 <button
                   type="submit"
-                  disabled={
-                    isLoading
-                  }
+                  disabled={isLoading}
                   className="w-full flex justify-center items-center cursor-pointer py-2.5 sm:py-3 lg:py-3.5 px-4 border border-transparent rounded-xl sm:rounded-2xl shadow-lg text-white font-semibold hover:shadow-xl focus:outline-none transition-all duration-300 relative overflow-hidden group disabled:opacity-70 mt-4 sm:mt-6 hover:scale-[1.03]"
                   style={{
                     background:

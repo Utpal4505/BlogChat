@@ -1,10 +1,9 @@
-import React, { useCallback, useContext, useEffect, useState } from "react";
+import React, { useContext, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FaCheck, FaTimes, FaUserAlt } from "react-icons/fa";
 import { MdBadge, MdEmail } from "react-icons/md";
 import { AuthContext } from "../context/AuthContext";
 import { AlertCircle, Shield, ShieldAlert, ShieldCheck } from "lucide-react";
-import { debounce } from "lodash";
 
 
 function SignUp() {
@@ -14,40 +13,11 @@ function SignUp() {
   const [errors, setErrors] = useState({}); // { username: "...", password: "..." }
   const [generalError, setGeneralError] = useState(""); // top-level errors like "Invalid Credentials"
 
-  const { register, loginWithGoogle, checkUsernameAvailability } =
+  const { register, loginWithGoogle } =
     useContext(AuthContext);
   const navigate = useNavigate();
 
-  // Debounced backend check
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const checkAvailabilityDebounced = useCallback(
-    debounce(async (name) => {
-      if (!name || !usernameRegex.test(name)) {
-        setUsernameAvailable(null);
-        return;
-      }
-
-      setChecking(true);
-      try {
-        const data = await checkUsernameAvailability(name);
-        if (data.message === "Username is already taken") {
-          if (usernameRegex.test(name)) {
-            setUsernameAvailable(false);
-          }
-        } else {
-          if (usernameRegex.test(name)) {
-            setUsernameAvailable(true);
-          }
-        }
-      } catch (err) {
-        console.error("Error checking username:", err);
-        setUsernameAvailable(null);
-      } finally {
-        setChecking(false);
-      }
-    }, 1000),
-    []
-  );
+  
 
   //Checking Fullname
   const fullnameRegex = /^[a-zA-Z\s]{3,20}$/;
@@ -87,9 +57,6 @@ function SignUp() {
     }
   };
 
-  useEffect(() => {
-    return () => checkAvailabilityDebounced.cancel();
-  }, [checkAvailabilityDebounced]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -129,7 +96,12 @@ function SignUp() {
         name: fullname.trim(),
         email: email.trim(),
       });
-      navigate("/email-verification", { state: { verificationId: data.verificationId, email } });
+      console.log(data);
+      if (data.data.status == "PENDING") {
+        navigate("/onboarding", { state: { email } });
+        return;
+      }
+      navigate("/email-verification", { state: { verificationId: data.data.verificationId, email } });
     } catch (err) {
       console.log("Registration error", err);
 

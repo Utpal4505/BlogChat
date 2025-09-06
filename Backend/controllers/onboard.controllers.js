@@ -57,6 +57,7 @@ export const onBoardUser = asyncHandler(async (req, res) => {
       password: hashedPassword,
       bio: bio,
       avatar: avatarUrl,
+      registration_status: "COMPLETED",
     },
     select: {
       id: true,

@@ -14,8 +14,6 @@ const VerificationForm = () => {
     // Get verificationId from location.state
   const verificationId = location.state?.verificationId;
   const email = location.state?.email;
-
-  console.log(verificationId);
   
   const handleChange = (e, index) => {
     const value = e.target.value;
@@ -41,7 +39,7 @@ const VerificationForm = () => {
     setLoading(true);
     try {
       // verifyOTP ko verificationId ke sath call karo
-      await verifyOTP({ verificationId, otp: enteredCode });
+      await verifyOTP({ verificationId: verificationId, otp: enteredCode });
       alert("Email verified! Registration complete.");
       navigate("/onboarding", { state: { email } });
     } catch (err) {

@@ -10,6 +10,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import jwt from "jsonwebtoken";
 import { sanitizeInput } from "../utils/HtmlSanitize.js";
 import { sendVerificationMail } from "../service/email.service.js";
+import { uploadToCloudinary } from "../utils/cloudinary.js";
 
 const options = {
   httpOnly: true,
@@ -51,11 +52,24 @@ const createUser = asyncHandler(async (req, res) => {
     name = sanitizeInput(name).trim();
 
     const existingUser = await prisma.user.findUnique({ where: { email } });
-    if (existingUser) {
-      // User already exists, handle accordingly
-      return res.status(409).json({
-        message: "⚠️ User with this email already exists",
-      });
+
+    // User already registered and onboard completed
+    if (existingUser && existingUser.registration_status === "COMPLETED") {
+      return res
+        .status(409)
+        .json(
+          new ApiResponse(409, null, "⚠️ User with this email already exists")
+        );
+    } else if (existingUser && existingUser.registration_status === "PENDING") {
+      return res
+        .status(200)
+        .json(
+          new ApiResponse(
+            200,
+            { email: existingUser.email, status: "PENDING" },
+            "✅ User already registered but onboard pending."
+          )
+        );
     }
 
     // OTP generate
@@ -73,64 +87,21 @@ const createUser = asyncHandler(async (req, res) => {
     });
 
     await sendVerificationMail(email, otp);
-
-    return res.status(200).json({
-      message: "✅ OTP sent to email",
-      verificationId: newUser.id,
-    });
+    return res
+      .status(201)
+      .json(
+        new ApiResponse(
+          201,
+          { verificationId: newUser.id },
+          "✅ OTP sent to email"
+        )
+      );
   } catch (error) {
     console.error("Error occurred while creating user:", error);
     return res.status(500).json({
       message: "⚠️ Something went wrong",
     });
   }
-});
-
-const updatePassword = asyncHandler(async (req, res) => {
-  //Logic for updating password
-  let { username, oldPassword, newPassword } = req.body;
-
-  if (!username || !oldPassword || !newPassword) {
-    throw new ApiError(400, "All fields are required");
-  }
-
-  username = sanitizeInput(username);
-  oldPassword = oldPassword.trim();
-  newPassword = newPassword.trim();
-
-  if (oldPassword === newPassword) {
-    throw new ApiError(400, "New password must be different from old password");
-  }
-
-  const user = await prisma.user.findUnique({
-    where: {
-      username: username,
-    },
-  });
-
-  if (!user) {
-    throw new ApiError(404, "User not found");
-  }
-
-  const isMatch = await bcrypt.compare(oldPassword, user.password);
-  if (!isMatch) {
-    throw new ApiError(401, "Old password is incorrect");
-  }
-
-  const hashedNewPassword = await bcrypt.hash(newPassword, 10);
-  await prisma.user.update({
-    where: {
-      id: user.id,
-    },
-
-    data: {
-      password: hashedNewPassword,
-    },
-  });
-
-  return res
-    .status(200)
-    .json(new ApiResponse(200, "✅ Password Updated Successfully"));
 });
 
 const LoginUser = asyncHandler(async (req, res) => {
@@ -309,6 +280,9 @@ const getMe = asyncHandler(async (req, res) => {
       username: true,
       email: true,
       name: true,
+      bio: true,
+      avatar: true,
+      registration_status: true,
       createdAt: true,
     },
   });
@@ -323,6 +297,8 @@ const getMe = asyncHandler(async (req, res) => {
 });
 
 const verifyOTP = asyncHandler(async (req, res) => {
+  console.log(req.body);
+
   try {
     const { verificationId, otp } = req.body;
 
@@ -351,6 +327,7 @@ const verifyOTP = asyncHandler(async (req, res) => {
         email: user.email,
         name: user.name,
         isVerified: true,
+        registration_status: "PENDING",
       },
       select: {
         id: true,
@@ -388,8 +365,8 @@ const verifyOTP = asyncHandler(async (req, res) => {
 
 const resetPasswordOTP = asyncHandler(async (req, res) => {
   console.log(req.body);
-  
-  const { email } = req.body;  
+
+  const { email } = req.body;
 
   if (!email) {
     return res.status(400).json({ message: "Email is required" });
@@ -420,9 +397,9 @@ const resetPasswordOTP = asyncHandler(async (req, res) => {
   await sendVerificationMail(email, otp);
 
   return res.status(200).json({
-      message: "✅Password Reset OTP sent to email",
-      verificationId: newUser.id,
-    });
+    message: "✅Password Reset OTP sent to email",
+    verificationId: newUser.id,
+  });
 });
 
 const verifyResetPassword = asyncHandler(async (req, res) => {
@@ -456,7 +433,9 @@ const verifyResetPassword = asyncHandler(async (req, res) => {
   });
 
   if (!updatedUser) {
-    return res.status(500).json({ message: "⚠️ Something went wrong while updating password" }); 
+    return res
+      .status(500)
+      .json({ message: "⚠️ Something went wrong while updating password" });
   }
 
   await prisma.emailVerification.delete({
@@ -468,9 +447,108 @@ const verifyResetPassword = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, "✅ Password reset successfully"));
 });
 
+const getUserProfile = asyncHandler(async (req, res) => {
+  const { username } = req.params;
+
+  if (!username) {
+    return res.status(400).json({ message: "Username is required" });
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { username },
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      bio: true,
+      avatar: true,
+      registration_status: true,
+    },
+  });
+
+  if (!user) {
+    return res.status(404).json({ message: "User not found" });
+  }
+
+  return res.status(200).json(new ApiResponse(200, user));
+});
+
+const updateMe = asyncHandler(async (req, res) => {
+  const userId = req.user.id;
+  const { name, bio, Newpassword } = req.body;
+
+  if (Newpassword) {
+    if (Newpassword.length < 8) {
+      return res
+        .status(400)
+        .json({ message: "Password must be at least 8 characters long" });
+    }
+  }
+
+  const updateData = {};
+  if (name !== undefined) updateData.name = name;
+  if (bio !== undefined) updateData.bio = bio;
+  if (Newpassword !== undefined)
+    updateData.password = await bcrypt.hash(Newpassword, 10);
+
+  if (Object.keys(updateData).length === 0) {
+    return res.status(400).json({
+      message: "At least one field (name, bio, password) is required to update",
+    });
+  }
+
+  const updatedUser = await prisma.user.update({
+    where: { id: userId },
+    data: updateData,
+    select: {
+      id: true,
+      username: true,
+      email: true,
+      name: true,
+      bio: true,
+      avatar: true,
+      createdAt: true,
+    },
+  });
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, updatedUser, "✅ Profile updated successfully"));
+});
+
+const updateAvatar = asyncHandler(async (req, res) => {
+  const userId = req.user.id;
+
+  if (!req.file?.path) {
+    return res.status(400).json({ message: "No avatar file uploaded" });
+  }
+
+  const avatarCloudPath = await uploadToCloudinary(req.file.path);
+  if (!avatarCloudPath) {
+    return res.status(500).json({ message: "Avatar upload failed" });
+  }
+
+  const updatedUser = await prisma.user.update({
+    where: { id: userId },
+    data: { avatar: avatarCloudPath.secure_url },
+    select: {
+      id: true,
+      username: true,
+      email: true,
+      name: true,
+      bio: true,
+      avatar: true,
+      createdAt: true,
+    },
+  });
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, updatedUser, "✅ Avatar updated successfully"));
+});
+
 export {
   createUser,
-  updatePassword,
   LoginUser,
   LoggedOutUser,
   refreshAccessToken,
@@ -478,5 +556,8 @@ export {
   getMe,
   verifyOTP,
   resetPasswordOTP,
-  verifyResetPassword
+  verifyResetPassword,
+  getUserProfile,
+  updateMe,
+  updateAvatar,
 };

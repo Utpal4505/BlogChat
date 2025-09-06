@@ -54,8 +54,8 @@ export const AuthProvider = ({ children }) => {
 
   const verifyOTP = async ({verificationId, otp}) => {
     try {
-      const { data } = await api.post("/verifyOTP", { verificationId , otp });
-      setUser(data.user);
+      const { data } = await api.post("/verifyOTP", { verificationId, otp });
+      setUser(data.data);
       return data;
     } catch (err) {
       throw err.response?.data || err.message;
@@ -65,13 +65,13 @@ export const AuthProvider = ({ children }) => {
   //onboard user
   const onBoardUser = async ({ username, password, bio, email }) => {
     try {
-      const { data } = await api.post("/onboarding", {
+      const { data } = await api.patch("/onboarding", {
         username,
         password,
         bio,
         email,
       });
-      setUser(data.user);
+      setUser(data.data.user);
       return data;
     } catch (err) {
       throw err.response?.data || err.message;
@@ -81,7 +81,7 @@ export const AuthProvider = ({ children }) => {
   //check-username availability
   const checkUsernameAvailability = async (username) => {
     try {
-      const { data } = await api.post("/username-check", { username });
+      const { data } = await api.get("/username-check", { params: { username } });
       return data;
     } catch (err) {
       throw err.response?.data || err.message;
@@ -95,7 +95,12 @@ export const AuthProvider = ({ children }) => {
         name,
         email,
       });
-      setUser(data.user);
+      console.log(data);
+      
+      if (data.data.status === "PENDING") {
+        setUser(data.data);
+      }
+      console.log("Set User", setUser);
       return data;
     } catch (err) {
       throw err.response?.data || err;

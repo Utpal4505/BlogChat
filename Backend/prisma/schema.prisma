@@ -37,6 +37,7 @@ model User {
   role                  Role           @default(USER)
   isVerified            Boolean        @default(false)
   bio                   String?
+  registration_status   RegistrationStatus @default(PENDING)
   posts                 Post[]         @relation("authorPosts") 
   comments              Comment[]
   postLikes             PostLike[]
@@ -51,7 +52,14 @@ model User {
   createdAt             DateTime       @default(now())
   updatedAt             DateTime       @updatedAt
   deletedAt             DateTime?
+
+  
 }
+
+enum RegistrationStatus {
+    PENDING
+    COMPLETED
+  }
 
 model EmailVerification {
   id        Int      @id @default(autoincrement())

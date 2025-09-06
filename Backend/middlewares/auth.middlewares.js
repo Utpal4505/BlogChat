@@ -4,8 +4,8 @@ import { ApiError } from '../utils/ApiError.js';
 import prisma from '../config/db.config.js';
 
 export const verifyJWT = asyncHandler(async (req, res, next) => {
-  const token = req.cookies.accessToken || req.body.accessToken || req.header("Authorization")?.replace("Bearer ", "");
-
+  const token = req.cookies?.accessToken || req.body?.accessToken || req.header("Authorization")?.replace("Bearer ", "");
+  
   if (!token) {
     throw new ApiError(401, "⚠️ Your session has expired. Please login again.");
   }
@@ -26,6 +26,6 @@ export const verifyJWT = asyncHandler(async (req, res, next) => {
     req.user = user;
     next();
   } catch (error) {
-    throw new ApiError(401, error.message || "⚠️ Invalid Access Token ");
+    throw new ApiError(401, error || "⚠️ Invalid Access Token ");
   }
 });

@@ -1,4 +1,4 @@
-import rateLimit from "express-rate-limit";
+import rateLimit, { ipKeyGenerator } from "express-rate-limit";
 
 // ✅ Custom handler for JSON response
 const rateLimitHandler = (req, res) => {
@@ -29,7 +29,7 @@ export const loginLimiter = rateLimit({
       error: "⚠️ Too many login attempts, please try again after 5 minutes.",
     });
   },
-  keyGenerator: (req) => req.body.username || req.ip, // username+ip protection
+   keyGenerator: (req, res) => ipKeyGenerator(req) || req.ip, // username+ip protection
 });
 
 // 📝 Register limiter

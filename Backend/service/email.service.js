@@ -1,12 +1,19 @@
-import { Resend } from "resend";
+import nodemailer from "nodemailer";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const transporter = nodemailer.createTransport({
+  host: "smtp-relay.brevo.com",
+  port: 587,
+  auth: {
+    user: "964bd3001@smtp-brevo.com", // tumhara Brevo login email
+    pass: "xsmtpsib-8b9a5ea75795dbfbaac73457dad131e12166932b1bf9b5049bfc289e5d858d0f-5hMFgfwUT7xsJYcZ", // Brevo SMTP key
+  },
+});
 
 export const sendVerificationMail = async (email, otp) => {
   try {
-    const { data, error } = await resend.emails.send({
-      from: "onboarding@resend.dev",
-      to: [email],
+    const mailOptions = {
+      from: `"BlogChat" <officialblogchat@gmail.com>`, // sender address
+      to: email,
       subject: "Verify your email address - BlogChat",
       text: `Your BlogChat verification code is: ${otp}. This code is valid for 10 minutes.`,
       html: `
@@ -43,14 +50,12 @@ export const sendVerificationMail = async (email, otp) => {
     </div>
   </div>
 `,
-    });
+    };
 
-    if (error) {
-      console.error("Resend error:", error);
-      throw new Error("Failed to send verification email");
-    }
+    const info = await transporter.sendMail(mailOptions);
 
-    return data;
+    console.log("Verification email sent:", info.messageId);
+    return info;
   } catch (err) {
     console.error("Error sending verification email:", err.message);
     throw err;
