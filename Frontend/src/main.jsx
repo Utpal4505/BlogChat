@@ -1,71 +1,74 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import App from './App.jsx'
-import { createBrowserRouter, RouterProvider } from 'react-router-dom'
-import Login from '../pages/Login.jsx'
-import SignUp from '../pages/SignUp.jsx'
-import Onboarding from '../pages/Onboarding.jsx'
-import Dashboard from '../pages/dashboard.jsx'
-import { AuthProvider } from '../context/AuthContext.jsx'
-import VerificationForm from '../pages/EmailVerification.jsx'
-import ForgetPassword from '../pages/ForgetPassword.jsx'
-import PasswordVerify from '../pages/PasswordVerify.jsx'
-import NewPassword from '../pages/NewPassword.jsx'
-import ProtectedRoute from '../utils/ProtectedRoute.jsx'
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import App from "./App.jsx";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import Login from "../pages/Login.jsx";
+import SignUp from "../pages/SignUp.jsx";
+import Onboarding from "../pages/Onboarding.jsx";
+import Dashboard from "../pages/dashboard.jsx";
+import { AuthProvider } from "../context/AuthContext.jsx";
+import VerificationForm from "../pages/EmailVerification.jsx";
+import ForgetPassword from "../pages/ForgetPassword.jsx";
+import PasswordVerify from "../pages/PasswordVerify.jsx";
+import NewPassword from "../pages/NewPassword.jsx";
+import ProtectedRoute from "../utils/ProtectedRoute.jsx";
 
 const router = createBrowserRouter([
   {
-    path: '/',
+    path: "/",
     element: <App />,
     children: [
       {
         path: "login",
-        element: <Login />
+        element: <Login />,
       },
       {
         path: "register",
-        element: <SignUp />
+        element: <SignUp />,
       },
       {
         path: "email-verification",
-        element: <VerificationForm />
+        element: <VerificationForm />,
       },
       {
         path: "forgot-password",
-        element: <ForgetPassword />
+        element: <ForgetPassword />,
       },
       {
         path: "verifyOTP",
-        element: <PasswordVerify />
+        element: <PasswordVerify />,
       },
       {
         path: "NewPassword",
-        element: <NewPassword />
+        element: <NewPassword />,
+      },
+      {
+        path: "onboarding",
+        element: <Onboarding />,
       },
 
       //Protected Routes
       {
         element: <ProtectedRoute />,
         children: [
-          {
-            path: "onboarding",
-            element: <Onboarding />
-          },
+          // {
+          //   path: "onboarding",
+          //   element: <Onboarding />
+          // },
           {
             path: "dashboard",
-            element: <Dashboard />
-          }
-        ]
-      }
-
-    ]
+            element: <Dashboard />,
+          },
+        ],
+      },
+    ],
   },
-])
+]);
 
-createRoot(document.getElementById('root')).render(
+createRoot(document.getElementById("root")).render(
   <StrictMode>
     <AuthProvider>
-    <RouterProvider router={router} />
+      <RouterProvider router={router} />
     </AuthProvider>
-  </StrictMode>,
-)
+  </StrictMode>
+);

@@ -1,10 +1,10 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FaCheck, FaTimes, FaUserAlt } from "react-icons/fa";
 import { MdBadge, MdEmail } from "react-icons/md";
 import { AuthContext } from "../context/AuthContext";
 import { AlertCircle, Shield, ShieldAlert, ShieldCheck } from "lucide-react";
-
+import toast from "react-hot-toast";
 
 function SignUp() {
   const [fullname, setFullname] = useState("");
@@ -13,11 +13,12 @@ function SignUp() {
   const [errors, setErrors] = useState({}); // { username: "...", password: "..." }
   const [generalError, setGeneralError] = useState(""); // top-level errors like "Invalid Credentials"
 
-  const { register, loginWithGoogle } =
-    useContext(AuthContext);
-  const navigate = useNavigate();
+  useEffect(() => {
+    generalError && toast.error(generalError);
+  }, [generalError]);
 
-  
+  const { register, loginWithGoogle } = useContext(AuthContext);
+  const navigate = useNavigate();
 
   //Checking Fullname
   const fullnameRegex = /^[a-zA-Z\s]{3,20}$/;
@@ -56,7 +57,6 @@ function SignUp() {
       setErrors((prev) => ({ ...prev, email: null }));
     }
   };
-
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -101,7 +101,9 @@ function SignUp() {
         navigate("/onboarding", { state: { email } });
         return;
       }
-      navigate("/email-verification", { state: { verificationId: data.data.verificationId, email } });
+      navigate("/email-verification", {
+        state: { verificationId: data.data.verificationId, email },
+      });
     } catch (err) {
       console.log("Registration error", err);
 
@@ -155,12 +157,11 @@ function SignUp() {
 
   return (
     <>
-      <div className="min-h-screen w-full flex justify-center items-center p-4 bg-[#f5f5f3]">
+      <div className="min-h-screen w-full flex justify-center items-center p-4 bg-bg dark:bg-dbg">
         <div>
           <Link
             to="/login"
-            className="absolute top-4 left-4 sm:top-6 sm:left-6 flex items-center gap-2 text-xs sm:text-sm font-medium px-2 sm:px-3 py-1.5 sm:py-2 rounded-xl hover:bg-white/50 transition-all duration-300 "
-            style={{ color: "#5C7B8A" }}
+            className="absolute top-4 left-4 sm:top-6 sm:left-6 flex items-center gap-2 text-xs sm:text-sm font-medium px-2 sm:px-3 py-1.5 sm:py-2 rounded-xl text-accent dark:text-daccent hover:bg-white/85 dark:hover:bg-white/5 hover:scale-105 transition-all duration-300"
           >
             <svg
               className="w-4 h-4 sm:w-5 sm:h-5"
@@ -180,29 +181,19 @@ function SignUp() {
         </div>
 
         <div className="w-full max-w-sm sm:max-w-md relative z-10">
-          <div className="bg-white/85 backdrop-blur-xl rounded-2xl sm:rounded-3xl shadow-xl sm:shadow-2xl p-4 sm:p-6 lg:p-8 border border-white/20">
-            {/* general error */}
-            {generalError && (
-              <div className="flex items-center gap-2 mb-4 p-3 text-sm text-red-700 bg-red-100 rounded-lg border border-red-300">
-                <AlertCircle size={18} />
-                <span>{generalError}</span>
-              </div>
-            )}
-
+          <div className="bg-white/85 dark:bg-dcard backdrop-blur-xl rounded-2xl sm:rounded-3xl shadow-xl sm:shadow-2xl p-4 sm:p-6 lg:p-8 border dark:border-dbordercolor border-white/20">
             <div className="text-center mb-4 sm:mb-6">
               <h1
-                className="text-xl sm:text-2xl lg:text-3xl font-bold mb-1 sm:mb-2 bg-gradient-to-r bg-clip-text text-transparent"
+                className="text-xl sm:text-2xl lg:text-3xl font-bold mb-1 sm:mb-2 bg-gradient-to-r from-text to-primary dark:from-dText dark:to-dPrimary bg-clip-text text-transparent"
                 style={{
-                  backgroundImage: `linear-gradient(135deg, #1A1F1D 0%, #4A5A5D 100%)`,
                   fontFamily: "Merriweather Sans, sans-serif",
                 }}
               >
                 Welcome
               </h1>
               <p
-                className="text-xs sm:text-sm lg:text-base opacity-70"
+                className="text-xs text-text dark:text-dText sm:text-sm lg:text-base opacity-70"
                 style={{
-                  color: "#7B7F95",
                   fontFamily: "Manrope, sans-serif",
                 }}
               >
@@ -211,13 +202,12 @@ function SignUp() {
             </div>
             <button
               onClick={loginWithGoogle}
-              className="w-full flex items-center justify-center cursor-pointer px-4 sm:px-4 py-2.5 sm:py-3 lg:py-3.5 border-2 rounded-xl sm:rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 mb-3 sm:mb-4 group relative overflow-hidden"
+              className="w-full flex items-center justify-center cursor-pointer px-3 sm:px-4 py-2.5 sm:py-3 lg:py-3.5 border-2 rounded-xl border-bordercolor dark:border-dbordercolor dark:bg-dcard bg-card text-text dark:text-dText sm:rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 mb-3 sm:mb-4 group relative overflow-hidden"
               style={{
-                borderColor: "#E5E7EB",
                 fontFamily: "Manrope, sans-serif",
               }}
             >
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-50 to-red-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-50 to-red-50 dark:from-dPrimary/20 dark:to-daccent/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               <svg
                 className="w-4 h-4 sm:w-5 sm:h-5 mr-2 sm:mr-3 relative z-10"
                 viewBox="0 0 24 24"
@@ -240,21 +230,21 @@ function SignUp() {
                 />
               </svg>
               <span
-                className="font-medium sm:font-semibold text-xs sm:text-sm text-gray-700 group-hover:text-gray-900 transition-colors relative z-10"
+                className="font-medium sm:font-semibold text-xs sm:text-sm dark:text-dText text-gray-700 group-hover:text-gray-900 dark:group-hover:text-dPrimary transition-colors relative z-10"
                 style={{ fontFamily: "Manrope, sans-serif" }}
               >
                 Continue with Google
               </span>
             </button>
+
             <div className="relative mb-3 sm:mb-4">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
               </div>
               <div className="relative flex justify-center text-xs sm:text-sm">
                 <span
-                  className="px-3 sm:px-4 bg-white/90 font-medium backdrop-blur-sm rounded-full py-1"
+                  className="px-3 sm:px-4 text-muted-text dark:text-dMuted-text bg-card dark:bg-dcard font-medium backdrop-blur-sm rounded-full py-1"
                   style={{
-                    color: "#7B7F95",
                     fontFamily: "Manrope, sans-serif",
                   }}
                 >
@@ -274,27 +264,31 @@ function SignUp() {
                   value={fullname}
                   onChange={handleFullnamechange}
                   required
-                  className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 lg:py-3.5 pt-5 sm:pt-6 border-2 rounded-xl sm:rounded-2xl focus:outline-none transition-all duration-300 peer placeholder-transparent bg-white/50 backdrop-blur-sm text-sm sm:text-base ${
-                    errors.fullname ? "border-red-500" : "border-[#5C7B8A]"
+                  className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 lg:py-3.5 pt-5 sm:pt-6 border-2 rounded-xl sm:rounded-2xl focus:outline-none transition-all duration-300 peer placeholder-transparent text-text dark:text-dText bg-card dark:bg-dcard text-sm sm:text-base ${
+                    errors.fullname
+                      ? "border-danger"
+                      : "border-accent dark:border-daccent"
                   }`}
                   style={{
-                    color: "#1A1F1D",
                     fontFamily: "Manrope, sans-serif",
                   }}
                   placeholder="FullName"
                 />
                 <label
                   htmlFor="fullname"
-                  className="absolute left-3 sm:left-4 top-1.5 sm:top-2 text-xs font-semibold transition-all duration-300 pointer-events-none"
+                  className={`absolute left-3 sm:left-4 top-1.5 sm:top-2 text-xs font-semibold transition-all duration-300 pointer-events-none ${
+                    fullname
+                      ? "text-accent dark:text-daccent"
+                      : "text-muted-text dark:text-dMuted-text"
+                  }`}
                   style={{
-                    color: fullname ? "#5C7B8A" : "#7B7F95",
                     fontFamily: "Manrope, sans-serif",
                   }}
                 >
                   FullName
                 </label>
                 {errors.fullname && (
-                  <p className="text-xs text-red-500 mt-1">{errors.fullname}</p>
+                  <p className="text-xs text-danger mt-1">{errors.fullname}</p>
                 )}
                 <div
                   className={`absolute inset-y-0  right-[10px] flex items-center pr-3 sm:pr-4 ${
@@ -303,7 +297,7 @@ function SignUp() {
                 >
                   <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full transition-all duration-300">
                     {fullname ? (
-                      <MdBadge className="flex items-center text-[#5c7b8a] text-xl" />
+                      <MdBadge className="flex items-center text-accent dark:text-daccent text-xl" />
                     ) : (
                       ""
                     )}
@@ -318,27 +312,31 @@ function SignUp() {
                   value={email}
                   onChange={handleEmailChange}
                   required
-                  className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 lg:py-3.5 pt-5 sm:pt-6 border-2 rounded-xl sm:rounded-2xl focus:outline-none transition-all duration-300 peer placeholder-transparent bg-white/50 backdrop-blur-sm text-sm sm:text-base ${
-                    errors.email ? "border-red-500" : "border-[#5C7B8A]"
+                  className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 lg:py-3.5 pt-5 sm:pt-6 border-2 rounded-xl sm:rounded-2xl focus:outline-none transition-all duration-300 peer placeholder-transparent text-text dark:text-dText bg-card dark:bg-dcard text-sm sm:text-base ${
+                    errors.email
+                      ? "border-danger"
+                      : "border-accent dark:border-daccent"
                   }`}
                   style={{
-                    color: "#1A1F1D",
                     fontFamily: "Manrope, sans-serif",
                   }}
                   placeholder="Email"
                 />
                 <label
                   htmlFor="email"
-                  className="absolute left-3 sm:left-4 top-1.5 sm:top-2 text-xs font-semibold transition-all duration-300 pointer-events-none"
+                  className={`absolute left-3 sm:left-4 top-1.5 sm:top-2 text-xs font-semibold transition-all duration-300 pointer-events-none ${
+                    email
+                      ? "text-accent dark:text-daccent"
+                      : "text-muted-text dark:text-dMuted-text"
+                  }`}
                   style={{
-                    color: email ? "#5C7B8A" : "#7B7F95",
                     fontFamily: "Manrope, sans-serif",
                   }}
                 >
                   Email
                 </label>
                 {errors.email && (
-                  <p className="text-xs text-red-500 mt-1">{errors.email}</p>
+                  <p className="text-xs text-danger mt-1">{errors.email}</p>
                 )}
                 <div
                   className={`absolute inset-y-0 right-[10px] flex items-center pr-3 sm:pr-4 ${
@@ -347,7 +345,7 @@ function SignUp() {
                 >
                   <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full transition-all duration-300">
                     {email ? (
-                      <MdEmail className="flex items-center text-[#5c7b8a] text-xl" />
+                      <MdEmail className="flex items-center text-accent dark:text-daccent text-xl" />
                     ) : (
                       ""
                     )}
@@ -359,10 +357,8 @@ function SignUp() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full flex justify-center items-center cursor-pointer py-2.5 sm:py-3 lg:py-3.5 px-4 border border-transparent rounded-xl sm:rounded-2xl shadow-lg text-white font-semibold hover:shadow-xl focus:outline-none transition-all duration-300 relative overflow-hidden group disabled:opacity-70 mt-4 sm:mt-6"
+                className="w-full flex justify-center items-center cursor-pointer py-2.5 sm:py-3 lg:py-3.5 px-4 border border-transparent bg-gradient-to-r from-primary to-accent dark:from-dPrimary dark:to-daccent rounded-xl sm:rounded-2xl shadow-lg text-white font-semibold hover:shadow-xl focus:outline-none transition-all duration-300 relative overflow-hidden group disabled:opacity-70 mt-4 sm:mt-6"
                 style={{
-                  background:
-                    "linear-gradient(135deg, #4A5A5D 0%, #5C7B8A 100%)",
                   fontFamily: "Manrope, sans-serif",
                 }}
               >

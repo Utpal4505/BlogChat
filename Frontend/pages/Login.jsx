@@ -1,7 +1,7 @@
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
-import { AlertCircle } from "lucide-react";
+import toast from "react-hot-toast";
 
 const LoginPage = () => {
   const [username, setUsername] = useState("");
@@ -16,6 +16,11 @@ const LoginPage = () => {
 
   const { login, loginWithGoogle } = useContext(AuthContext);
   const navigate = useNavigate();
+
+  //General error showing on toast
+  useEffect(() => {
+    generalError && toast.error(generalError);
+  }, [generalError]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -77,10 +82,6 @@ const LoginPage = () => {
     }
   };
 
-  const handleGoogleLogin = () => {
-    loginWithGoogle();
-  };
-
   // helpers to clear relevant errors while typing
   const onUsernameChange = (e) => {
     setUsername(e.target.value);
@@ -103,14 +104,10 @@ const LoginPage = () => {
   };
 
   return (
-    <div
-      className="h-screen flex items-center justify-center p-2 sm:p-4 relative overflow-hidden"
-      style={{ backgroundColor: "#F5F5F3" }}
-    >
+    <div className="h-screen flex items-center bg-bg dark:bg-dbg justify-center p-2 sm:p-4 relative overflow-hidden">
       <Link
         to="/"
-        className="absolute top-4 left-4 sm:top-6 sm:left-6 flex items-center gap-2 text-xs sm:text-sm font-medium px-2 sm:px-3 py-1.5 sm:py-2 rounded-xl hover:bg-white/50 transition-all duration-300 "
-        style={{ color: "#5C7B8A" }}
+        className="absolute top-4 left-4 text-accent dark:text-daccent sm:top-6 sm:left-6 flex items-center gap-2 text-xs sm:text-sm font-medium px-2 sm:px-3 py-1.5 sm:py-2 rounded-xl hover:bg-white/85 dark:hover:bg-white/5 hover:scale-105 transition-all duration-300 "
       >
         <svg
           className="w-4 h-4 sm:w-5 sm:h-5"
@@ -129,13 +126,10 @@ const LoginPage = () => {
       </Link>
 
       <div className="w-full max-w-sm sm:max-w-md relative z-10">
-        <div className="bg-white/85 backdrop-blur-xl rounded-2xl sm:rounded-3xl shadow-xl sm:shadow-2xl p-4 sm:p-6 lg:p-8 border border-white/20 relative">
+        <div className="bg-white/85 dark:bg-dcard backdrop-blur-xl rounded-2xl sm:rounded-3xl shadow-xl sm:shadow-2xl p-4 sm:p-6 lg:p-8 border-white/20 dark:border-dbordercolor border">
           <div className="relative z-10">
             <div className="text-center mb-4 sm:mb-6">
-              <div
-                className="mx-auto w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 rounded-xl sm:rounded-2xl flex items-center justify-center mb-2 sm:mb-3 shadow-lg"
-                style={{ backgroundColor: "#4A5A5D" }}
-              >
+              <div className="mx-auto w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 rounded-xl bg-primary dark:bg-dPrimary sm:rounded-2xl flex items-center justify-center mb-2 sm:mb-3 shadow-lg">
                 <svg
                   className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 text-white"
                   fill="none"
@@ -151,18 +145,16 @@ const LoginPage = () => {
                 </svg>
               </div>
               <h1
-                className="text-xl sm:text-2xl lg:text-3xl font-bold mb-1 sm:mb-2 bg-gradient-to-r bg-clip-text text-transparent"
+                className="text-xl sm:text-2xl lg:text-3xl font-bold mb-1 sm:mb-2 bg-gradient-to-r from-text to-primary dark:from-dText dark:to-dPrimary bg-clip-text text-transparent"
                 style={{
-                  backgroundImage: `linear-gradient(135deg, #1A1F1D 0%, #4A5A5D 100%)`,
                   fontFamily: "Merriweather Sans, sans-serif",
                 }}
               >
                 Welcome Back
               </h1>
               <p
-                className="text-xs sm:text-sm lg:text-base opacity-70"
+                className="text-xs text-text dark:text-dText sm:text-sm lg:text-base opacity-70"
                 style={{
-                  color: "#7B7F95",
                   fontFamily: "Manrope, sans-serif",
                 }}
               >
@@ -172,25 +164,36 @@ const LoginPage = () => {
 
             {/* Google Button */}
             <button
-              onClick={handleGoogleLogin}
-              className="w-full flex items-center justify-center cursor-pointer px-3 sm:px-4 py-2.5 sm:py-3 lg:py-3.5 border-2 rounded-xl sm:rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 mb-3 sm:mb-4 group relative overflow-hidden"
+              onClick={loginWithGoogle}
+              className="w-full flex items-center justify-center cursor-pointer px-3 sm:px-4 py-2.5 sm:py-3 lg:py-3.5 border-2 rounded-xl border-bordercolor dark:border-dbordercolor dark:bg-dcard bg-card text-text dark:text-dText sm:rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 mb-3 sm:mb-4 group relative overflow-hidden"
               style={{
-                borderColor: "#E5E7EB",
                 fontFamily: "Manrope, sans-serif",
               }}
             >
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-50 to-red-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-50 to-red-50 dark:from-dPrimary/20 dark:to-daccent/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               <svg
                 className="w-4 h-4 sm:w-5 sm:h-5 mr-2 sm:mr-3 relative z-10"
                 viewBox="0 0 24 24"
               >
-                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
-                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+                <path
+                  fill="#4285F4"
+                  d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                />
+                <path
+                  fill="#34A853"
+                  d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                />
+                <path
+                  fill="#FBBC05"
+                  d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                />
+                <path
+                  fill="#EA4335"
+                  d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                />
               </svg>
               <span
-                className="font-medium sm:font-semibold text-xs sm:text-sm text-gray-700 group-hover:text-gray-900 transition-colors relative z-10"
+                className="font-medium sm:font-semibold text-xs sm:text-sm dark:text-dText text-gray-700 group-hover:text-gray-900 dark:group-hover:text-dPrimary transition-colors relative z-10"
                 style={{ fontFamily: "Manrope, sans-serif" }}
               >
                 Continue with Google
@@ -204,9 +207,8 @@ const LoginPage = () => {
               </div>
               <div className="relative flex justify-center text-xs sm:text-sm">
                 <span
-                  className="px-3 sm:px-4 bg-white/90 font-medium backdrop-blur-sm rounded-full py-1"
+                  className="px-3 sm:px-4 text-muted-text dark:text-dMuted-text bg-card dark:bg-dcard font-medium backdrop-blur-sm rounded-full py-1"
                   style={{
-                    color: "#7B7F95",
                     fontFamily: "Manrope, sans-serif",
                   }}
                 >
@@ -214,14 +216,6 @@ const LoginPage = () => {
                 </span>
               </div>
             </div>
-
-            {/* TOP-LEVEL GENERAL ERROR (inline near form) */}
-              {generalError && (
-        <div className="flex items-center gap-2 mb-4 p-3 text-sm text-red-700 bg-red-100 rounded-lg border border-red-300">
-          <AlertCircle size={18} />
-          <span>{generalError}</span>
-        </div>
-      )}
 
             {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
@@ -234,19 +228,26 @@ const LoginPage = () => {
                   onChange={onUsernameChange}
                   required
                   aria-invalid={errors.username ? "true" : "false"}
-                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 lg:py-3.5 pt-5 sm:pt-6 border-2 rounded-xl sm:rounded-2xl focus:outline-none transition-all duration-300 peer placeholder-transparent bg-white/50 backdrop-blur-sm text-sm sm:text-base"
+                  className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 lg:py-3.5 pt-5 sm:pt-6 border-2 rounded-xl sm:rounded-2xl focus:outline-none transition-all duration-300 peer placeholder-transparent text-text dark:text-dText bg-card dark:bg-dcard text-sm sm:text-base ${
+                    errors.username
+                      ? "border-danger"
+                      : username
+                      ? "border-primary dark:border-dPrimary"
+                      : "border-bordercolor dark:border-dbordercolor"
+                  }`}
                   style={{
-                    borderColor: errors.username ? "#EF4444" : username ? "#5C7B8A" : "#E5E7EB",
-                    color: "#1A1F1D",
                     fontFamily: "Manrope, sans-serif",
                   }}
                   placeholder="Username"
                 />
                 <label
                   htmlFor="username"
-                  className="absolute left-3 sm:left-4 top-1.5 sm:top-2 text-xs font-semibold transition-all duration-300 pointer-events-none"
+                  className={`absolute left-3 sm:left-4 top-1.5 sm:top-2 text-xs font-semibold transition-all duration-300 pointer-events-none ${
+                    username
+                      ? "text-primary dark:text-dPrimary"
+                      : "text-muted-text dark:text-dMuted-text"
+                  }`}
                   style={{
-                    color: username ? "#5C7B8A" : "#7B7F95",
                     fontFamily: "Manrope, sans-serif",
                   }}
                 >
@@ -254,16 +255,16 @@ const LoginPage = () => {
                 </label>
                 <div className="absolute inset-y-0 right-0 flex items-center pr-3 sm:pr-4">
                   <div
-                    className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full transition-all duration-300"
-                    style={{
-                      backgroundColor: username ? "#5C7B8A" : "transparent",
-                    }}
+                    className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full transition-all duration-300 ${
+                      username
+                        ? "bg-primary dark:bg-dPrimary"
+                        : "bg-transparent"
+                    }`}
                   ></div>
                 </div>
-
                 {/* Inline field error */}
                 {errors.username && (
-                  <p className="text-gray-400 text-xs mt-1">{errors.username}</p>
+                  <p className="text-danger text-xs mt-1">{errors.username}</p> // --danger
                 )}
               </div>
 
@@ -276,21 +277,25 @@ const LoginPage = () => {
                   onChange={onPasswordChange}
                   required
                   aria-invalid={errors.password ? "true" : "false"}
-                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 lg:py-3.5 pt-5 sm:pt-6 pr-10 sm:pr-12 border-2 rounded-xl sm:rounded-2xl focus:outline-none transition-all duration-300 peer placeholder-transparent bg-white/50 backdrop-blur-sm text-sm sm:text-base"
+                  className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 lg:py-3.5 pt-5 sm:pt-6 pr-10 sm:pr-12 border-2 rounded-xl sm:rounded-2xl focus:outline-none transition-all duration-300 peer placeholder-transparent text-text dark:text-dText bg-card dark:bg-dcard text-sm sm:text-base ${
+                    errors.password
+                      ? "border-danger"
+                      : password
+                      ? "border-primary dark:border-dPrimary"
+                      : "border-bordercolor dark:border-dbordercolor"
+                  }`}
                   style={{
-                    borderColor: errors.password ? "#EF4444" : password ? "#5C7B8A" : "#E5E7EB",
-                    color: "#1A1F1D",
                     fontFamily: "Manrope, sans-serif",
                   }}
                   placeholder="Password"
                 />
                 <label
                   htmlFor="password"
-                  className="absolute left-3 sm:left-4 top-1.5 sm:top-2 text-xs font-semibold transition-all duration-300 pointer-events-none"
-                  style={{
-                    color: password ? "#5C7B8A" : "#7B7F95",
-                    fontFamily: "Manrope, sans-serif",
-                  }}
+                  className={`absolute left-3 sm:left-4 top-1.5 sm:top-2 text-xs font-semibold transition-all duration-300 pointer-events-none ${
+                    password
+                      ? "text-primary dark:text-dPrimary"
+                      : "text-muted-text dark:text-dMuted-text"
+                  }`}
                 >
                   Password
                 </label>
@@ -300,7 +305,7 @@ const LoginPage = () => {
                   className="absolute inset-y-0 right-0 flex items-center pr-3 sm:pr-4 hover:scale-110 transition-transform duration-200"
                 >
                   <svg
-                    className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 hover:text-gray-600"
+                    className="w-4 h-4 sm:w-5 sm:h-5 text-[#9AA1B5] hover:text-[#E5E7E6]"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -314,8 +319,18 @@ const LoginPage = () => {
                       />
                     ) : (
                       <>
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                        />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                        />
                       </>
                     )}
                   </svg>
@@ -323,22 +338,23 @@ const LoginPage = () => {
 
                 {/* Inline field error */}
                 {errors.password && (
-                  <p className="text-gray-400 text-xs mt-1">{errors.password}</p>
+                  <p className="text-[#EF4444] text-xs mt-1">
+                    {errors.password}
+                  </p> // --danger
                 )}
               </div>
 
               <div className="flex items-center justify-between pt-1">
                 <label className="flex items-center cursor-pointer group">
                   <div
-                    className="w-4 h-4 sm:w-5 sm:h-5 rounded border-2 flex items-center justify-center group-hover:scale-110 transition-transform duration-200"
-                    style={{ borderColor: "#5C7B8A" }}
+                    className="w-5 h-5 sm:w-4 sm:h-4 rounded border-2 flex items-center justify-center group-hover:scale-110 transition-transform duration-200 border-primary dark:border-dPrimary"
                     onClick={() => setRememberMe(!rememberMe)}
                   >
                     <svg
                       className={`w-2.5 h-2.5 sm:w-3 sm:h-3 text-white transition-opacity ${
                         rememberMe ? "opacity-100" : "opacity-0"
                       }`}
-                      style={{ color: "#5C7B8A" }}
+                      style={{ color: "#7A999E" }} // --brand
                       fill="currentColor"
                       viewBox="0 0 20 20"
                     >
@@ -350,9 +366,8 @@ const LoginPage = () => {
                     </svg>
                   </div>
                   <span
-                    className="ml-2 text-xs sm:text-sm font-medium"
+                    className="ml-2 text-xs text-muted-text dark:text-dMuted-text sm:text-sm font-medium"
                     style={{
-                      color: "#7B7F95",
                       fontFamily: "Manrope, sans-serif",
                     }}
                   >
@@ -360,10 +375,11 @@ const LoginPage = () => {
                   </span>
                 </label>
 
-                <Link to="/forgot-password"
+                <Link
+                  to="/forgot-password"
                   className="text-xs sm:text-sm font-semibold hover:scale-105 transition-all duration-200"
                   style={{
-                    color: "#5C7B8A",
+                    color: "#7A999E", // --brand
                     fontFamily: "Manrope, sans-serif",
                   }}
                 >
@@ -374,46 +390,69 @@ const LoginPage = () => {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full flex justify-center items-center cursor-pointer py-2.5 sm:py-3 lg:py-3.5 px-4 border border-transparent rounded-xl sm:rounded-2xl shadow-lg text-white font-semibold hover:shadow-xl focus:outline-none transition-all duration-300 relative overflow-hidden group disabled:opacity-70 mt-4 sm:mt-6"
+                className="w-full flex justify-center items-center cursor-pointer py-2.5 sm:py-3 lg:py-3.5 px-4 border border-transparent bg-gradient-to-r from-primary to-accent dark:from-dPrimary dark:to-daccent rounded-xl sm:rounded-2xl shadow-lg text-white font-semibold hover:shadow-xl focus:outline-none transition-all duration-300 relative overflow-hidden group disabled:opacity-70 mt-4 sm:mt-6"
                 style={{
-                  background: "linear-gradient(135deg, #4A5A5D 0%, #5C7B8A 100%)",
                   fontFamily: "Manrope, sans-serif",
                 }}
               >
                 <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
                 {isLoading ? (
                   <>
-                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 sm:h-5 sm:w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    <svg
+                      className="animate-spin -ml-1 mr-2 h-4 w-4 sm:h-5 sm:w-5 text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      />
                     </svg>
                     <span className="text-sm sm:text-base">Signing in...</span>
                   </>
                 ) : (
                   <>
                     <span className="text-sm sm:text-base">Sign In</span>
-                    <svg className="ml-2 w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                    <svg
+                      className="ml-2 w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform duration-200"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M17 8l4 4m0 0l-4 4m4-4H3"
+                      />
                     </svg>
                   </>
                 )}
               </button>
             </form>
 
-            <div className="text-center mt-4 sm:mt-6 pt-3 sm:pt-4 border-t border-gray-200/50">
+            <div className="text-center mt-4 sm:mt-6 pt-3 sm:pt-4 border-t border-bordercolor dark:border-dbordercolor">
               <p
-                className="text-xs sm:text-sm"
+                className="text-xs text-muted-text dark:text-dMuted-text sm:text-sm"
                 style={{
-                  color: "#7B7F95",
                   fontFamily: "Manrope, sans-serif",
                 }}
               >
                 New here?{" "}
                 <Link
                   to="/register"
-                  className="font-semibold hover:scale-105 ml-0.5 transition-all duration-200 inline-block"
+                  className="font-semibold text-primary dark:text-dPrimary hover:scale-105 ml-0.5 transition-all duration-200 inline-block"
                   style={{
-                    color: "#5C7B8A",
                     fontFamily: "Manrope, sans-serif",
                   }}
                 >

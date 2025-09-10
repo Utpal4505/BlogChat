@@ -1,9 +1,20 @@
 @import "tailwindcss";
 @custom-variant dark (&:where(.dark, .dark *));
-:root{
-    --text: #1A1F1D;
-  --background: #F5F5F3;
-  --primary: #4A5A5D;
-  --secondary: #7B7F95;
-  --accent: #5C7B8A
+
+@theme {
+  --color-dbg: #0F1217;
+  --color-dText: #E5E7E6;
+  --color-dMuted-text: #9AA1B5;
+  --color-dPrimary: #7A999E;
+  --color-daccent: #6A8C9E;
+  --color-dbordercolor: #272B33;
+  --color-dcard: #1A1D23;
+  --color-card: #FFFFFFD9;
+  --color-bg: #F5F5F3;
+  --color-text: #1A1F1D;
+  --color-primary: #4A5A5D;
+  --color-muted-text: #7B7F95;
+  --color-accent: #5C7B8A;
+  --color-bordercolor: #E5E7EB;
+  --color-danger: #EF4444;
 }

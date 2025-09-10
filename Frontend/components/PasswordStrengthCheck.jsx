@@ -10,10 +10,29 @@ export const GetStrength = (pwd) => {
   if (/[0-9]/.test(pwd)) score++;
   if (/[^A-Za-z0-9]/.test(pwd)) score++;
 
-  if (score <= 1) return { score, label: "Weak", color: "red-500" };
-  if (score === 2) return { score, label: "Medium", color: "yellow-400" };
-  return { score, label: "Strong", color: "green-500" };
+  if (score <= 1)
+    return {
+      score,
+      label: "Weak",
+      light: "text-red-500",
+      dark: "text-red-400",
+    };
+  if (score === 2 || score === 3)
+    return {
+      score,
+      label: "Medium",
+      light: "text-yellow-500",
+      dark: "text-yellow-300",
+    };
+  if (score === 4)
+  return {
+    score,
+    label: "Strong",
+    light: "text-green-600",
+    dark: "text-green-400",
+  };
 };
+
 
 export default function PasswordInput({ password, setPassword }) {
   const [showPassword, setShowPassword] = useState(false);
@@ -64,19 +83,16 @@ export default function PasswordInput({ password, setPassword }) {
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
           required
-          className="w-full px-3 sm:px-4 py-2.5 sm:py-3 lg:py-3.5 pt-5 sm:pt-6 pr-10 sm:pr-12 border-2 rounded-xl sm:rounded-2xl focus:outline-none transition-all duration-300 peer placeholder-transparent bg-white/50 backdrop-blur-sm text-sm sm:text-base"
+          className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 lg:py-3.5 pt-5 sm:pt-6 border-2 rounded-xl sm:rounded-2xl focus:outline-none transition-all duration-300 text-text dark:text-dText peer placeholder-transparent bg-card dark:bg-dcard backdrop-blur-sm text-sm sm:text-base ${password ? "border-accent dark:border-daccent" : "border-bordercolor dark:border-dbordercolor"}`}
           style={{
-            borderColor: password ? "#5C7B8A" : "#E5E7EB",
-            color: "#1A1F1D",
             fontFamily: "Manrope, sans-serif",
           }}
           placeholder="Password"
         />
         <label
           htmlFor="password"
-          className="absolute left-3 sm:left-4 top-1.5 sm:top-2 text-xs font-semibold transition-all duration-300 pointer-events-none"
+          className={`absolute left-3 sm:left-4 top-1.5 sm:top-2 text-xs font-semibold transition-all duration-300 pointer-events-none ${password ? "text-accent dark:text-daccent" : "text-muted-text dark:text-dMuted-text"}`}
           style={{
-            color: password ? "#5C7B8A" : "#7B7F95",
             fontFamily: "Manrope, sans-serif",
           }}
         >
@@ -147,28 +163,23 @@ export default function PasswordInput({ password, setPassword }) {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -5 }}
               transition={{ duration: 0.3, ease: "easeInOut" }}
-              className="text-sm font-medium"
-              style={{ color: strength.color }}
+              className={`text-sm font-medium ${strength.light} dark:${strength.dark}`}
             >
               {strength.label}
             </motion.p>
 
             {/* Checklist */}
-            <ul className="grid grid-cols-2 gap-x-4 gap-y-1 bg-gray-50 p-3 rounded-lg">
-              <Requirement
-                condition={password.length >= 8}
-                text="8+ characters"
-              />
-              <Requirement
-                condition={/[A-Z]/.test(password)}
-                text="Uppercase letter"
-              />
+            <motion.ul
+              className="grid grid-cols-2 gap-x-4 gap-y-2 bg-gray-50 dark:bg-gray-700/20 p-3 rounded-lg"
+              initial={{ opacity: 0, y: 5 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <Requirement condition={password.length >= 8} text="8+ characters" />
+              <Requirement condition={/[A-Z]/.test(password)} text="Uppercase letter" />
               <Requirement condition={/[0-9]/.test(password)} text="Number" />
-              <Requirement
-                condition={/[^A-Za-z0-9]/.test(password)}
-                text="Special char"
-              />
-            </ul>
+              <Requirement condition={/[^A-Za-z0-9]/.test(password)} text="Special char" />
+            </motion.ul>
           </motion.div>
         )}
       </AnimatePresence>

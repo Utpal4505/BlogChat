@@ -23,6 +23,11 @@ function Onboarding() {
   const [errors, setErrors] = useState({}); // { username: "...", password: "..." }
   const [generalError, setGeneralError] = useState(""); // top-level errors like "Invalid Credentials"
 
+  //general error toast
+  useEffect(() => {
+    generalError && toast.error(generalError)
+  }, [generalError])
+
   const { onBoardUser, checkUsernameAvailability } = useContext(AuthContext);
 
   const [usernameAvailable, setUsernameAvailable] = useState(null);
@@ -187,20 +192,19 @@ function Onboarding() {
   };
 
   //username UI
-  let usernameBorderClass = "border-gray-300";
-  if (errors.username) usernameBorderClass = "border-red-500";
+  let usernameBorderClass = "border-primary dark:border-dPrimary";
+  if (errors.username) usernameBorderClass = "border-danger";
   else if (usernameTouched && usernameAvailable === true)
     usernameBorderClass = "border-green-400";
   else if (usernameTouched && usernameAvailable === false)
-    usernameBorderClass = "border-red-400";
+    usernameBorderClass = "border-danger";
 
   return (
     <>
-      <div className="min-h-screen flex items-center bg-[#f5f5f3] justify-center p-2 sm:p-4 relative overflow-hidden">
+      <div className="min-h-screen flex items-center bg-bg dark:bg-dbg justify-center p-2 sm:p-4 relative overflow-hidden">
         <Link
           to="/"
-          className="absolute top-4 left-4 sm:top-6 sm:left-6 flex items-center gap-2 text-xs sm:text-sm font-medium px-2 sm:px-3 py-1.5 sm:py-2 rounded-xl transition-all duration-300 hover:bg-[#5c7b8a1c] "
-          style={{ color: "#5C7B8A" }}
+          className="absolute top-4 left-4 sm:top-6 sm:left-6 flex items-center gap-2 text-xs sm:text-sm font-medium px-2 sm:px-3 py-1.5 sm:py-2 rounded-xl text-accent dark:text-daccent hover:bg-white/85 dark:hover:bg-white/5 hover:scale-105 transition-all duration-300"
         >
           <svg
             className="w-4 h-4 sm:w-5 sm:h-5"
@@ -219,22 +223,20 @@ function Onboarding() {
         </Link>
 
         <div className="w-full max-w-xl lg:max-w-2xl relative z-10">
-          <div className="bg-white/85 backdrop-blur-xl rounded-3xl shadow-2xl p-6 sm:p-8 lg:p-10 border border-white/20 relative">
+          <div className="bg-white/85 dark:bg-dcard backdrop-blur-xl rounded-2xl sm:rounded-3xl shadow-xl sm:shadow-2xl p-4 sm:p-6 lg:p-8 border-white/20 dark:border-dbordercolor border relative">
             <div className="text-center mb-6 sm:mb-8">
               <span className="text-3xl sm:text-4xl block mb-3">👋</span>
               <h1
-                className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-2 bg-gradient-to-r bg-clip-text text-transparent"
+                className="text-xl sm:text-2xl lg:text-3xl font-bold mb-1 sm:mb-2 bg-gradient-to-r from-text to-primary dark:from-dText dark:to-dPrimary bg-clip-text text-transparent"
                 style={{
-                  backgroundImage: `linear-gradient(135deg, var(--text) 0%, var(--primary) 100%)`,
                   fontFamily: "Merriweather Sans, sans-serif",
                 }}
               >
                 Welcome to BlogChat!
               </h1>
               <p
-                className="text-sm sm:text-base opacity-80"
+                className="text-xs text-text dark:text-dText sm:text-sm lg:text-base opacity-70"
                 style={{
-                  color: "var(--secondary)",
                   fontFamily: "Manrope, sans-serif",
                 }}
               >
@@ -242,30 +244,22 @@ function Onboarding() {
                 you
               </p>
             </div>
-            {/* TOP-LEVEL GENERAL ERROR (inline near form) */}{" "}
-            {generalError && (
-              <div className="flex items-center gap-2 mb-4 p-3 text-sm text-red-700 bg-red-100 rounded-lg border border-red-300">
-                {" "}
-                <AlertCircle size={18} /> <span>{generalError}</span>{" "}
-              </div>
-            )}
+
             <form onSubmit={handleSubmit}>
               {/* Username Field */}
               <div className="mb-5 relative">
                 <label
                   htmlFor="username"
-                  className="block text-sm font-semibold mb-1.5"
+                  className="block text-sm text-text dark:text-dText font-semibold mb-1.5"
                   style={{
-                    color: "var(--text)",
                     fontFamily: "Manrope, sans-serif",
                   }}
                 >
                   Choose your username
                 </label>
                 <p
-                  className="mt-1 text-xs mb-1.5"
+                  className={`mt-1 text-xs mb-1.5 ${username ? "text-accent dark:text-daccent" : "text-muted-text dark:text-dMuted-text"}`}
                   style={{
-                    color: username ? "#5C7B8A" : "#7B7F95",
                     fontFamily: "Manrope, sans-serif",
                   }}
                 >
@@ -279,9 +273,8 @@ function Onboarding() {
                   onChange={handleUsernameChange}
                   onFocus={() => setUsernameTouched(true)}
                   value={username}
-                  className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 lg:py-3.5 pt-5 sm:pt-6 border-2 rounded-xl sm:rounded-2xl focus:outline-none transition-all duration-300 peer placeholder-transparent bg-white/50 backdrop-blur-sm text-sm sm:text-base ${usernameBorderClass}`}
+                  className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 lg:py-3.5 pt-5 sm:pt-6 border-2 rounded-xl sm:rounded-2xl focus:outline-none transition-all duration-300 text-text dark:text-dText peer placeholder-transparent bg-card dark:bg-dcard backdrop-blur-sm text-sm sm:text-base ${usernameBorderClass}`}
                   style={{
-                    color: "#1A1F1D",
                     fontFamily: "Manrope, sans-serif",
                   }}
                 />
@@ -289,7 +282,7 @@ function Onboarding() {
                 <div className="absolute inset-y-0 top-7 right-3 flex items-center">
                   {" "}
                   {checking && (
-                    <div className="absolute w-4 h-4 bottom-1 right-1 border-2 border-gray-300 border-t-transparent rounded-full animate-spin"></div>
+                    <div className={`absolute w-4 h-4  right-1 border-2 border-gray-300 border-t-transparent rounded-full animate-spin ${errors.username ? "bottom-10" : "bottom-5"}`}></div>
                   )}{" "}
                   {!checking &&
                     username &&
@@ -301,7 +294,7 @@ function Onboarding() {
                         {usernameAvailable ? (
                           <FaCheck className="text-green-500 w-4 h-4" />
                         ) : (
-                          <FaTimes className="text-red-500 w-5 h-5" />
+                          <FaTimes className="text-danger w-5 h-5" />
                         )}{" "}
                       </>
                     )}{" "}
@@ -313,7 +306,7 @@ function Onboarding() {
                   !checking && (
                     <p
                       className={`text-xs mt-1 transition-opacity ${
-                        usernameAvailable ? "text-green-500" : "text-red-500"
+                        usernameAvailable ? "text-green-500" : "text-danger"
                       }`}
                     >
                       {" "}
@@ -324,7 +317,7 @@ function Onboarding() {
                   )}{" "}
                 {/* Field errors */}{" "}
                 {errors.username && (
-                  <p id="username-error" className="text-xs mt-1 text-red-500">
+                  <p id="username-error" className="text-xs mt-1 text-danger">
                     {" "}
                     {errors.username}{" "}
                   </p>
@@ -335,9 +328,8 @@ function Onboarding() {
               <div className="mb-6">
                 <label
                   htmlFor="bio"
-                  className="block text-sm font-semibold mb-2"
+                  className="block text-sm text-text dark:text-dText font-semibold mb-2"
                   style={{
-                    color: "var(--text)",
                     fontFamily: "Manrope, sans-serif",
                   }}
                 >
@@ -350,27 +342,21 @@ function Onboarding() {
                   onChange={handleBioChange}
                   required
                   placeholder="Tell people a bit about yourself..."
-                  className="w-full px-4 py-3 border-2 rounded-xl focus:outline-none bg-white/50 backdrop-blur-sm text-base resize-none"
+                  className={`w-full px-4 py-3 border-2 text-text dark:text-dText rounded-xl focus:outline-none bg-card dark:bg-dcard backdrop-blur-sm text-base resize-none ${errors.bio ? "border-danger" : bio ? "border-accent dark:border-daccent" : "border-bordercolor dark:border-dbordercolor"}`}
                   style={{
-                    color: "var(--text)",
                     fontFamily: "Manrope, sans-serif",
-                    borderColor: errors.bio
-                      ? "#EF4444"
-                      : bio
-                      ? "#5C7B8A"
-                      : "#E5E7EB",
                   }}
                 />
                 <div className="flex justify-between text-xs mt-1">
-                  <span style={{ color: "var(--secondary)" }}>
+                  <span className="text-muted-text dark:text-dMuted-text">
                     {bio.length}/160 characters
                   </span>
-                  <span style={{ color: "var(--secondary)" }}>
+                  <span className="text-muted-text dark:text-dMuted-text">
                     Optional, but recommended
                   </span>
                 </div>
                 {errors.bio && (
-                  <p id="bio-error" className="text-xs mt-1 text-red-500">
+                  <p id="bio-error" className="text-xs mt-1 text-danger">
                     {" "}
                     {errors.bio}{" "}
                   </p>
@@ -381,9 +367,8 @@ function Onboarding() {
               <div className="mb-6">
                 <label
                   htmlFor="password"
-                  className="block text-sm font-semibold mb-2"
+                  className="block text-sm text-text dark:text-dText font-semibold mb-2"
                   style={{
-                    color: "var(--text)",
                     fontFamily: "Manrope, sans-serif",
                   }}
                 >
