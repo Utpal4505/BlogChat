@@ -12,6 +12,7 @@ import ForgetPassword from "../pages/ForgetPassword.jsx";
 import PasswordVerify from "../pages/PasswordVerify.jsx";
 import NewPassword from "../pages/NewPassword.jsx";
 import ProtectedRoute from "../utils/ProtectedRoute.jsx";
+import ProfilePage from "../pages/Profile.jsx";
 
 const router = createBrowserRouter([
   {
@@ -43,18 +44,18 @@ const router = createBrowserRouter([
         element: <NewPassword />,
       },
       {
-        path: "onboarding",
-        element: <Onboarding />,
-      },
+        path: "profile",
+        element: <ProfilePage />
+      },{
+            path: "onboarding",
+            element: <Onboarding />
+          },
 
       //Protected Routes
       {
         element: <ProtectedRoute />,
         children: [
-          // {
-          //   path: "onboarding",
-          //   element: <Onboarding />
-          // },
+          
           {
             path: "dashboard",
             element: <Dashboard />,

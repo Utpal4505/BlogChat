@@ -5,6 +5,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import prisma from "../config/db.config.js";
 import { sanitizeInput } from "../utils/HtmlSanitize.js";
 import { generateAccessandRefreshTokens } from "./user.controllers.js";
+import jwt from 'jsonwebtoken'
 
 const options = {
   httpOnly: true,
@@ -15,6 +16,19 @@ const options = {
 
 export const onBoardUser = asyncHandler(async (req, res) => {
   let { username, password, bio, email } = req.body;
+
+  //logic for getting email by cokkies
+  const token = req?.cookies?.onboardEmail;
+  if (!token) throw new ApiError(401, "Onboarding session expired");
+
+  let decoded;
+  try {
+    decoded = jwt.verify(token, process.env.ONBOARD_TOKEN_SECRET);
+  } catch (err) {
+    throw new ApiError(401, "Invalid or expired onboarding token");
+  }
+
+  const gEmail = decoded.email; 
 
   //checking required
   if (!username || !password || !bio) {
@@ -50,7 +64,7 @@ export const onBoardUser = asyncHandler(async (req, res) => {
 
   const updateUser = await prisma.user.update({
     where: {
-      email: email,
+      email: email || gEmail,
     },
     data: {
       username: username,
@@ -74,5 +88,5 @@ export const onBoardUser = asyncHandler(async (req, res) => {
     .status(200)
     .cookie("accessToken", accessToken, options)
     .cookie("refreshToken", refreshToken, options)
-    .json(new ApiResponse(200, "Onboarding complete 🎉", updateUser));
+    .json(new ApiResponse(200, updateUser, "Onboarding complete 🎉"));
 });

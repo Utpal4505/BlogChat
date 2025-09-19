@@ -26,44 +26,55 @@ enum ReferenceType {
   MESSAGE
 }
 
-model User {
-  id                    Int            @id @default(autoincrement())
-  name                  String
-  email                 String?         @unique
-  username              String?         @unique
-  password              String?        // nullable for OAuth users
-  googleId              String?        // nullable if not using Google
-  avatar                String?
-  role                  Role           @default(USER)
-  isVerified            Boolean        @default(false)
-  bio                   String?
-  registration_status   RegistrationStatus @default(PENDING)
-  posts                 Post[]         @relation("authorPosts") 
-  comments              Comment[]
-  postLikes             PostLike[]
-  sentMessages          Message[]      @relation("sentMessages")
-  receivedMessages      Message[]      @relation("receivedMessages")
-  sentNotifications     Notification[] @relation("sentNotifications")
-  receivedNotifications Notification[] @relation("receivedNotifications")
-  // followers / followees (self-relation)
-  followers             Follow[]       @relation("followee")
-  followees             Follow[]       @relation("follower")
-  tokens                Token[]
-  createdAt             DateTime       @default(now())
-  updatedAt             DateTime       @updatedAt
-  deletedAt             DateTime?
-
-  
+enum RegistrationStatus {
+  PENDING
+  COMPLETED
 }
 
-enum RegistrationStatus {
-    PENDING
-    COMPLETED
-  }
+enum Visibility {
+  PRIVATE
+  PUBLIC
+}
+
+enum Status {
+  DRAFT
+  PUBLISHED
+}
+
+model User {
+  id                    Int                @id @default(autoincrement())
+  name                  String
+  email                 String?            @unique
+  username              String?            @unique
+  password              String? // nullable for OAuth users
+  googleId              String? // nullable if not using Google
+  avatar                String?
+  role                  Role               @default(USER)
+  isVerified            Boolean            @default(false)
+  bio                   String?
+  isDeleted             Boolean            @default(false)
+  registration_status   RegistrationStatus @default(PENDING)
+  visibility            Visibility         @default(PUBLIC)
+  posts                 Post[]             @relation("authorPosts")
+  comments              Comment[]
+  postLikes             PostLike[]
+  sentMessages          Message[]          @relation("sentMessages")
+  receivedMessages      Message[]          @relation("receivedMessages")
+  sentNotifications     Notification[]     @relation("sentNotifications")
+  receivedNotifications Notification[]     @relation("receivedNotifications")
+  // followers / followees (self-relation)
+  followers             Follow[]           @relation("followee")
+  followees             Follow[]           @relation("follower")
+  tokens                Token[]
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
+  deletedAt             DateTime?
+  @@index([username])
+}
 
 model EmailVerification {
   id        Int      @id @default(autoincrement())
-  email     String  
+  email     String
   name      String
   otp       String
   otpExpiry DateTime
@@ -71,37 +82,39 @@ model EmailVerification {
 }
 
 model Post {
-  id           Int         @id @default(autoincrement())
-  author       User        @relation("authorPosts", fields: [authorId], references: [id])
+  id           Int        @id @default(autoincrement())
+  author       User       @relation("authorPosts", fields: [authorId], references: [id])
   authorId     Int
   title        String
-  slug         String?     @unique
+  slug         String?    @unique
   content      String
   coverImage   String?
-  commentCount Int         @default(0)
-  isPublished  Boolean     @default(false)
+  commentCount Int        @default(0)
+  visibility   Visibility @default(PUBLIC)
+  status       Status    @default(DRAFT)
   publishedAt  DateTime?
   comments     Comment[]
   postLikes    PostLike[]
   postTags     PostTag[]
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
   deletedAt    DateTime?
 
   @@index([authorId])
   @@index([publishedAt])
+  @@index([title])
 }
 
 model Comment {
-  id         Int      @id @default(autoincrement())
-  post       Post     @relation(fields: [postId], references: [id])
-  postId     Int
-  author     User     @relation(fields: [authorId], references: [id])
-  authorId   Int
-  content    String
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  deletedAt  DateTime?
+  id        Int       @id @default(autoincrement())
+  post      Post      @relation(fields: [postId], references: [id])
+  postId    Int
+  author    User      @relation(fields: [authorId], references: [id])
+  authorId  Int
+  content   String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
 
   @@index([postId, createdAt])
 }
@@ -118,9 +131,9 @@ model Follow {
 }
 
 model PostLike {
-  user      User   @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
   userId    Int
-  post      Post   @relation(fields: [postId], references: [id])
+  post      Post     @relation(fields: [postId], references: [id])
   postId    Int
   createdAt DateTime @default(now())
 
@@ -129,22 +142,25 @@ model PostLike {
 }
 
 model Message {
-  id         Int      @id @default(autoincrement())
-  sender     User     @relation("sentMessages", fields: [senderId], references: [id])
+  id         Int       @id @default(autoincrement())
+  sender     User      @relation("sentMessages", fields: [senderId], references: [id])
   senderId   Int
-  receiver   User     @relation("receivedMessages", fields: [receiverId], references: [id])
+  receiver   User      @relation("receivedMessages", fields: [receiverId], references: [id])
   receiverId Int
   content    String
-  createdAt  DateTime @default(now())
+  createdAt  DateTime  @default(now())
   readAt     DateTime?
+
   @@index([receiverId, createdAt])
 }
 
 model Tag {
-  id        Int      @id @default(autoincrement())
-  name      String   @unique
+  id        Int       @id @default(autoincrement())
+  name      String    @unique
   postTags  PostTag[]
-  createdAt DateTime @default(now())
+  createdAt DateTime  @default(now())
+
+  @@index([name])
 }
 
 model PostTag {
@@ -158,24 +174,24 @@ model PostTag {
 }
 
 model Notification {
-  id            Int               @id @default(autoincrement())
-  recipient     User              @relation("receivedNotifications", fields: [recipientId], references: [id])
+  id            Int              @id @default(autoincrement())
+  recipient     User             @relation("receivedNotifications", fields: [recipientId], references: [id])
   recipientId   Int
-  actor         User?             @relation("sentNotifications", fields: [actorId], references: [id])
+  actor         User?            @relation("sentNotifications", fields: [actorId], references: [id])
   actorId       Int?
-  type          NotificationType  @default(LIKE)
-  referenceType ReferenceType     @default(POST)
+  type          NotificationType @default(LIKE)
+  referenceType ReferenceType    @default(POST)
   referenceId   Int
-  isRead        Boolean           @default(false)
-  createdAt     DateTime          @default(now())
+  isRead        Boolean          @default(false)
+  createdAt     DateTime         @default(now())
 
   @@index([recipientId, isRead])
 }
 
 model Token {
-  id     Int    @id @default(autoincrement())
-  userId Int
-  token  String @unique
-  user   User   @relation(fields: [userId], references: [id])
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  token     String   @unique
+  user      User     @relation(fields: [userId], references: [id])
   createdAt DateTime @default(now())
 }

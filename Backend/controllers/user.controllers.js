@@ -122,13 +122,17 @@ const LoginUser = asyncHandler(async (req, res) => {
   });
 
   if (!user) {
-    throw new ApiError(404, "User not found please register");
+    throw new ApiError(404, "Invalid username or password");
+  }
+
+  if (user.isDeleted) {
+    throw new ApiError(403, "This account is no longer active")
   }
 
   const isPasswordMatch = await bcrypt.compare(password, user.password);
 
   if (!isPasswordMatch) {
-    throw new ApiError(401, "⚠️ Incorrect Password");
+    throw new ApiError(401, "Invalid username or password");
   }
 
   const { accessToken, refreshToken } = await generateAccessandRefreshTokens(
@@ -351,9 +355,10 @@ const verifyOTP = asyncHandler(async (req, res) => {
         new ApiResponse(
           201,
           newUser,
-          "✅ User verified & registered successfully"
+          "✅ User verified & registered successfully now procced to onboarding"
         )
-      );
+      )
+      
   } catch (error) {
     throw new ApiError(
       500,
@@ -547,6 +552,38 @@ const updateAvatar = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, updatedUser, "✅ Avatar updated successfully"));
 });
 
+const deleteUser = asyncHandler(async (req, res) => {
+  const userID = req.user.id;
+
+  try {
+    const deleteUser = await prisma.user.update({
+      where: { id: userID },
+      data: {
+        isDeleted: true,
+        name: "Deleted User",
+        avatar: process.env.DELETED_USER_AVATAR,
+        deletedAt: new Date(),
+      },
+      select: {
+        username: true,
+        avatar: true,
+        name: true,
+      },
+    });
+
+    return res
+      .status(200)
+      .json(new ApiResponse(200, deleteUser, "🗑️ Profile delete successfully"))
+      .clearCookie("refreshToken", options)
+      .clearCookie("accessToken", options);
+  } catch (error) {
+    console.error("Error occurred while Deleting user:", error);
+    return res.status(500).json({
+      message: "⚠️ Something went wrong",
+    });
+  }
+});
+
 export {
   createUser,
   LoginUser,
@@ -560,4 +597,5 @@ export {
   getUserProfile,
   updateMe,
   updateAvatar,
+  deleteUser,
 };

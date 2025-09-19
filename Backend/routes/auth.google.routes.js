@@ -49,46 +49,29 @@ router.get(
         .cookie("accessToken", accessToken, options)
         .cookie("refreshToken", refreshToken, options);
 
+      
+      //Onbvboarding email security
+      const onboardToken = jwt.sign(
+        { email: req.user.email }, // payload
+        process.env.ONBOARD_TOKEN_SECRET, // secret just for onboarding
+        { expiresIn: "10m" } // 10 minutes
+      );
+
       // Redirect to frontend success page
       if (!req.user.username) {
+        res.cookie("onboardEmail", onboardToken, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "strict",
+          maxAge: 10 * 60 * 1000, // 10 minutes
+        });
         return res.redirect(`${process.env.CLIENT_URL}/onboarding`);
       } else {
         return res.redirect(`${process.env.CLIENT_URL}/dashboard`);
       }
-      
     } catch (error) {
       console.error("❌ Google Auth Error:", error);
       throw new ApiError(500, "Error processing Google login");
-    }
-  })
-);
-
-// Step 3: Protected route to get current user
-router.get(
-  "/me",
-  asyncHandler(async (req, res) => {
-    try {
-      const token = req.cookies.accessToken;
-      if (!token) throw new ApiError(401, "Not authenticated");
-
-      const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
-      const user = await prisma.user.findUnique({
-        where: { id: decoded.id },
-        select: {
-          id: true,
-          email: true,
-          username: true,
-          name: true,
-          createdAt: true,
-        },
-      });
-
-
-      if (!user) throw new ApiError(404, "User not found");
-
-      return res.status(200).json(new ApiResponse(200, user, "✅ User fetched successfully"));
-    } catch (error) {
-      throw new ApiError(401, "Invalid token");
     }
   })
 );

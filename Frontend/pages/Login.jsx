@@ -1,7 +1,10 @@
 import { useContext, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
+// eslint-disable-next-line no-unused-vars
+import { motion } from "framer-motion";
 import toast from "react-hot-toast";
+
 
 const LoginPage = () => {
   const [username, setUsername] = useState("");
@@ -103,10 +106,15 @@ const LoginPage = () => {
     setGeneralError("");
   };
 
+  const handleBack = () => navigate("/");
+
   return (
     <div className="h-screen flex items-center bg-bg dark:bg-dbg justify-center p-2 sm:p-4 relative overflow-hidden">
-      <Link
-        to="/"
+      <motion.button
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.4 }}
+        onClick={handleBack}
         className="absolute top-4 left-4 text-accent dark:text-daccent sm:top-6 sm:left-6 flex items-center gap-2 text-xs sm:text-sm font-medium px-2 sm:px-3 py-1.5 sm:py-2 rounded-xl hover:bg-white/85 dark:hover:bg-white/5 hover:scale-105 transition-all duration-300 "
       >
         <svg
@@ -123,13 +131,23 @@ const LoginPage = () => {
           />
         </svg>
         <span className="hidden sm:inline">Go Back</span>
-      </Link>
+      </motion.button>
 
-      <div className="w-full max-w-sm sm:max-w-md relative z-10">
+      <motion.div
+        initial={{ opacity: 0, y: 20, scale: 0.95 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.4, ease: "easeOut" }}
+        className="w-full max-w-sm sm:max-w-md relative z-10"
+      >
         <div className="bg-white/85 dark:bg-dcard backdrop-blur-xl rounded-2xl sm:rounded-3xl shadow-xl sm:shadow-2xl p-4 sm:p-6 lg:p-8 border-white/20 dark:border-dbordercolor border">
           <div className="relative z-10">
             <div className="text-center mb-4 sm:mb-6">
-              <div className="mx-auto w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 rounded-xl bg-primary dark:bg-dPrimary sm:rounded-2xl flex items-center justify-center mb-2 sm:mb-3 shadow-lg">
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ type: "spring", stiffness: 200, damping: 15 }}
+                className="mx-auto w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 rounded-xl bg-primary dark:bg-dPrimary sm:rounded-2xl flex items-center justify-center mb-2 sm:mb-3 shadow-lg"
+              >
                 <svg
                   className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 text-white"
                   fill="none"
@@ -143,7 +161,8 @@ const LoginPage = () => {
                     d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
                   />
                 </svg>
-              </div>
+              </motion.div>
+
               <h1
                 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-1 sm:mb-2 bg-gradient-to-r from-text to-primary dark:from-dText dark:to-dPrimary bg-clip-text text-transparent"
                 style={{
@@ -163,7 +182,9 @@ const LoginPage = () => {
             </div>
 
             {/* Google Button */}
-            <button
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.96 }}
               onClick={loginWithGoogle}
               className="w-full flex items-center justify-center cursor-pointer px-3 sm:px-4 py-2.5 sm:py-3 lg:py-3.5 border-2 rounded-xl border-bordercolor dark:border-dbordercolor dark:bg-dcard bg-card text-text dark:text-dText sm:rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 mb-3 sm:mb-4 group relative overflow-hidden"
               style={{
@@ -198,7 +219,7 @@ const LoginPage = () => {
               >
                 Continue with Google
               </span>
-            </button>
+            </motion.button>
 
             {/* Divider */}
             <div className="relative mb-3 sm:mb-4">
@@ -383,13 +404,15 @@ const LoginPage = () => {
                     fontFamily: "Manrope, sans-serif",
                   }}
                 >
-                  Forgot?
+                  Forgot password?
                 </Link>
               </div>
 
-              <button
+              <motion.button
                 type="submit"
                 disabled={isLoading}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.96 }}
                 className="w-full flex justify-center items-center cursor-pointer py-2.5 sm:py-3 lg:py-3.5 px-4 border border-transparent bg-gradient-to-r from-primary to-accent dark:from-dPrimary dark:to-daccent rounded-xl sm:rounded-2xl shadow-lg text-white font-semibold hover:shadow-xl focus:outline-none transition-all duration-300 relative overflow-hidden group disabled:opacity-70 mt-4 sm:mt-6"
                 style={{
                   fontFamily: "Manrope, sans-serif",
@@ -438,7 +461,7 @@ const LoginPage = () => {
                     </svg>
                   </>
                 )}
-              </button>
+              </motion.button>
             </form>
 
             <div className="text-center mt-4 sm:mt-6 pt-3 sm:pt-4 border-t border-bordercolor dark:border-dbordercolor">
@@ -448,7 +471,7 @@ const LoginPage = () => {
                   fontFamily: "Manrope, sans-serif",
                 }}
               >
-                New here?{" "}
+                Don’t have an account?{" "}
                 <Link
                   to="/register"
                   className="font-semibold text-primary dark:text-dPrimary hover:scale-105 ml-0.5 transition-all duration-200 inline-block"
@@ -462,7 +485,7 @@ const LoginPage = () => {
             </div>
           </div>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 };

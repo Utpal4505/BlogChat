@@ -1,11 +1,13 @@
 import { AlertCircle } from "lucide-react";
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import PasswordInput, {
   GetStrength,
 } from "../components/PasswordStrengthCheck";
 import toast from "react-hot-toast";
 import { AuthContext } from "../context/AuthContext";
+// eslint-disable-next-line no-unused-vars
+import { motion } from "framer-motion";
 
 function NewPassword() {
   const [password, setPassword] = useState("");
@@ -31,9 +33,8 @@ function NewPassword() {
     const strength = GetStrength(password);
     const isStrong = strength.label === "Strong";
     if (!isStrong) {
-      errors.password = "Please choose a stronger password!";
       setIsLoading(false);
-      toast.error("Please choose a stronger password!");
+      return toast.error("Please choose a stronger password!");
     }
 
     const firstErrorField = Object.keys(errors)[0];
@@ -96,14 +97,22 @@ function NewPassword() {
     }
   };
 
+  useEffect(() => {
+    generalError && toast.error(generalError);
+  }, [generalError]);
+
+  const handleBack = () => navigate("/login");
+
   return (
     <>
-      <div className="min-h-screen w-full flex justify-center items-center p-4 bg-[#f5f5f3]">
+      <div className="min-h-screen w-full flex justify-center items-center p-4 bg-bg dark:bg-dbg">
         <div>
-          <Link
-            to="/login"
-            className="absolute top-4 left-4 sm:top-6 sm:left-6 flex items-center gap-2 text-xs sm:text-sm font-medium px-2 sm:px-3 py-1.5 sm:py-2 rounded-xl hover:bg-white/50 transition-all duration-300 "
-            style={{ color: "#5C7B8A" }}
+          <motion.button
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.4 }}
+            onClick={handleBack}
+            className="absolute top-4 left-4 sm:top-6 sm:left-6 flex items-center gap-2 text-xs sm:text-sm font-medium px-2 sm:px-3 py-1.5 sm:py-2 rounded-xl text-accent dark:text-daccent hover:bg-white/85 dark:hover:bg-white/5 hover:scale-105 transition-all duration-300"
           >
             <svg
               className="w-4 h-4 sm:w-5 sm:h-5"
@@ -119,33 +128,31 @@ function NewPassword() {
               />
             </svg>
             <span className="hidden sm:inline">Go Back</span>
-          </Link>
+          </motion.button>
         </div>
 
-        <div className="w-full max-w-sm sm:max-w-md relative z-10">
-          <div className="bg-white/85 backdrop-blur-xl rounded-2xl sm:rounded-3xl shadow-xl sm:shadow-2xl p-4 sm:p-6 lg:p-8 border border-white/20">
-            {/* general error */}
-            {generalError && (
-              <div className="flex items-center gap-2 mb-4 p-3 text-sm text-red-700 bg-red-100 rounded-lg border border-red-300">
-                <AlertCircle size={18} />
-                <span>{generalError}</span>
-              </div>
-            )}
-
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
+          className="w-full max-w-sm sm:max-w-md relative z-10"
+        >
+          <div className="bg-white/85 dark:bg-dcard backdrop-blur-xl rounded-2xl sm:rounded-3xl shadow-xl sm:shadow-2xl p-4 sm:p-6 lg:p-8 border dark:border-dbordercolor border-white/20">
             <div className="text-center mb-4 sm:mb-6">
-              <h1
-                className="text-xl sm:text-2xl lg:text-3xl font-bold mb-1 sm:mb-2 bg-gradient-to-r bg-clip-text text-transparent"
+              <motion.h1
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="text-xl sm:text-2xl lg:text-3xl font-bold mb-1 sm:mb-2 bg-gradient-to-r from-text to-primary dark:from-dText dark:to-dPrimary bg-clip-text text-transparent"
                 style={{
-                  backgroundImage: `linear-gradient(135deg, #1A1F1D 0%, #4A5A5D 100%)`,
                   fontFamily: "Merriweather Sans, sans-serif",
                 }}
               >
                 Reset Password
-              </h1>
+              </motion.h1>
               <p
-                className="text-xs sm:text-sm lg:text-base opacity-70"
+                className="text-xs text-text dark:text-dText sm:text-sm lg:text-base opacity-70"
                 style={{
-                  color: "#7B7F95",
                   fontFamily: "Manrope, sans-serif",
                 }}
               >
@@ -159,13 +166,13 @@ function NewPassword() {
               </div>
 
               {/* register button  */}
-              <button
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.96 }}
                 type="submit"
                 disabled={isLoading}
-                className="w-full flex justify-center items-center cursor-pointer py-2.5 sm:py-3 lg:py-3.5 px-4 border border-transparent rounded-xl sm:rounded-2xl shadow-lg text-white font-semibold hover:shadow-xl focus:outline-none transition-all duration-300 relative overflow-hidden group disabled:opacity-70 mt-4 sm:mt-6"
+                className="w-full flex justify-center items-center cursor-pointer py-2.5 sm:py-3 lg:py-3.5 px-4 border border-transparent bg-gradient-to-r from-primary to-accent dark:from-dPrimary dark:to-daccent rounded-xl sm:rounded-2xl shadow-lg text-white font-semibold hover:shadow-xl focus:outline-none transition-all duration-300 relative overflow-hidden group disabled:opacity-70 mt-4 sm:mt-6"
                 style={{
-                  background:
-                    "linear-gradient(135deg, #4A5A5D 0%, #5C7B8A 100%)",
                   fontFamily: "Manrope, sans-serif",
                 }}
               >
@@ -212,10 +219,10 @@ function NewPassword() {
                     </svg>
                   </>
                 )}
-              </button>
+              </motion.button>
             </form>
           </div>
-        </div>
+        </motion.div>
       </div>
     </>
   );

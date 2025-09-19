@@ -1,11 +1,14 @@
-import jwt from 'jsonwebtoken'
-import { asyncHandler } from '../utils/asyncHandler.js'
-import { ApiError } from '../utils/ApiError.js';
-import prisma from '../config/db.config.js';
+import jwt from "jsonwebtoken";
+import { asyncHandler } from "../utils/asyncHandler.js";
+import { ApiError } from "../utils/ApiError.js";
+import prisma from "../config/db.config.js";
 
 export const verifyJWT = asyncHandler(async (req, res, next) => {
-  const token = req.cookies?.accessToken || req.body?.accessToken || req.header("Authorization")?.replace("Bearer ", "");
-  
+  const token =
+    req.cookies?.accessToken ||
+    req.body?.accessToken ||
+    req.header("Authorization")?.replace("Bearer ", "");
+
   if (!token) {
     throw new ApiError(401, "⚠️ Your session has expired. Please login again.");
   }
@@ -16,11 +19,22 @@ export const verifyJWT = asyncHandler(async (req, res, next) => {
       where: {
         id: decoded.id,
       },
-      select: { id: true, username: true, email: true, name: true, createdAt: true }
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        name: true,
+        isDeleted: true,
+        createdAt: true,
+      },
     });
 
     if (!user) {
       throw new ApiError(404, "User not found");
+    }
+
+    if (user.isDeleted) {
+      throw new ApiError(403, "User account has been deleted");
     }
 
     req.user = user;

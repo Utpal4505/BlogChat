@@ -1,10 +1,10 @@
-import React, { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { FaCheck, FaTimes, FaUserAlt } from "react-icons/fa";
 import { MdBadge, MdEmail } from "react-icons/md";
 import { AuthContext } from "../context/AuthContext";
-import { AlertCircle, Shield, ShieldAlert, ShieldCheck } from "lucide-react";
 import toast from "react-hot-toast";
+// eslint-disable-next-line no-unused-vars
+import { motion } from "framer-motion";
 
 function SignUp() {
   const [fullname, setFullname] = useState("");
@@ -155,42 +155,53 @@ function SignUp() {
     }
   };
 
+  const handleBack = () => navigate("/login");
+
   return (
     <>
       <div className="min-h-screen w-full flex justify-center items-center p-4 bg-bg dark:bg-dbg">
-        <div>
-          <Link
-            to="/login"
-            className="absolute top-4 left-4 sm:top-6 sm:left-6 flex items-center gap-2 text-xs sm:text-sm font-medium px-2 sm:px-3 py-1.5 sm:py-2 rounded-xl text-accent dark:text-daccent hover:bg-white/85 dark:hover:bg-white/5 hover:scale-105 transition-all duration-300"
+        <motion.button
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.4 }}
+          onClick={handleBack}
+          className="absolute top-4 left-4 sm:top-6 sm:left-6 flex items-center gap-2 text-xs sm:text-sm font-medium px-2 sm:px-3 py-1.5 sm:py-2 rounded-xl text-accent dark:text-daccent hover:bg-white/85 dark:hover:bg-white/5 hover:scale-105 transition-all duration-300"
+        >
+          <svg
+            className="w-4 h-4 sm:w-5 sm:h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
           >
-            <svg
-              className="w-4 h-4 sm:w-5 sm:h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M10 19l-7-7m0 0l7-7m-7 7h18"
-              />
-            </svg>
-            <span className="hidden sm:inline">Go Back</span>
-          </Link>
-        </div>
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M10 19l-7-7m0 0l7-7m-7 7h18"
+            />
+          </svg>
+          <span className="hidden sm:inline">Go Back</span>
+        </motion.button>
 
-        <div className="w-full max-w-sm sm:max-w-md relative z-10">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
+          className="w-full max-w-sm sm:max-w-md relative z-10"
+        >
           <div className="bg-white/85 dark:bg-dcard backdrop-blur-xl rounded-2xl sm:rounded-3xl shadow-xl sm:shadow-2xl p-4 sm:p-6 lg:p-8 border dark:border-dbordercolor border-white/20">
             <div className="text-center mb-4 sm:mb-6">
-              <h1
+              <motion.h1
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
                 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-1 sm:mb-2 bg-gradient-to-r from-text to-primary dark:from-dText dark:to-dPrimary bg-clip-text text-transparent"
                 style={{
                   fontFamily: "Merriweather Sans, sans-serif",
                 }}
               >
                 Welcome
-              </h1>
+              </motion.h1>
               <p
                 className="text-xs text-text dark:text-dText sm:text-sm lg:text-base opacity-70"
                 style={{
@@ -200,7 +211,10 @@ function SignUp() {
                 Create your account to get started
               </p>
             </div>
-            <button
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.96 }}
+              transition={{ type: "spring", stiffness: 250, damping: 18 }}
               onClick={loginWithGoogle}
               className="w-full flex items-center justify-center cursor-pointer px-3 sm:px-4 py-2.5 sm:py-3 lg:py-3.5 border-2 rounded-xl border-bordercolor dark:border-dbordercolor dark:bg-dcard bg-card text-text dark:text-dText sm:rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 mb-3 sm:mb-4 group relative overflow-hidden"
               style={{
@@ -235,7 +249,7 @@ function SignUp() {
               >
                 Continue with Google
               </span>
-            </button>
+            </motion.button>
 
             <div className="relative mb-3 sm:mb-4">
               <div className="absolute inset-0 flex items-center">
@@ -258,8 +272,10 @@ function SignUp() {
             >
               {/* Fullname */}
               <div className="relative">
-                <input
+                <motion.input
                   id="fullname"
+                  whileFocus={{ scale: 1.01 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 20 }}
                   type="text"
                   value={fullname}
                   onChange={handleFullnamechange}
@@ -306,9 +322,11 @@ function SignUp() {
               </div>
 
               <div className="relative">
-                <input
+                <motion.input
                   id="email"
                   type="email"
+                  whileFocus={{ scale: 1.01 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 20 }}
                   value={email}
                   onChange={handleEmailChange}
                   required
@@ -354,7 +372,9 @@ function SignUp() {
               </div>
 
               {/* register button  */}
-              <button
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.96 }}
                 type="submit"
                 disabled={isLoading}
                 className="w-full flex justify-center items-center cursor-pointer py-2.5 sm:py-3 lg:py-3.5 px-4 border border-transparent bg-gradient-to-r from-primary to-accent dark:from-dPrimary dark:to-daccent rounded-xl sm:rounded-2xl shadow-lg text-white font-semibold hover:shadow-xl focus:outline-none transition-all duration-300 relative overflow-hidden group disabled:opacity-70 mt-4 sm:mt-6"
@@ -407,10 +427,10 @@ function SignUp() {
                     </svg>
                   </>
                 )}
-              </button>
+              </motion.button>
             </form>
           </div>
-        </div>
+        </motion.div>
       </div>
     </>
   );

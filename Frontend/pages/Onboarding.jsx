@@ -1,13 +1,14 @@
 import React, { useCallback, useContext, useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { AlertCircle } from "lucide-react";
 import { AuthContext } from "../context/AuthContext";
 import PasswordInput, {
   GetStrength,
 } from "../components/PasswordStrengthCheck";
 import { debounce } from "lodash";
-import { FaCheck, FaTimes, FaUser } from "react-icons/fa";
+import { FaCheck, FaTimes } from "react-icons/fa";
 import toast from "react-hot-toast";
+// eslint-disable-next-line no-unused-vars
+import { motion } from "framer-motion";
 
 function Onboarding() {
   const [isLoading, setIsLoading] = useState(false);
@@ -25,8 +26,8 @@ function Onboarding() {
 
   //general error toast
   useEffect(() => {
-    generalError && toast.error(generalError)
-  }, [generalError])
+    generalError && toast.error(generalError);
+  }, [generalError]);
 
   const { onBoardUser, checkUsernameAvailability } = useContext(AuthContext);
 
@@ -59,7 +60,7 @@ function Onboarding() {
       } finally {
         setChecking(false);
       }
-    }, 500),
+    }, 1000),
     []
   );
 
@@ -199,11 +200,16 @@ function Onboarding() {
   else if (usernameTouched && usernameAvailable === false)
     usernameBorderClass = "border-danger";
 
+  const handleBack = () => navigate("/login");
+
   return (
     <>
       <div className="min-h-screen flex items-center bg-bg dark:bg-dbg justify-center p-2 sm:p-4 relative overflow-hidden">
-        <Link
-          to="/"
+        <motion.button
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.4 }}
+          onClick={handleBack}
           className="absolute top-4 left-4 sm:top-6 sm:left-6 flex items-center gap-2 text-xs sm:text-sm font-medium px-2 sm:px-3 py-1.5 sm:py-2 rounded-xl text-accent dark:text-daccent hover:bg-white/85 dark:hover:bg-white/5 hover:scale-105 transition-all duration-300"
         >
           <svg
@@ -220,20 +226,28 @@ function Onboarding() {
             />
           </svg>
           <span className="hidden sm:inline">Go Back</span>
-        </Link>
+        </motion.button>
 
-        <div className="w-full max-w-xl lg:max-w-2xl relative z-10">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
+          className="w-full max-w-xl lg:max-w-2xl relative z-10"
+        >
           <div className="bg-white/85 dark:bg-dcard backdrop-blur-xl rounded-2xl sm:rounded-3xl shadow-xl sm:shadow-2xl p-4 sm:p-6 lg:p-8 border-white/20 dark:border-dbordercolor border relative">
             <div className="text-center mb-6 sm:mb-8">
               <span className="text-3xl sm:text-4xl block mb-3">👋</span>
-              <h1
+              <motion.h1
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
                 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-1 sm:mb-2 bg-gradient-to-r from-text to-primary dark:from-dText dark:to-dPrimary bg-clip-text text-transparent"
                 style={{
                   fontFamily: "Merriweather Sans, sans-serif",
                 }}
               >
                 Welcome to BlogChat!
-              </h1>
+              </motion.h1>
               <p
                 className="text-xs text-text dark:text-dText sm:text-sm lg:text-base opacity-70"
                 style={{
@@ -258,7 +272,11 @@ function Onboarding() {
                   Choose your username
                 </label>
                 <p
-                  className={`mt-1 text-xs mb-1.5 ${username ? "text-accent dark:text-daccent" : "text-muted-text dark:text-dMuted-text"}`}
+                  className={`mt-1 text-xs mb-1.5 ${
+                    username
+                      ? "text-accent dark:text-daccent"
+                      : "text-muted-text dark:text-dMuted-text"
+                  }`}
                   style={{
                     fontFamily: "Manrope, sans-serif",
                   }}
@@ -266,9 +284,11 @@ function Onboarding() {
                   This is how others will find you on BlogChat (like @username
                   on Twitter)
                 </p>
-                <input
+                <motion.input
                   type="text"
                   id="username"
+                  whileFocus={{ scale: 1.02 }}
+                  animate={errors.username ? { x: [0, -4, 4, -4, 0] } : {}}
                   placeholder="@username"
                   onChange={handleUsernameChange}
                   onFocus={() => setUsernameTouched(true)}
@@ -282,7 +302,10 @@ function Onboarding() {
                 <div className="absolute inset-y-0 top-7 right-3 flex items-center">
                   {" "}
                   {checking && (
-                    <div className={`absolute w-4 h-4  right-1 border-2 border-gray-300 border-t-transparent rounded-full animate-spin ${errors.username ? "bottom-10" : "bottom-5"}`}></div>
+                    <div
+                      className={`absolute w-4 h-4 right-1 border-2 border-gray-300 border-t-transparent rounded-full animate-spin`}
+                      style={{ top: "50%", transform: "translateY(-50%)" }}
+                    ></div>
                   )}{" "}
                   {!checking &&
                     username &&
@@ -292,9 +315,29 @@ function Onboarding() {
                       <>
                         {" "}
                         {usernameAvailable ? (
-                          <FaCheck className="text-green-500 w-4 h-4" />
+                          <motion.div
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            transition={{
+                              type: "spring",
+                              stiffness: 300,
+                              damping: 10,
+                            }}
+                          >
+                            <FaCheck className="text-green-500 w-4 h-4" />
+                          </motion.div>
                         ) : (
-                          <FaTimes className="text-danger w-5 h-5" />
+                          <motion.div
+                            initial={{ scale: 0, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            transition={{
+                              type: "spring",
+                              stiffness: 300,
+                              damping: 15,
+                            }}
+                          >
+                            <FaTimes className="text-danger w-5 h-5" />
+                          </motion.div>
                         )}{" "}
                       </>
                     )}{" "}
@@ -304,7 +347,10 @@ function Onboarding() {
                   usernameTouched &&
                   usernameAvailable !== null &&
                   !checking && (
-                    <p
+                    <motion.p
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.3 }}
                       className={`text-xs mt-1 transition-opacity ${
                         usernameAvailable ? "text-green-500" : "text-danger"
                       }`}
@@ -313,7 +359,7 @@ function Onboarding() {
                       {usernameAvailable
                         ? "Great! This username is available 🎉"
                         : "Oops! Someone else has this username 😅"}{" "}
-                    </p>
+                    </motion.p>
                   )}{" "}
                 {/* Field errors */}{" "}
                 {errors.username && (
@@ -335,20 +381,34 @@ function Onboarding() {
                 >
                   Write a short bio
                 </label>
-                <textarea
+                <motion.textarea
                   id="bio"
+                  whileFocus={{ scale: 1.02 }}
+                  animate={errors.bio ? { x: [0, -4, 4, -4, 0] } : {}}
                   rows="4"
                   value={bio}
                   onChange={handleBioChange}
                   required
                   placeholder="Tell people a bit about yourself..."
-                  className={`w-full px-4 py-3 border-2 text-text dark:text-dText rounded-xl focus:outline-none bg-card dark:bg-dcard backdrop-blur-sm text-base resize-none ${errors.bio ? "border-danger" : bio ? "border-accent dark:border-daccent" : "border-bordercolor dark:border-dbordercolor"}`}
+                  className={`w-full px-4 py-3 border-2 text-text dark:text-dText rounded-xl focus:outline-none bg-card dark:bg-dcard backdrop-blur-sm text-base resize-none ${
+                    errors.bio
+                      ? "border-danger"
+                      : bio
+                      ? "border-accent dark:border-daccent"
+                      : "border-bordercolor dark:border-dbordercolor"
+                  }`}
                   style={{
                     fontFamily: "Manrope, sans-serif",
                   }}
                 />
                 <div className="flex justify-between text-xs mt-1">
-                  <span className="text-muted-text dark:text-dMuted-text">
+                  <span
+                    className={`text-xs ${
+                      bio.length > 140
+                        ? "text-danger font-medium"
+                        : "text-muted-text dark:text-dMuted-text"
+                    }`}
+                  >
                     {bio.length}/160 characters
                   </span>
                   <span className="text-muted-text dark:text-dMuted-text">
@@ -378,7 +438,9 @@ function Onboarding() {
               </div>
               {/* Buttons */}
               <div className="flex justify-center items-center">
-                <button
+                <motion.button
+                  whileHover={!isLoading ? { scale: 1.02 } : {}}
+                  whileTap={!isLoading ? { scale: 0.96 } : {}}
                   type="submit"
                   disabled={isLoading}
                   className="w-full flex justify-center items-center cursor-pointer py-2.5 sm:py-3 lg:py-3.5 px-4 border border-transparent rounded-xl sm:rounded-2xl shadow-lg text-white font-semibold hover:shadow-xl focus:outline-none transition-all duration-300 relative overflow-hidden group disabled:opacity-70 mt-4 sm:mt-6 hover:scale-[1.03]"
@@ -442,11 +504,11 @@ function Onboarding() {
                       </svg>{" "}
                     </>
                   )}{" "}
-                </button>
+                </motion.button>
               </div>
             </form>
           </div>
-        </div>
+        </motion.div>
       </div>
     </>
   );

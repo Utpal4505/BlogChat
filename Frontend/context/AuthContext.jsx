@@ -71,7 +71,7 @@ export const AuthProvider = ({ children }) => {
         bio,
         email,
       });
-      setUser(data.data.user);
+      setUser(data.data);
       return data;
     } catch (err) {
       throw err.response?.data || err.message;
@@ -94,13 +94,10 @@ export const AuthProvider = ({ children }) => {
       const { data } = await api.post("/register", {
         name,
         email,
-      });
-      console.log(data);
-      
+      });  
       if (data.data.status === "PENDING") {
         setUser(data.data);
       }
-      console.log("Set User", setUser);
       return data;
     } catch (err) {
       throw err.response?.data || err;
