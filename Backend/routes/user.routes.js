@@ -25,6 +25,7 @@ import {
   registerLimiter,
 } from "../middlewares/rateLimiters.middlewares.js";
 import { verifyRefreshToken } from "../middlewares/VerifyRefreshToken.js";
+import { follow } from "../controllers/follow.controllers.js";
 
 const router = Router();
 
@@ -48,5 +49,6 @@ router
   .route("/me/avatar")
   .patch(verifyJWT, upload.single("avatar"), updateAvatar);
 router.route("/delete").delete(verifyJWT, deleteUser);
+router.route("/:userId/follow").post(verifyJWT, follow);
 
 export default router;

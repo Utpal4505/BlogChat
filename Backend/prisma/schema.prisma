@@ -69,6 +69,7 @@ model User {
   createdAt             DateTime           @default(now())
   updatedAt             DateTime           @updatedAt
   deletedAt             DateTime?
+
   @@index([username])
 }
 
@@ -91,7 +92,7 @@ model Post {
   coverImage   String?
   commentCount Int        @default(0)
   visibility   Visibility @default(PUBLIC)
-  status       Status    @default(DRAFT)
+  status       Status     @default(DRAFT)
   publishedAt  DateTime?
   comments     Comment[]
   postLikes    PostLike[]
@@ -120,24 +121,26 @@ model Comment {
 }
 
 model Follow {
+  id         Int      @id @default(autoincrement())
   follower   User     @relation("follower", fields: [followerId], references: [id])
   followerId Int
   followee   User     @relation("followee", fields: [followeeId], references: [id])
   followeeId Int
   createdAt  DateTime @default(now())
 
-  @@id([followerId, followeeId])
+  @@unique([followerId, followeeId])
   @@index([followeeId, followerId])
 }
 
 model PostLike {
+  id        Int      @id @default(autoincrement())
   user      User     @relation(fields: [userId], references: [id])
   userId    Int
   post      Post     @relation(fields: [postId], references: [id])
   postId    Int
   createdAt DateTime @default(now())
 
-  @@id([userId, postId])
+  @@unique([userId, postId])
   @@index([postId])
 }
 

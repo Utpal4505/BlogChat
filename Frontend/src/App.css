@@ -18,3 +18,21 @@
   --color-bordercolor: #E5E7EB;
   --color-danger: #EF4444;
 }
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 2s infinite;
+}
+
+/* Add these utilities to your Tailwind config */
+.transform-gpu {
+  transform: translateZ(0);
+}

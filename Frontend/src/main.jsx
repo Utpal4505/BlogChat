@@ -12,7 +12,7 @@ import ForgetPassword from "../pages/ForgetPassword.jsx";
 import PasswordVerify from "../pages/PasswordVerify.jsx";
 import NewPassword from "../pages/NewPassword.jsx";
 import ProtectedRoute from "../utils/ProtectedRoute.jsx";
-import ProfilePage from "../pages/Profile.jsx";
+import WriteBlog from "../pages/Write.jsx";
 
 const router = createBrowserRouter([
   {
@@ -44,21 +44,21 @@ const router = createBrowserRouter([
         element: <NewPassword />,
       },
       {
-        path: "profile",
-        element: <ProfilePage />
-      },{
-            path: "onboarding",
-            element: <Onboarding />
-          },
+        path: "Write-Blog",
+        element: <WriteBlog />,
+      },
 
       //Protected Routes
       {
         element: <ProtectedRoute />,
         children: [
-          
           {
             path: "dashboard",
             element: <Dashboard />,
+          },
+          {
+            path: "onboarding",
+            element: <Onboarding />,
           },
         ],
       },

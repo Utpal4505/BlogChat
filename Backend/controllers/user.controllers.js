@@ -126,7 +126,7 @@ const LoginUser = asyncHandler(async (req, res) => {
   }
 
   if (user.isDeleted) {
-    throw new ApiError(403, "This account is no longer active")
+    throw new ApiError(403, "This account is no longer active");
   }
 
   const isPasswordMatch = await bcrypt.compare(password, user.password);
@@ -286,6 +286,14 @@ const getMe = asyncHandler(async (req, res) => {
       name: true,
       bio: true,
       avatar: true,
+      posts: true,
+      _count: {
+        select: {
+          followees: true,
+          followers: true,
+          posts: true,
+        },
+      },
       registration_status: true,
       createdAt: true,
     },
@@ -357,8 +365,7 @@ const verifyOTP = asyncHandler(async (req, res) => {
           newUser,
           "✅ User verified & registered successfully now procced to onboarding"
         )
-      )
-      
+      );
   } catch (error) {
     throw new ApiError(
       500,
