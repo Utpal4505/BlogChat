@@ -3,6 +3,7 @@ import "./App.css";
 import { Toaster } from "react-hot-toast";
 import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
+import MainLayout from "./layouts/MainLayout";
 
 
 function App() {
@@ -10,10 +11,7 @@ function App() {
     <>
       {/* Toast container */}
       <Toaster position="top-center" reverseOrder={false} />
-      <Navbar />
-      <Sidebar />
-      {/* Your routed pages */}
-      <Outlet />
+      <MainLayout />
     </>
   );
 }

@@ -1,6 +1,5 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import App from "./App.jsx";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Login from "../pages/Login.jsx";
 import SignUp from "../pages/SignUp.jsx";
@@ -12,12 +11,31 @@ import ForgetPassword from "../pages/ForgetPassword.jsx";
 import PasswordVerify from "../pages/PasswordVerify.jsx";
 import NewPassword from "../pages/NewPassword.jsx";
 import ProtectedRoute from "../utils/ProtectedRoute.jsx";
-import WriteBlog from "../pages/Write.jsx";
+import MinimalLayout from "./layouts/MinimalLayout.jsx";
+import App from "./App.jsx";
+import BlogEditor from "../pages/Write.jsx";
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: <App />,
+    children: [
+      //Protected Routes
+      {
+        element: <ProtectedRoute />,
+        children: [
+          {
+            path: "dashboard",
+            element: <Dashboard />,
+          },
+
+        ],
+      },
+    ],
+  },
+
+  {
+    element: <MinimalLayout />,
     children: [
       {
         path: "login",
@@ -45,23 +63,18 @@ const router = createBrowserRouter([
       },
       {
         path: "Write-Blog",
-        element: <WriteBlog />,
+        element: <BlogEditor />,
       },
 
-      //Protected Routes
       {
         element: <ProtectedRoute />,
         children: [
           {
-            path: "dashboard",
-            element: <Dashboard />,
-          },
-          {
             path: "onboarding",
             element: <Onboarding />,
-          },
-        ],
-      },
+          }
+        ]
+      }
     ],
   },
 ]);
