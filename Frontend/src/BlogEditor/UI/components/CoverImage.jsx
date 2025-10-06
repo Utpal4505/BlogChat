@@ -128,71 +128,80 @@ const CoverImage = ({
     );
   }
 
-  // Display existing cover image
+  // Display existing cover image - COMPACT LAYOUT
   if (coverImage) {
     const imageSrc = getImageSrc();
     const imageAlt = getImageAlt();
 
     return (
-      <div className="mb-8 group">
-        <div className="relative aspect-[2.5/1] rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800">
-          {imageSrc && !imageError ? (
-            <>
-              {imageLoading && (
-                <div className="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-800 z-10">
+      <div className="mb-8">
+        <div className="flex items-center gap-5">
+          {/* Medium-sized thumbnail (not too small) */}
+          <div className={`w-32 h-32 md:w-40 md:h-40 flex items-center justify-center rounded-xl border overflow-hidden ${
+            isDark ? 'border-dbordercolor bg-dcard' : 'border-gray-200 bg-gray-50'
+          }`}>
+            {imageSrc && !imageError ? (
+              <>
+                {imageLoading && (
                   <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
-                </div>
-              )}
-              <img 
-                src={imageSrc}
-                alt={imageAlt}
-                className={`w-full h-full object-cover transition-opacity duration-300 ${
-                  imageLoading ? 'opacity-0' : 'opacity-100'
-                }`}
-                onLoadStart={handleImageLoadStart}
-                onLoad={handleImageLoad}
-                onError={handleImageError}
-                loading="lazy"
-              />
-            </>
-          ) : (
-            <div className="w-full h-full flex items-center justify-center">
+                )}
+                <img 
+                  src={imageSrc}
+                  alt={imageAlt}
+                  className={`w-full h-full object-cover transition-opacity duration-300 ${
+                    imageLoading ? 'opacity-0' : 'opacity-100'
+                  }`}
+                  onLoadStart={handleImageLoadStart}
+                  onLoad={handleImageLoad}
+                  onError={handleImageError}
+                  loading="lazy"
+                />
+              </>
+            ) : (
               <div className="text-center">
                 <AlertCircle className={`w-8 h-8 mx-auto mb-2 ${
                   isDark ? 'text-dMuted-text' : 'text-gray-400'
                 }`} />
-                <p className={`text-sm ${
+                <p className={`text-xs ${
                   isDark ? 'text-dMuted-text' : 'text-gray-500'
                 }`}>
-                  Failed to load image
+                  Failed to load
                 </p>
               </div>
-            </div>
-          )}
+            )}
+          </div>
           
-          {/* Hover overlay with controls */}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-            <div className="flex space-x-3">
-              <button
-                onClick={() => setShowImagePicker(true)}
-                className="px-4 py-2 bg-white/90 backdrop-blur-sm rounded-lg text-gray-800 font-medium hover:bg-white transition-colors flex items-center space-x-2 shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                aria-label="Change cover image"
-              >
-                <Edit3 className="w-4 h-4" />
-                <span>Change</span>
-              </button>
-              <button
-                onClick={() => {
-                  setCoverImage(null);
-                  setImageError(false);
-                }}
-                className="px-4 py-2 bg-red-500/90 backdrop-blur-sm rounded-lg text-white font-medium hover:bg-red-500 transition-colors flex items-center space-x-2 shadow-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
-                aria-label="Remove cover image"
-              >
-                <Trash2 className="w-4 h-4" />
-                <span>Remove</span>
-              </button>
-            </div>
+          {/* Buttons side by side */}
+          <div className="flex justify-between">
+          <div className="flex gap-3">
+            <button
+              onClick={() => setShowImagePicker(true)}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 border ${
+                isDark 
+                  ? 'bg-dcard border-dbordercolor text-dText hover:bg-dcard/80' 
+                  : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+              }`}
+              aria-label="Change cover image"
+            >
+              <Edit3 className="w-4 h-4" />
+              <span>Change</span>
+            </button>
+            <button
+              onClick={() => {
+                setCoverImage(null);
+                setImageError(false);
+              }}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 border border-red-200 ${
+                isDark 
+                  ? 'bg-red-500/10 text-red-400 hover:bg-red-500/20' 
+                  : 'bg-white text-red-600 hover:bg-red-50'
+              }`}
+              aria-label="Remove cover image"
+            >
+              <Trash2 className="w-4 h-4" />
+              <span>Remove</span>
+            </button>
+          </div>
           </div>
         </div>
         

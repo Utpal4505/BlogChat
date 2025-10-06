@@ -13,3 +13,19 @@ export const UNSPLASH_CATEGORIES = [
   'nature', 'business', 'technology', 'architecture', 
   'food', 'travel', 'minimal', 'abstract'
 ];
+
+// Add to your Unsplash.BlogChat file
+export const HIGHLIGHT_COLORS = [
+  '#ffeb3b', // Yellow
+  '#4caf50', // Green  
+  '#2196f3', // Blue
+  '#ff9800', // Orange
+  '#e91e63', // Pink
+  '#9c27b0', // Purple
+  '#00bcd4', // Cyan
+  '#ff5722', // Deep Orange
+  '#795548', // Brown
+  '#607d8b', // Blue Grey
+  '#f44336', // Red
+  '#3f51b5', // Indigo
+]

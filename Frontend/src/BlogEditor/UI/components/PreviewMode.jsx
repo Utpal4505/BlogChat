@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { User, Calendar, Type } from 'lucide-react';
 import CoverImage from './CoverImage';
+import hljs from 'highlight.js'; // Fixed import name
+import 'highlight.js/styles/github-dark.css';
 
 const PreviewMode = ({ 
   title, 
@@ -10,6 +12,18 @@ const PreviewMode = ({
   editorContent, 
   isDark 
 }) => {
+  const contentRef = useRef(null);
+
+  // Apply syntax highlighting to code blocks
+  useEffect(() => {
+    if (contentRef.current) {
+      // Find all code blocks and apply highlighting
+      contentRef.current.querySelectorAll('pre code').forEach((block) => {
+        hljs.highlightElement(block);
+      });
+    }
+  }, [editorContent]); // Re-run when content changes
+
   return (
     <article className={`max-w-4xl mx-auto rounded-2xl shadow-xl overflow-hidden ${
       isDark ? 'bg-dcard border border-dbordercolor' : 'bg-white border border-bordercolor'
@@ -70,7 +84,11 @@ const PreviewMode = ({
           )}
         </header>
         
-        <div className="blog-preview-content prose prose-xl max-w-none">
+        {/* Content with ref for highlight.js */}
+        <div 
+          ref={contentRef}
+          className="blog-preview-content prose prose-xl max-w-none"
+        >
           <div dangerouslySetInnerHTML={{ __html: editorContent }} />
         </div>
       </div>

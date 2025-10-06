@@ -12,7 +12,7 @@ import {
   CheckCircle2,
   ArrowRight
 } from 'lucide-react';
-import { UNSPLASH_ACCESS_KEY, UNSPLASH_API_URL, UNSPLASH_CATEGORIES } from './BlogEditor';
+import { UNSPLASH_ACCESS_KEY, UNSPLASH_API_URL, UNSPLASH_CATEGORIES } from './Unsplash.BlogChat';
 
 const ImagePickerModal = ({ isOpen, onClose, onSelectImage, isDark }) => {
   const [activeTab, setActiveTab] = useState('unsplash');

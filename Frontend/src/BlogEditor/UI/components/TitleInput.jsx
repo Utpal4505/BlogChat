@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 
 const TitleInput = ({ title, setTitle, isDark }) => {
@@ -11,11 +11,17 @@ const TitleInput = ({ title, setTitle, isDark }) => {
     }
   };
 
+  const inputRef = useRef(null);
+
+  useEffect(() => {
+    inputRef.current && inputRef.current.focus();
+  }, [])
+
   return (
     <motion.div 
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="mb-8"
+      className="mb-5"
     >
       <motion.input
         type="text"
@@ -24,6 +30,7 @@ const TitleInput = ({ title, setTitle, isDark }) => {
         onKeyDown={handleKeyDown}
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
+        ref={inputRef}
         placeholder="Write your story title..."
         animate={{ scale: isFocused ? 1.01 : 1 }}
         transition={{ duration: 0.2 }}

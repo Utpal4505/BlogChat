@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Hash, Plus, X, Tag, Sparkles, ChevronDown } from 'lucide-react';
+import { Hash, Plus, X, Tag, ChevronDown } from 'lucide-react';
 
 const TagsSection = ({ 
   tags, 
@@ -47,54 +47,53 @@ const TagsSection = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-
   return (
     <motion.section 
       ref={sectionRef}
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-      className={`rounded-2xl mb-8 overflow-hidden transition-all duration-300 ${
+      className={`rounded-xl mb-8 overflow-hidden transition-all duration-300 ${
         isDark 
-          ? 'bg-gradient-to-br from-dcard/40 to-dcard/20 border border-dbordercolor/30 backdrop-blur-sm' 
-          : 'bg-gradient-to-br from-white/80 to-gray-50/80 border border-bordercolor/30 backdrop-blur-sm'
-      }`}
+          ? 'bg-dcard/50 border border-dbordercolor/50 backdrop-blur-sm' 
+          : 'bg-white/80 border border-bordercolor/50 backdrop-blur-sm'
+      } ${isExpanded ? 'shadow-lg' : 'shadow-sm hover:shadow-md'}`}
     >
-      {/* Collapsed Header - Always Visible */}
+      {/* Collapsed Header */}
       <motion.div
         onClick={() => setIsExpanded(!isExpanded)}
-        className={`flex items-center justify-between p-6 cursor-pointer transition-all duration-200 ${
-          isExpanded ? 'pb-4' : 'hover:bg-black/5 dark:hover:bg-white/5'
+        className={`flex items-center justify-between p-5 cursor-pointer transition-all duration-200 ${
+          !isExpanded && 'hover:bg-black/5 dark:hover:bg-white/5'
         }`}
       >
         <div className="flex items-center space-x-3">
           <motion.div 
-            animate={{ rotate: isExpanded ? 180 : 0 }}
-            transition={{ duration: 0.3 }}
-            className={`p-2 rounded-lg ${
-              isDark ? 'bg-daccent/20' : 'bg-accent/20'
+            animate={{ rotate: isExpanded ? 0 : 0 }}
+            className={`p-2.5 rounded-lg transition-colors ${
+              isDark ? 'bg-daccent/15' : 'bg-accent/15'
             }`}
           >
-            <Hash className={`w-5 h-5 ${isDark ? 'text-daccent' : 'text-accent'}`} />
+            <Hash className={`w-4 h-4 ${isDark ? 'text-daccent' : 'text-accent'}`} />
           </motion.div>
-          <div>
-            <h3 className={`text-lg font-semibold ${
+          
+          <div className="flex-1">
+            <h3 className={`text-base font-semibold ${
               isDark ? 'text-dText' : 'text-text'
             }`}>
               Tags
             </h3>
+            
             {!isExpanded && (
               <div className="flex items-center space-x-2 mt-1">
                 {tags.length > 0 ? (
-                  <div className="flex items-center space-x-1">
-                    <div className="flex -space-x-1">
-                      {tags.slice(0, 3).map((tag, index) => (
+                  <div className="flex items-center space-x-2">
+                    <div className="flex flex-wrap gap-1.5">
+                      {tags.slice(0, 3).map((tag) => (
                         <span
                           key={tag}
-                          className={`inline-block px-2 py-1 text-xs rounded-md border ${
+                          className={`inline-block px-2.5 py-1 text-xs font-medium rounded-md ${
                             isDark 
-                              ? 'bg-daccent/15 text-daccent border-daccent/30' 
-                              : 'bg-accent/15 text-accent border-accent/30'
+                              ? 'bg-daccent/15 text-daccent' 
+                              : 'bg-accent/15 text-accent'
                           }`}
                         >
                           {tag}
@@ -102,16 +101,16 @@ const TagsSection = ({
                       ))}
                     </div>
                     {tags.length > 3 && (
-                      <span className={`text-xs ${
+                      <span className={`text-xs font-medium ${
                         isDark ? 'text-dMuted-text' : 'text-muted-text'
                       }`}>
-                        +{tags.length - 3} more
+                        +{tags.length - 3}
                       </span>
                     )}
                   </div>
                 ) : (
                   <p className={`text-sm ${
-                    isDark ? 'text-dMuted-text' : 'text-muted-text'
+                    isDark ? 'text-dMuted-text/70' : 'text-muted-text/70'
                   }`}>
                     Click to add tags
                   </p>
@@ -124,17 +123,16 @@ const TagsSection = ({
         <div className="flex items-center space-x-3">
           <motion.div 
             animate={{ 
-              scale: tags.length >= 8 ? 1.1 : 1,
-              color: tags.length >= 10 ? '#ef4444' : undefined
+              scale: tags.length >= 8 ? 1.05 : 1,
             }}
-            className={`text-sm font-medium px-3 py-1 rounded-full ${
+            className={`text-sm font-semibold px-3 py-1.5 rounded-full transition-colors ${
               isDark 
                 ? tags.length >= 8 
-                  ? 'bg-red-500/20 text-red-400' 
-                  : 'bg-daccent/20 text-daccent'
+                  ? 'bg-red-500/15 text-red-400' 
+                  : 'bg-daccent/15 text-daccent'
                 : tags.length >= 8 
                   ? 'bg-red-100 text-red-600' 
-                  : 'bg-accent/20 text-accent'
+                  : 'bg-accent/15 text-accent'
             }`}
           >
             {tags.length}/10
@@ -142,9 +140,9 @@ const TagsSection = ({
           
           <motion.div
             animate={{ rotate: isExpanded ? 180 : 0 }}
-            transition={{ duration: 0.3 }}
+            transition={{ duration: 0.3, ease: 'easeInOut' }}
           >
-            <ChevronDown className={`w-5 h-5 ${
+            <ChevronDown className={`w-5 h-5 transition-colors ${
               isDark ? 'text-dMuted-text' : 'text-muted-text'
             }`} />
           </motion.div>
@@ -158,46 +156,51 @@ const TagsSection = ({
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.3, ease: 'easeInOut' }}
+            transition={{ duration: 0.25, ease: 'easeInOut' }}
             className="overflow-hidden"
           >
-            <div className="px-6 pb-6 space-y-6">
+            <div className={`px-5 pb-5 pt-2 space-y-5 border-t ${
+              isDark ? 'border-dbordercolor/30' : 'border-bordercolor/30'
+            }`}>
               {/* Tags Display */}
-              <AnimatePresence>
+              <AnimatePresence mode="popLayout">
                 {tags.length > 0 && (
                   <motion.div 
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2 }}
                   >
                     <div className="flex flex-wrap gap-2">
-                      {tags.map((tag, index) => (
+                      {tags.map((tag) => (
                         <motion.span
                           key={tag}
+                          layout
                           initial={{ opacity: 0, scale: 0.8 }}
                           animate={{ opacity: 1, scale: 1 }}
                           exit={{ opacity: 0, scale: 0.8 }}
-                          whileHover={{ scale: 1.05 }}
-                          className={`group inline-flex items-center px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
+                          whileHover={{ scale: 1.03, y: -2 }}
+                          transition={{ duration: 0.2 }}
+                          className={`group inline-flex items-center px-3.5 py-2 rounded-lg text-sm font-medium transition-all ${
                             isDark 
-                              ? 'bg-daccent/15 text-daccent border border-daccent/30 hover:bg-daccent/25' 
-                              : 'bg-accent/15 text-accent border border-accent/30 hover:bg-accent/25'
+                              ? 'bg-daccent/15 text-daccent border border-daccent/20 hover:bg-daccent/20 hover:border-daccent/30' 
+                              : 'bg-accent/15 text-accent border border-accent/20 hover:bg-accent/20 hover:border-accent/30'
                           }`}
                         >
-                          <Tag className="w-3 h-3 mr-2" />
+                          <Tag className="w-3.5 h-3.5 mr-2 opacity-70" />
                           {tag}
                           <motion.button
-                            whileHover={{ scale: 1.2, rotate: 90 }}
-                            whileTap={{ scale: 0.8 }}
+                            whileHover={{ scale: 1.15, rotate: 90 }}
+                            whileTap={{ scale: 0.85 }}
                             onClick={(e) => {
                               e.stopPropagation();
                               removeTag(tag);
                             }}
-                            className={`ml-3 p-1 rounded-full transition-colors ${
+                            className={`ml-2.5 p-1 rounded-full transition-colors ${
                               isDark ? 'hover:bg-red-500/20 text-red-400' : 'hover:bg-red-100 text-red-500'
                             }`}
                           >
-                            <X className="w-3 h-3" />
+                            <X className="w-3.5 h-3.5" />
                           </motion.button>
                         </motion.span>
                       ))}
@@ -211,11 +214,13 @@ const TagsSection = ({
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
-                className="flex gap-3"
+                className="flex gap-2.5"
               >
                 <motion.div 
                   className="flex-1 relative"
-                  animate={{ scale: inputFocused ? 1.01 : 1 }}
+                  animate={{ 
+                    scale: inputFocused ? 1.005 : 1,
+                  }}
                   transition={{ duration: 0.2 }}
                 >
                   <input
@@ -225,30 +230,35 @@ const TagsSection = ({
                     onKeyDown={handleTagInputKeyPress}
                     onFocus={() => setInputFocused(true)}
                     onBlur={() => setInputFocused(false)}
-                    placeholder="Add tags (press Enter or comma)..."
+                    placeholder={tags.length >= 10 ? "Maximum tags reached" : "Add tags (press Enter or comma)..."}
                     disabled={tags.length >= 10}
-                    className={`w-full px-4 py-3.5 pl-12 rounded-xl border-2 transition-all duration-300 ${
+                    maxLength={30}
+                    className={`w-full px-4 py-3 pl-11 rounded-lg border transition-all duration-200 font-medium text-sm ${
                       isDark 
-                        ? 'bg-dbg/60 border-dbordercolor text-dText placeholder-dMuted-text focus:border-daccent focus:bg-dbg/80' 
-                        : 'bg-white/80 border-bordercolor text-text placeholder-muted-text focus:border-accent focus:bg-white'
-                    } ${tags.length >= 10 ? 'opacity-50 cursor-not-allowed' : 'focus:shadow-lg'}`}
+                        ? 'bg-dbg/60 border-dbordercolor text-dText placeholder-dMuted-text/70 focus:border-daccent focus:bg-dbg/80' 
+                        : 'bg-white/80 border-bordercolor text-text placeholder-muted-text/70 focus:border-accent focus:bg-white'
+                    } ${tags.length >= 10 ? 'opacity-50 cursor-not-allowed' : 'focus:shadow-md focus:ring-2 focus:ring-offset-0'} ${
+                      isDark ? 'focus:ring-daccent/20' : 'focus:ring-accent/20'
+                    }`}
                   />
-                  <Hash className={`absolute left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 ${
-                    isDark ? 'text-dMuted-text' : 'text-muted-text'
+                  <Hash className={`absolute left-3.5 top-1/2 transform -translate-y-1/2 w-4 h-4 transition-colors ${
+                    inputFocused 
+                      ? isDark ? 'text-daccent' : 'text-accent'
+                      : isDark ? 'text-dMuted-text/70' : 'text-muted-text/70'
                   }`} />
                 </motion.div>
                 
                 <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+                  whileHover={{ scale: tags.length >= 10 || !tagInput.trim() ? 1 : 1.05 }}
+                  whileTap={{ scale: tags.length >= 10 || !tagInput.trim() ? 1 : 0.95 }}
                   onClick={addTag}
                   disabled={!tagInput.trim() || tags.length >= 10}
-                  className={`p-3.5 rounded-xl border-2 transition-all duration-200 ${
+                  className={`p-3 rounded-lg border transition-all duration-200 ${
                     !tagInput.trim() || tags.length >= 10
-                      ? 'opacity-50 cursor-not-allowed'
+                      ? 'opacity-40 cursor-not-allowed'
                       : isDark
-                        ? 'bg-daccent/10 border-daccent/30 text-daccent hover:bg-daccent/20 hover:border-daccent/50'
-                        : 'bg-accent/10 border-accent/30 text-accent hover:bg-accent/20 hover:border-accent/50'
+                        ? 'bg-daccent/15 border-daccent/30 text-daccent hover:bg-daccent/25 hover:border-daccent/50'
+                        : 'bg-accent/15 border-accent/30 text-accent hover:bg-accent/25 hover:border-accent/50'
                   }`}
                 >
                   <Plus className="w-5 h-5" />
@@ -259,15 +269,23 @@ const TagsSection = ({
               <motion.div 
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ delay: 0.3 }}
-                className={`text-xs ${
-                  isDark ? 'text-dMuted-text' : 'text-muted-text'
+                transition={{ delay: 0.2 }}
+                className={`flex items-center justify-between text-xs ${
+                  isDark ? 'text-dMuted-text/80' : 'text-muted-text/80'
                 }`}
               >
                 <p>
-                  Use commas or Enter to separate tags • Max 10 tags
-                  {tags.length < 10 && ` • ${10 - tags.length} remaining`}
+                  Press <kbd className={`px-1.5 py-0.5 rounded text-xs font-semibold ${
+                    isDark ? 'bg-dbg border border-dbordercolor' : 'bg-gray-100 border border-gray-300'
+                  }`}>Enter</kbd> or <kbd className={`px-1.5 py-0.5 rounded text-xs font-semibold ${
+                    isDark ? 'bg-dbg border border-dbordercolor' : 'bg-gray-100 border border-gray-300'
+                  }`}>,</kbd> to add
                 </p>
+                {tags.length < 10 && (
+                  <p className="font-medium">
+                    {10 - tags.length} remaining
+                  </p>
+                )}
               </motion.div>
             </div>
           </motion.div>
