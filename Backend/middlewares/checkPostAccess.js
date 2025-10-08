@@ -1,5 +1,4 @@
-import prisma from "../config/prisma.js";
-
+import prisma from '../config/db.config.js'
 export const checkPostAccess = async (req, res, next) => {
   try {
     const { postId } = req.params;

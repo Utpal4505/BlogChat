@@ -28,7 +28,6 @@ const router = createBrowserRouter([
             path: "dashboard",
             element: <Dashboard />,
           },
-
         ],
       },
     ],
@@ -61,10 +60,6 @@ const router = createBrowserRouter([
         path: "NewPassword",
         element: <NewPassword />,
       },
-      {
-        path: "Write-Blog",
-        element: <BlogEditor />,
-      },
 
       {
         element: <ProtectedRoute />,
@@ -72,9 +67,13 @@ const router = createBrowserRouter([
           {
             path: "onboarding",
             element: <Onboarding />,
-          }
-        ]
-      }
+          },
+          {
+            path: "Write-Blog",
+            element: <BlogEditor />,
+          },
+        ],
+      },
     ],
   },
 ]);

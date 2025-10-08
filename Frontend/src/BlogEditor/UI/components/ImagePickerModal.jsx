@@ -14,7 +14,8 @@ import {
 } from 'lucide-react';
 import { UNSPLASH_ACCESS_KEY, UNSPLASH_API_URL, UNSPLASH_CATEGORIES } from './Unsplash.BlogChat';
 
-const ImagePickerModal = ({ isOpen, onClose, onSelectImage, isDark }) => {
+
+const ImagePickerModal = ({ isOpen, onClose, onSelectImage }) => {
   const [activeTab, setActiveTab] = useState('unsplash');
   const [searchTerm, setSearchTerm] = useState('');
   const [unsplashImages, setUnsplashImages] = useState([]);
@@ -22,6 +23,7 @@ const ImagePickerModal = ({ isOpen, onClose, onSelectImage, isDark }) => {
   const [dragActive, setDragActive] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
+
 
   const fetchUnsplashImages = async (query = 'minimal', pageNum = 1, perPage = 12) => {
     if (!UNSPLASH_ACCESS_KEY || UNSPLASH_ACCESS_KEY === 'your-unsplash-access-key-here') {
@@ -48,6 +50,7 @@ const ImagePickerModal = ({ isOpen, onClose, onSelectImage, isDark }) => {
       return;
     }
 
+
     setLoading(true);
     try {
       const endpoint = query 
@@ -65,11 +68,13 @@ const ImagePickerModal = ({ isOpen, onClose, onSelectImage, isDark }) => {
     setLoading(false);
   };
 
+
   useEffect(() => {
     if (isOpen && activeTab === 'unsplash') {
       fetchUnsplashImages('minimal', 1);
     }
   }, [isOpen, activeTab]);
+
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -77,6 +82,7 @@ const ImagePickerModal = ({ isOpen, onClose, onSelectImage, isDark }) => {
       fetchUnsplashImages(searchTerm.trim(), 1);
     }
   };
+
 
   const handleDrag = (e) => {
     e.preventDefault();
@@ -88,6 +94,7 @@ const ImagePickerModal = ({ isOpen, onClose, onSelectImage, isDark }) => {
     }
   };
 
+
   const handleDrop = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -98,6 +105,7 @@ const ImagePickerModal = ({ isOpen, onClose, onSelectImage, isDark }) => {
     }
   };
 
+
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -105,19 +113,23 @@ const ImagePickerModal = ({ isOpen, onClose, onSelectImage, isDark }) => {
     }
   };
 
+
   const handleFile = (file) => {
     if (!file.type.startsWith('image/')) {
       alert('Please select an image file');
       return;
     }
 
-    if (file.size > 10 * 1024 * 1024) {
-      alert('File size must be less than 10MB');
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert('File size must be less than 5MB');
       return;
     }
 
+
     setIsUploading(true);
     setUploadProgress(0);
+
 
     const interval = setInterval(() => {
       setUploadProgress(prev => {
@@ -138,6 +150,7 @@ const ImagePickerModal = ({ isOpen, onClose, onSelectImage, isDark }) => {
     }, 150);
   };
 
+
   const selectUnsplashImage = (image) => {
     onSelectImage({
       url: image.urls.regular,
@@ -150,6 +163,7 @@ const ImagePickerModal = ({ isOpen, onClose, onSelectImage, isDark }) => {
     });
     onClose();
   };
+
 
   return (
     <AnimatePresence>
@@ -171,25 +185,15 @@ const ImagePickerModal = ({ isOpen, onClose, onSelectImage, isDark }) => {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className={`relative w-full max-w-5xl max-h-[90vh] rounded-2xl overflow-hidden shadow-2xl ${
-              isDark ? 'bg-dcard border border-dbordercolor/20' : 'bg-white border border-bordercolor/20'
-            }`}
+            className="relative w-full max-w-5xl max-h-[90vh] rounded-2xl overflow-hidden shadow-2xl bg-white dark:bg-dcard border border-bordercolor/20 dark:border-dbordercolor/20"
           >
             {/* Header */}
-            <div className={`flex items-center justify-between p-6 border-b backdrop-blur-sm ${
-              isDark ? 'border-dbordercolor/30 bg-dcard/80' : 'border-bordercolor/30 bg-white/80'
-            }`}>
+            <div className="flex items-center justify-between p-6 border-b backdrop-blur-sm border-bordercolor/30 dark:border-dbordercolor/30 bg-white/80 dark:bg-dcard/80">
               <div className="flex items-center space-x-3">
-                <div className={`p-2 rounded-lg ${
-                  isDark ? 'bg-daccent/20' : 'bg-accent/20'
-                }`}>
-                  <ImageIcon className={`w-5 h-5 ${
-                    isDark ? 'text-daccent' : 'text-accent'
-                  }`} />
+                <div className="p-2 rounded-lg bg-accent/20 dark:bg-daccent/20">
+                  <ImageIcon className="w-5 h-5 text-accent dark:text-daccent" />
                 </div>
-                <h2 className={`text-xl font-semibold ${
-                  isDark ? 'text-dText' : 'text-text'
-                }`}>
+                <h2 className="text-xl font-semibold text-text dark:text-dText">
                   Add Cover Image
                 </h2>
               </div>
@@ -197,32 +201,23 @@ const ImagePickerModal = ({ isOpen, onClose, onSelectImage, isDark }) => {
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
                 onClick={onClose}
-                className={`p-2.5 rounded-xl transition-colors duration-200 ${
-                  isDark 
-                    ? 'hover:bg-dbg/80 text-dMuted-text hover:text-dText' 
-                    : 'hover:bg-gray-100 text-muted-text hover:text-text'
-                }`}
+                className="p-2.5 rounded-xl transition-colors duration-200 hover:bg-gray-100 dark:hover:bg-dbg/80 text-muted-text dark:text-dMuted-text hover:text-text dark:hover:text-dText"
               >
                 <X className="w-5 h-5" />
               </motion.button>
             </div>
 
+
             {/* Tabs */}
-            <div className={`flex border-b ${
-              isDark ? 'border-dbordercolor/30' : 'border-bordercolor/30'
-            }`}>
+            <div className="flex border-b border-bordercolor/30 dark:border-dbordercolor/30">
               {['upload', 'unsplash'].map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
                   className={`relative flex items-center px-8 py-4 font-medium transition-colors duration-200 ${
                     activeTab === tab
-                      ? isDark
-                        ? 'text-daccent bg-daccent/10'
-                        : 'text-accent bg-accent/10'
-                      : isDark
-                        ? 'text-dMuted-text hover:text-dText hover:bg-dbg/30'
-                        : 'text-muted-text hover:text-text hover:bg-gray-50'
+                      ? 'text-accent dark:text-daccent bg-accent/10 dark:bg-daccent/10'
+                      : 'text-muted-text dark:text-dMuted-text hover:text-text dark:hover:text-dText hover:bg-gray-50 dark:hover:bg-dbg/30'
                   }`}
                 >
                   {tab === 'upload' ? (
@@ -234,14 +229,13 @@ const ImagePickerModal = ({ isOpen, onClose, onSelectImage, isDark }) => {
                   {activeTab === tab && (
                     <motion.div 
                       layoutId="activeTab"
-                      className={`absolute bottom-0 left-0 right-0 h-0.5 rounded-full ${
-                        isDark ? 'bg-daccent' : 'bg-accent'
-                      }`}
+                      className="absolute bottom-0 left-0 right-0 h-0.5 rounded-full bg-accent dark:bg-daccent"
                     />
                   )}
                 </button>
               ))}
             </div>
+
 
             {/* Content */}
             <div className="p-8 max-h-[60vh] overflow-y-auto">
@@ -265,38 +259,24 @@ const ImagePickerModal = ({ isOpen, onClose, onSelectImage, isDark }) => {
                     >
                       <label className={`w-full aspect-[2.5/1] rounded-2xl border-2 border-dashed transition-all duration-200 cursor-pointer flex flex-col items-center justify-center ${
                         dragActive 
-                          ? isDark
-                            ? 'border-daccent bg-daccent/10 scale-[1.01]' 
-                            : 'border-accent bg-accent/10 scale-[1.01]'
-                          : isDark 
-                            ? 'border-dbordercolor hover:border-daccent/60 hover:bg-daccent/5' 
-                            : 'border-bordercolor hover:border-accent/60 hover:bg-accent/5'
+                          ? 'border-accent dark:border-daccent bg-accent/10 dark:bg-daccent/10 scale-[1.01]'
+                          : 'border-bordercolor dark:border-dbordercolor hover:border-accent/60 dark:hover:border-daccent/60 hover:bg-accent/5 dark:hover:bg-daccent/5'
                       } ${isUploading ? 'opacity-60' : ''}`}>
                         
                         {isUploading ? (
                           <div className="text-center space-y-4">
-                            <div className={`w-16 h-16 mx-auto rounded-full flex items-center justify-center ${
-                              isDark ? 'bg-daccent/20' : 'bg-accent/20'
-                            }`}>
-                              <Loader2 className={`w-8 h-8 animate-spin ${
-                                isDark ? 'text-daccent' : 'text-accent'
-                              }`} />
+                            <div className="w-16 h-16 mx-auto rounded-full flex items-center justify-center bg-accent/20 dark:bg-daccent/20">
+                              <Loader2 className="w-8 h-8 animate-spin text-accent dark:text-daccent" />
                             </div>
                             <div>
-                              <h3 className={`text-lg font-semibold mb-2 ${
-                                isDark ? 'text-dText' : 'text-text'
-                              }`}>
+                              <h3 className="text-lg font-semibold mb-2 text-text dark:text-dText">
                                 Uploading... {uploadProgress}%
                               </h3>
-                              <div className={`w-64 h-2 mx-auto rounded-full overflow-hidden ${
-                                isDark ? 'bg-dbg' : 'bg-gray-200'
-                              }`}>
+                              <div className="w-64 h-2 mx-auto rounded-full overflow-hidden bg-gray-200 dark:bg-dbg">
                                 <motion.div 
                                   initial={{ width: 0 }}
                                   animate={{ width: `${uploadProgress}%` }}
-                                  className={`h-full rounded-full ${
-                                    isDark ? 'bg-daccent' : 'bg-accent'
-                                  }`}
+                                  className="h-full rounded-full bg-accent dark:bg-daccent"
                                 />
                               </div>
                             </div>
@@ -305,36 +285,28 @@ const ImagePickerModal = ({ isOpen, onClose, onSelectImage, isDark }) => {
                           <div className="text-center space-y-4">
                             <div className={`w-16 h-16 mx-auto rounded-full flex items-center justify-center transition-colors ${
                               dragActive 
-                                ? isDark ? 'bg-daccent/20' : 'bg-accent/20'
-                                : isDark ? 'bg-dbg' : 'bg-gray-100'
+                                ? 'bg-accent/20 dark:bg-daccent/20'
+                                : 'bg-gray-100 dark:bg-dbg'
                             }`}>
                               <Upload className={`w-8 h-8 transition-colors ${
                                 dragActive 
-                                  ? isDark ? 'text-daccent' : 'text-accent'
-                                  : isDark ? 'text-dMuted-text' : 'text-muted-text'
+                                  ? 'text-accent dark:text-daccent'
+                                  : 'text-muted-text dark:text-dMuted-text'
                               }`} />
                             </div>
                             
                             <div>
-                              <h3 className={`text-xl font-semibold mb-2 ${
-                                isDark ? 'text-dText' : 'text-text'
-                              }`}>
+                              <h3 className="text-xl font-semibold mb-2 text-text dark:text-dText">
                                 {dragActive ? 'Drop your image here' : 'Click to upload an image'}
                               </h3>
-                              <p className={`text-base mb-4 ${
-                                isDark ? 'text-dMuted-text' : 'text-muted-text'
-                              }`}>
+                              <p className="text-base mb-4 text-muted-text dark:text-dMuted-text">
                                 or drag and drop it here
                               </p>
                               
                               <div className="flex items-center justify-center space-x-2">
-                                <CheckCircle2 className={`w-4 h-4 ${
-                                  isDark ? 'text-daccent' : 'text-accent'
-                                }`} />
-                                <span className={`text-sm ${
-                                  isDark ? 'text-dMuted-text' : 'text-muted-text'
-                                }`}>
-                                  PNG, JPG, WebP up to 10MB
+                                <CheckCircle2 className="w-4 h-4 text-accent dark:text-daccent" />
+                                <span className="text-sm text-muted-text dark:text-dMuted-text">
+                                  PNG, JPG, WebP up to 5MB
                                 </span>
                               </div>
                             </div>
@@ -351,6 +323,7 @@ const ImagePickerModal = ({ isOpen, onClose, onSelectImage, isDark }) => {
                       </label>
                     </div>
 
+
                     {/* Quick Actions */}
                     <div className="grid grid-cols-2 gap-4">
                       <motion.button
@@ -361,29 +334,23 @@ const ImagePickerModal = ({ isOpen, onClose, onSelectImage, isDark }) => {
                         className={`flex items-center justify-center space-x-3 p-4 rounded-xl border transition-colors duration-200 ${
                           isUploading 
                             ? 'opacity-50 cursor-not-allowed' 
-                            : isDark
-                              ? 'border-dbordercolor hover:border-daccent/60 hover:bg-daccent/5 text-dMuted-text hover:text-dText'
-                              : 'border-bordercolor hover:border-accent/60 hover:bg-accent/5 text-muted-text hover:text-text'
+                            : 'border-bordercolor dark:border-dbordercolor hover:border-accent/60 dark:hover:border-daccent/60 hover:bg-accent/5 dark:hover:bg-daccent/5 text-muted-text dark:text-dMuted-text hover:text-text dark:hover:text-dText'
                         }`}
                       >
                         <FolderOpen className="w-5 h-5" />
                         <span className="font-medium">Browse Files</span>
                       </motion.button>
 
-                      <div className={`flex items-center justify-center space-x-3 p-4 rounded-xl border ${
-                        isDark 
-                          ? 'border-dbordercolor/50 bg-dbg/30 text-dMuted-text' 
-                          : 'border-bordercolor/50 bg-gray-50 text-muted-text'
-                      }`}>
+
+                      <div className="flex items-center justify-center space-x-3 p-4 rounded-xl border border-bordercolor/50 dark:border-dbordercolor/50 bg-gray-50 dark:bg-dbg/30 text-muted-text dark:text-dMuted-text">
                         <ImageIcon className="w-5 h-5" />
-                        <span className="font-medium text-sm">Max: 10MB</span>
+                        <span className="font-medium text-sm">Max: 5MB</span>
                       </div>
                     </div>
 
+
                     <div className="text-center">
-                      <p className={`text-sm ${
-                        isDark ? 'text-dMuted-text' : 'text-muted-text'
-                      }`}>
+                      <p className="text-sm text-muted-text dark:text-dMuted-text">
                         Recommended size: 1200×480px • Supported: JPEG, PNG, WebP
                       </p>
                     </div>
@@ -400,34 +367,25 @@ const ImagePickerModal = ({ isOpen, onClose, onSelectImage, isDark }) => {
                     {/* Search */}
                     <form onSubmit={handleSearch}>
                       <div className="relative">
-                        <Search className={`absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 ${
-                          isDark ? 'text-dMuted-text' : 'text-muted-text'
-                        }`} />
+                        <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-text dark:text-dMuted-text" />
                         <input
                           type="text"
                           value={searchTerm}
                           onChange={(e) => setSearchTerm(e.target.value)}
                           placeholder="Search for beautiful images..."
-                          className={`w-full pl-12 pr-12 py-4 rounded-xl border-2 transition-colors duration-200 ${
-                            isDark 
-                              ? 'bg-dbg border-dbordercolor text-dText placeholder-dMuted-text focus:border-daccent' 
-                              : 'bg-bg border-bordercolor text-text placeholder-muted-text focus:border-accent'
-                          }`}
+                          className="w-full pl-12 pr-12 py-4 rounded-xl border-2 transition-colors duration-200 bg-bg dark:bg-dbg border-bordercolor dark:border-dbordercolor text-text dark:text-dText placeholder-muted-text dark:placeholder-dMuted-text focus:border-accent dark:focus:border-daccent"
                         />
                         <motion.button
                           whileHover={{ scale: 1.1 }}
                           whileTap={{ scale: 0.9 }}
                           type="submit"
-                          className={`absolute right-2 top-1/2 transform -translate-y-1/2 p-2 rounded-lg transition-colors duration-200 ${
-                            isDark 
-                              ? 'hover:bg-daccent/20 text-dMuted-text hover:text-daccent' 
-                              : 'hover:bg-accent/20 text-muted-text hover:text-accent'
-                          }`}
+                          className="absolute right-2 top-1/2 transform -translate-y-1/2 p-2 rounded-lg transition-colors duration-200 hover:bg-accent/20 dark:hover:bg-daccent/20 text-muted-text dark:text-dMuted-text hover:text-accent dark:hover:text-daccent"
                         >
                           <ArrowRight className="w-5 h-5" />
                         </motion.button>
                       </div>
                     </form>
+
 
                     {/* Categories */}
                     <div className="flex flex-wrap gap-3">
@@ -440,26 +398,19 @@ const ImagePickerModal = ({ isOpen, onClose, onSelectImage, isDark }) => {
                             setSearchTerm(category);
                             fetchUnsplashImages(category, 1);
                           }}
-                          className={`px-4 py-2 text-sm font-medium rounded-xl transition-colors duration-200 ${
-                            isDark 
-                              ? 'bg-daccent/15 text-daccent hover:bg-daccent/25 border border-daccent/30' 
-                              : 'bg-accent/15 text-accent hover:bg-accent/25 border border-accent/30'
-                          }`}
+                          className="px-4 py-2 text-sm font-medium rounded-xl transition-colors duration-200 bg-accent/15 dark:bg-daccent/15 text-accent dark:text-daccent hover:bg-accent/25 dark:hover:bg-daccent/25 border border-accent/30 dark:border-daccent/30"
                         >
                           {category}
                         </motion.button>
                       ))}
                     </div>
 
+
                     {/* Images Grid */}
                     {loading ? (
                       <div className="flex flex-col items-center justify-center py-16 space-y-4">
-                        <Loader2 className={`w-10 h-10 animate-spin ${
-                          isDark ? 'text-daccent' : 'text-accent'
-                        }`} />
-                        <p className={`text-lg font-medium ${
-                          isDark ? 'text-dText' : 'text-text'
-                        }`}>
+                        <Loader2 className="w-10 h-10 animate-spin text-accent dark:text-daccent" />
+                        <p className="text-lg font-medium text-text dark:text-dText">
                           Finding beautiful images...
                         </p>
                       </div>
@@ -502,5 +453,6 @@ const ImagePickerModal = ({ isOpen, onClose, onSelectImage, isDark }) => {
     </AnimatePresence>
   );
 };
+
 
 export default ImagePickerModal;

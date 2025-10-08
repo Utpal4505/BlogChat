@@ -14,8 +14,8 @@ export const createPost = asyncHandler(async (req, res) => {
       throw new ApiError(400, "⚠️ Title and content are required");
     }
 
-    if (!title || title.length < 3 || title.length > 150) {
-      throw new ApiError(400, "Title must be between 3–150 characters");
+    if (!title || title.length < 10 || title.length > 150) {
+      throw new ApiError(400, "Title must be between 10–150 characters");
     }
 
     if (!content || content.length < 20) {

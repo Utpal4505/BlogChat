@@ -1,127 +1,88 @@
-import React from 'react';
-import { 
-  ArrowLeft, 
-  Check, 
-  Sun, 
-  Moon, 
-  Eye, 
-  Save, 
-  Type,
-  Loader2
-} from 'lucide-react';
+import React from "react";
+import { ArrowLeft, Check, Sun, Moon, Eye, Upload, Type } from "lucide-react";
 
-const Navbar = ({ 
-  isDark, 
-  setIsDark, 
-  isPreview, 
-  setIsPreview, 
-  isSaving, 
-  lastSaved, 
-  wordCount 
+
+const Navbar = ({
+  isPreview,
+  setIsPreview,
+  wordCount,
+  onPublish,
 }) => {
+  const toggleTheme = () => {
+    document.documentElement.classList.toggle('dark');
+  };
+
   return (
-    <nav className={`sticky top-0 z-40 backdrop-blur-xl border-b transition-all duration-300 ${
-      isDark ? 'bg-dbg/90 border-dbordercolor/30' : 'bg-bg/90 border-bordercolor/30'
-    }`}>
+    <nav className="sticky top-0 z-40 backdrop-blur-xl border-b transition-all duration-300 bg-bg/95 dark:bg-dbg/95 border-bordercolor/20 dark:border-dbordercolor/20">
       <div className="max-w-7xl mx-auto px-6">
         <div className="flex items-center justify-between h-16">
           {/* Left Section */}
-          <div className="flex items-center space-x-6">
+          <div className="flex items-center space-x-5">
             <button
               onClick={() => window.history.back()}
-              className={`flex items-center px-4 py-2 rounded-xl font-medium text-sm transition-all duration-200 hover:scale-105 ${
-                isDark 
-                  ? 'hover:bg-dcard/50 text-dMuted-text hover:text-dText' 
-                  : 'hover:bg-gray-100/50 text-muted-text hover:text-text'
-              }`}
+              className="flex items-center px-4 py-2 rounded-lg font-medium text-sm transition-all hover:bg-gray-100 dark:hover:bg-dcard/50 text-muted-text dark:text-dMuted-text hover:text-text dark:hover:text-dText"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back
             </button>
-            
-            <div className={`h-6 w-px ${isDark ? 'bg-dbordercolor' : 'bg-bordercolor'}`}></div>
-            
-            <div className="flex items-center space-x-3">
-              {isSaving ? (
-                <div className="flex items-center space-x-2">
-                  <div className={`w-2 h-2 rounded-full animate-pulse ${
-                    isDark ? 'bg-daccent' : 'bg-accent'
-                  }`}></div>
-                  <span className={`text-sm font-medium ${
-                    isDark ? 'text-dMuted-text' : 'text-muted-text'
-                  }`}>
-                    Saving...
-                  </span>
-                </div>
-              ) : lastSaved ? (
-                <div className="flex items-center space-x-2">
-                  <Check className="w-4 h-4 text-green-500" />
-                  <span className={`text-sm ${
-                    isDark ? 'text-dMuted-text' : 'text-muted-text'
-                  }`}>
-                    Saved at {new Date(lastSaved).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  </span>
-                </div>
-              ) : (
-                <div className="flex items-center space-x-2">
-                  <div className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
-                  <span className={`text-sm ${
-                    isDark ? 'text-dMuted-text' : 'text-muted-text'
-                  }`}>
-                    Unsaved changes
-                  </span>
-                </div>
-              )}
-            </div>
+
+            <div className="h-5 w-px bg-bordercolor/30 dark:bg-dbordercolor/30" />
           </div>
-          
+
           {/* Center Section */}
-          <div className={`hidden md:flex items-center space-x-6 px-4 py-2 rounded-xl ${
-            isDark ? 'bg-dcard/30' : 'bg-card/30'
-          }`}>
+          <div className="hidden md:flex items-center space-x-5 ml-12 px-4 py-2 rounded-lg bg-gray-50 dark:bg-dcard/30">
             <div className="flex items-center space-x-2 text-sm">
-              <Type className="w-4 h-4" />
-              <span className="font-medium">{wordCount}</span>
-              <span className={isDark ? 'text-dMuted-text' : 'text-muted-text'}>words</span>
+              <Type className="w-4 h-4 opacity-60" />
+              <span className="font-semibold">{wordCount}</span>
+              <span className="text-muted-text dark:text-dMuted-text">
+                words
+              </span>
             </div>
-            <div className={`w-px h-4 ${isDark ? 'bg-dbordercolor' : 'bg-bordercolor'}`}></div>
+
+            <div className="w-px h-4 bg-bordercolor/30 dark:bg-dbordercolor/30" />
+
             <div className="text-sm">
-              <span className="font-medium">{Math.ceil(wordCount / 200)}</span>
-              <span className={isDark ? 'text-dMuted-text' : 'text-muted-text'}> min read</span>
+              <span className="font-semibold">
+                {Math.ceil(wordCount / 200)}
+              </span>
+              <span className="text-muted-text dark:text-dMuted-text">
+                {" "}
+                min
+              </span>
             </div>
           </div>
-          
+
           {/* Right Section */}
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-2.5">
+            {/* Theme Toggle */}
             <button
-              onClick={() => setIsDark(!isDark)}
-              className={`p-2.5 rounded-xl transition-all duration-200 hover:scale-105 ${
-                isDark 
-                  ? 'hover:bg-dcard/50 text-dMuted-text hover:text-dText' 
-                  : 'hover:bg-gray-100/50 text-muted-text hover:text-text'
-              }`}
+              onClick={toggleTheme}
+              className="p-2.5 rounded-lg transition-all hover:bg-gray-100 dark:hover:bg-dcard/50 text-muted-text dark:text-dMuted-text hover:text-text dark:hover:text-dText"
+              title="Toggle theme"
             >
-              {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+              <Sun className="w-4 h-4 hidden dark:block" />
+              <Moon className="w-4 h-4 block dark:hidden" />
             </button>
-            
+
+            {/* Preview Toggle */}
             <button
               onClick={() => setIsPreview(!isPreview)}
-              className={`flex items-center px-4 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 hover:scale-105 ${
-                isDark 
-                  ? 'bg-dcard/50 hover:bg-dcard text-dMuted-text hover:text-dText border border-dbordercolor/50' 
-                  : 'bg-gray-100/50 hover:bg-gray-100 text-muted-text hover:text-text border border-bordercolor/50'
+              className={`flex items-center px-4 py-2 rounded-lg font-medium text-sm transition-all ${
+                isPreview
+                  ? "bg-accent/15 dark:bg-daccent/15 text-accent dark:text-daccent border border-accent/30 dark:border-daccent/30"
+                  : "hover:bg-gray-100 dark:hover:bg-dcard/50 text-muted-text dark:text-dMuted-text hover:text-text dark:hover:text-dText border border-transparent"
               }`}
             >
               <Eye className="w-4 h-4 mr-2" />
-              {isPreview ? 'Edit' : 'Preview'}
+              {isPreview ? "Edit" : "Preview"}
             </button>
-            
-            <button className={`flex items-center px-4 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 hover:scale-105 shadow-lg ${
-              isDark 
-                ? 'bg-dPrimary hover:bg-daccent text-dText shadow-dPrimary/20' 
-                : 'bg-primary hover:bg-accent text-white shadow-primary/20'
-            }`}>
-              <Save className="w-4 h-4 mr-2" />
+
+            {/* Publish Button with Validation */}
+            <button
+              onClick={onPublish}
+              className="flex items-center px-5 py-2 rounded-lg font-semibold text-sm transition-all shadow-md hover:shadow-lg bg-accent dark:bg-daccent hover:bg-accent/90 dark:hover:bg-daccent/90 text-white"
+            >
+              <Upload className="w-4 h-4 mr-2" />
               Publish
             </button>
           </div>
@@ -130,5 +91,6 @@ const Navbar = ({
     </nav>
   );
 };
+
 
 export default Navbar;

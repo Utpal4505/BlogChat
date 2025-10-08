@@ -1,5 +1,13 @@
-import React, { useState, useEffect } from "react";
-import { Loader2, Maximize2, Minimize2 } from "lucide-react";
+import React, { useState, useEffect, useContext, useRef } from "react";
+import {
+  Loader2,
+  Maximize2,
+  Minimize2,
+  Eye,
+  ArrowLeft,
+  AlertCircle,
+  EyeOff,
+} from "lucide-react";
 
 // Components
 import Navbar from "../src/BlogEditor/UI/components/Navbar";
@@ -13,23 +21,121 @@ import ImagePickerModal from "../src/BlogEditor/UI/components/ImagePickerModal";
 
 // Custom Hook
 import { useEditor } from "../src/BlogEditor/hooks/UseEditor";
+import ToastContainer from "../src/BlogEditor/UI/components/Toast";
+import { AuthContext } from "../context/AuthContext";
 
 const BlogEditor = () => {
   // State management
   const [title, setTitle] = useState("");
   const [tags, setTags] = useState([]);
   const [tagInput, setTagInput] = useState("");
-  const [isDark, setIsDark] = useState(true);
   const [isPreview, setIsPreview] = useState(false);
   const [coverImage, setCoverImage] = useState(null);
   const [showImagePicker, setShowImagePicker] = useState(false);
   const [isFocusMode, setIsFocusMode] = useState(false);
+  const { createPost } = useContext(AuthContext);
+
+  const [toasts, setToasts] = useState([]);
+
+  // ref using for autofocus
+  const titleRef = useRef(null);
+  const editorRef = useRef(null);
 
   // Custom hook for editor logic
   const { editor, wordCount, charCount, lastSaved, isSaving, setLink } =
     useEditor();
 
-  // Keyboard shortcuts for Focus Mode
+  const addToast = (message, type = "error") => {
+    const id = Date.now();
+    setToasts((prev) => [...prev, { id, message, type }]);
+  };
+
+  const removeToast = (id) => {
+    setToasts((prev) => prev.filter((toast) => toast.id !== id));
+  };
+
+  // Validation function
+  const validateForm = () => {
+    // Title validation (3-150 characters)
+    const trimmedTitle = title.trim();
+    if (!trimmedTitle) {
+      addToast("Title is required", "error");
+      return false;
+    }
+    if (trimmedTitle.length < 10) {
+      addToast("Title must be at least 10 characters", "error");
+      return false;
+    }
+    if (trimmedTitle.length > 150) {
+      addToast("Title cannot exceed 150 characters", "error");
+      return false;
+    }
+
+    // Content validation (minimum 20 characters)
+    const contentText = editor?.getText().trim() || "";
+    if (!contentText) {
+      addToast("Content is required", "error");
+      return false;
+    }
+    if (contentText.length < 20) {
+      addToast(
+        `Content must be at least 20 characters (currently ${contentText.length})`,
+        "error"
+      );
+      return false;
+    }
+
+    return true;
+  };
+
+  // Handle publish with validation
+  const handlePublish = async () => {
+    if (!validateForm()) return;
+
+    const content = editor.getHTML();
+
+    console.log(content)
+    try {
+      const data = await createPost({ title, content, tags, coverImage });
+      addToast("Blog published successfully!", "success");
+
+      console.log("Post data:", data);
+
+      setTitle("");
+      editor.commands.clearContent();
+      setTags([]);
+      setCoverImage(null);
+    } catch (err) {
+      // Add general toast
+      addToast(err.message || "Something went wrong", "error");
+
+      // Handle field-specific errors
+      if (err.errors && err.errors.length) {
+        err.errors.forEach((e) => {
+          addToast(e.error, "error");
+
+          // Focus/select field based on error.field
+          switch (e.field) {
+            case "title":
+              titleRef.current?.focus();
+              titleRef.current?.select();
+              break;
+            case "content":
+              editor.commands.focus();
+              break;
+            case "coverImage":
+              // Open image picker modal if error is about cover image
+              setShowImagePicker(true);
+              break;
+            default:
+              break;
+          }
+        });
+      }
+    }
+  };
+
+  // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e) => {
       // F11 or Cmd/Ctrl + Shift + F to toggle focus mode
@@ -41,91 +147,102 @@ const BlogEditor = () => {
         setIsFocusMode((prev) => !prev);
       }
 
-      // ESC to exit focus mode
-      if (e.key === "Escape" && isFocusMode) {
-        setIsFocusMode(false);
+      // ESC to exit preview or focus mode
+      if (e.key === "Escape") {
+        if (isPreview) {
+          setIsPreview(false);
+        } else if (isFocusMode) {
+          setIsFocusMode(false);
+        }
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isFocusMode]);
+  }, [isFocusMode, isPreview]);
 
   // Loading state
   if (!editor) {
     return (
-      <div
-        className={`flex items-center justify-center h-screen ${
-          isDark ? "bg-dbg" : "bg-bg"
-        }`}
-      >
-        <Loader2
-          className={`w-8 h-8 animate-spin ${
-            isDark ? "text-daccent" : "text-accent"
-          }`}
-        />
+      <div className="flex items-center justify-center h-screen bg-bg dark:bg-dbg">
+        <Loader2 className="w-8 h-8 animate-spin text-accent dark:text-daccent" />
       </div>
     );
   }
 
   return (
-    <div
-      className={`min-h-screen transition-colors duration-300 ${
-        isDark ? "bg-dbg text-dText" : "bg-bg text-text"
-      }`}
-    >
-      {/* Navigation - Hide in Focus Mode */}
+    <div className="min-h-screen transition-colors duration-300 bg-bg dark:bg-dbg text-text dark:text-dText">
+      <ToastContainer toasts={toasts} removeToast={removeToast} />
+
+      {/* Navigation - Hide in Focus Mode & Preview */}
       {!isFocusMode && (
         <Navbar
-          isDark={isDark}
-          setIsDark={setIsDark}
           isPreview={isPreview}
           setIsPreview={setIsPreview}
           isSaving={isSaving}
           lastSaved={lastSaved}
           wordCount={wordCount}
+          onPublish={handlePublish}
         />
       )}
 
-      {/* Focus Mode Toggle Button */}
+      {/* Focus Mode Controls - Top Right */}
       {!isPreview && (
-        <button
-          onClick={() => setIsFocusMode(!isFocusMode)}
-          className={`fixed top-6 right-6 z-[998] p-3 rounded-full transition-all duration-300 group ${
-            isDark
-              ? "bg-dcard/80 hover:bg-dcard border-dbordercolor text-dText"
-              : "bg-white/80 hover:bg-white border-bordercolor text-text"
-          } border backdrop-blur-xl shadow-lg hover:shadow-xl hover:scale-105`}
-          title={
-            isFocusMode ? "Exit Focus Mode (ESC)" : "Enter Focus Mode (F11)"
-          }
-        >
-          {isFocusMode ? (
-            <Minimize2 className="w-5 h-5" />
-          ) : (
-            <Maximize2 className="w-5 h-5" />
+        <div className="fixed top-6 right-6 z-[998] flex items-center gap-3">
+          {/* Preview Button - Only in Focus Mode */}
+          {isFocusMode && (
+            <button
+              onClick={() => setIsPreview(true)}
+              className="p-3 rounded-full flex transition-all duration-300 group bg-white/80 dark:bg-dcard/80 hover:bg-white dark:hover:bg-dcard border-bordercolor dark:border-dbordercolor text-text dark:text-dText border backdrop-blur-xl shadow-lg hover:shadow-xl hover:scale-105"
+              title="Preview"
+            >
+              <Eye className="w-5 h-5" />
+              <span className="absolute right-full mr-3 top-1/2 -translate-y-1/2 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none bg-white dark:bg-dcard text-text dark:text-dText border-bordercolor dark:border-dbordercolor border shadow-lg">
+                Preview
+              </span>
+            </button>
           )}
-          <span
-            className={`absolute right-full mr-3 top-1/2 -translate-y-1/2 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none ${
-              isDark
-                ? "bg-dcard text-dText border-dbordercolor"
-                : "bg-white text-text border-bordercolor"
-            } border shadow-lg`}
+
+          {/* Focus Mode Toggle Button */}
+          <button
+            onClick={() => setIsFocusMode(!isFocusMode)}
+            className="p-3 rounded-full transition-all duration-300 group bg-white/80 dark:bg-dcard/80 hover:bg-white dark:hover:bg-dcard border-bordercolor dark:border-dbordercolor text-text dark:text-dText border backdrop-blur-xl shadow-lg hover:shadow-xl hover:scale-105"
+            title={
+              isFocusMode ? "Exit Focus Mode (ESC)" : "Enter Focus Mode (F11)"
+            }
           >
-            {isFocusMode ? "Exit Focus (ESC)" : "Focus Mode (F11)"}
-          </span>
-        </button>
+            {isFocusMode ? (
+              <Minimize2 className="w-5 h-5" />
+            ) : (
+              <Maximize2 className="w-5 h-5" />
+            )}
+            <span className="absolute right-full mr-3 top-1/2 -translate-y-1/2 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none bg-white dark:bg-dcard text-text dark:text-dText border-bordercolor dark:border-dbordercolor border shadow-lg">
+              {isFocusMode ? "Exit Focus (ESC)" : "Focus Mode (F11)"}
+            </span>
+          </button>
+        </div>
       )}
 
       {/* Main Content */}
-      {/* Main Content */}
       <main
         className={`transition-all duration-500 ${
-          isFocusMode
-            ? "w-full px-32 py-16"
-            : "max-w-6xl mx-auto px-6 py-8"
+          isFocusMode ? "w-full px-32 py-16" : "max-w-6xl mx-auto px-6 py-8"
         }`}
       >
+        {/* Back Button - Preview + Focus Mode */}
+        {isPreview && isFocusMode && (
+          <button
+            onClick={() => setIsPreview(false)}
+            className="fixed top-6 left-6 z-[998] p-3 rounded-full transition-all duration-300 group bg-white/80 dark:bg-dcard/80 hover:bg-white dark:hover:bg-dcard border-bordercolor dark:border-dbordercolor text-text dark:text-dText border backdrop-blur-xl shadow-lg hover:shadow-xl hover:scale-105"
+            title="Back to Editor (ESC)"
+          >
+            <EyeOff className="w-5 h-5" />
+            <span className="absolute left-full ml-3 top-1/2 -translate-y-1/2 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none bg-white dark:bg-dcard text-text dark:text-dText border-bordercolor dark:border-dbordercolor border shadow-lg">
+              Back to Editor
+            </span>
+          </button>
+        )}
+
         {isPreview ? (
           <PreviewMode
             title={title}
@@ -133,18 +250,13 @@ const BlogEditor = () => {
             wordCount={wordCount}
             coverImage={coverImage}
             editorContent={editor.getHTML()}
-            isDark={isDark}
           />
         ) : (
           <>
             {/* Focus Mode - Minimal Title */}
             {isFocusMode ? (
               <div className="mb-10">
-                <TitleInput 
-                title={title}
-                setTitle={setTitle}
-                isDark={isDark}
-                />
+                <TitleInput title={title} setTitle={setTitle} />
               </div>
             ) : (
               <>
@@ -153,48 +265,42 @@ const BlogEditor = () => {
                   coverImage={coverImage}
                   setCoverImage={setCoverImage}
                   setShowImagePicker={setShowImagePicker}
-                  isDark={isDark}
                 />
 
-                <TitleInput title={title} setTitle={setTitle} isDark={isDark} />
+                <div>
+                  <TitleInput
+                    ref={titleRef}
+                    title={title}
+                    setTitle={setTitle}
+                  />
+                  {/* Title Error */}
+                </div>
 
                 <TagsSection
                   tags={tags}
                   setTags={setTags}
                   tagInput={tagInput}
                   setTagInput={setTagInput}
-                  isDark={isDark}
                 />
               </>
             )}
 
             {/* Editor Container */}
-            {/* Editor Container */}
-            {/* Editor Container */}
-            {/* Editor Container */}
             <div
               className={`overflow-hidden transition-all duration-500 ${
                 isFocusMode
-                  ? `w-full rounded-xl ${
-                      isDark
-                        ? "bg-dcard/70 border border-daccent/20"
-                        : "bg-white/70 border border-accent/20"
-                    }`
-                  : `rounded-2xl shadow-2xl hover:shadow-[0_20px_50px_rgba(0,0,0,0.3)] ${
-                      isDark
-                        ? "bg-dcard border border-dbordercolor"
-                        : "bg-white border border-bordercolor"
-                    }`
+                  ? "w-full rounded-xl bg-white/70 dark:bg-dcard/70 border border-accent/20 dark:border-daccent/20"
+                  : "rounded-2xl shadow-2xl hover:shadow-[0_20px_50px_rgba(0,0,0,0.3)] bg-white dark:bg-dcard border border-bordercolor dark:border-dbordercolor"
               }`}
             >
-              <Toolbar editor={editor} setLink={setLink} isDark={isDark} />
+              <Toolbar editor={editor} setLink={setLink} />
 
               <EditorContent
                 editor={editor}
                 wordCount={wordCount}
                 charCount={charCount}
-                isDark={isDark}
                 isFocusMode={isFocusMode}
+                ref={editorRef}
               />
             </div>
           </>
@@ -206,11 +312,9 @@ const BlogEditor = () => {
         isOpen={showImagePicker}
         onClose={() => setShowImagePicker(false)}
         onSelectImage={(image) => setCoverImage(image)}
-        isDark={isDark}
       />
 
-      {/* Focus Mode Background Overlay (subtle) */}
-      {/* Focus Mode - Dimmed Overlay */}
+      {/* Focus Mode Background Overlay */}
       {isFocusMode && (
         <div className="fixed inset-0 bg-black/10 dark:bg-black/30 -z-10 backdrop-blur-sm transition-all duration-500" />
       )}

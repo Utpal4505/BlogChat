@@ -23,9 +23,35 @@ export const sanitizePosts = (content) => {
       "code",
       "pre",
       "a",
+      "span",
+      "mark",
     ],
     allowedAttributes: {
       a: ["href", "target", "rel"],
+      span: ["style"],
+      mark: ["style", "data-color", "class"],
+    },
+    allowedStyles: {
+      span: {
+        color: [/^#[0-9a-fA-F]{3,6}$/, /^rgb/, /^rgba/, /^hsl/, /^hsla/],
+        "background-color": [
+          /^#[0-9a-fA-F]{3,6}$/,
+          /^rgb/,
+          /^rgba/,
+          /^hsl/,
+          /^hsla/,
+        ],
+      },
+      mark: {
+        color: [/^#[0-9a-fA-F]{3,6}$/, /^rgb/, /^rgba/, /^hsl/, /^hsla/],
+        "background-color": [
+          /^#[0-9a-fA-F]{3,6}$/,
+          /^rgb/,
+          /^rgba/,
+          /^hsl/,
+          /^hsla/,
+        ],
+      },
     },
     allowedSchemes: ["https"],
   });

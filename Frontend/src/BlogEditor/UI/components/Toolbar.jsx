@@ -28,6 +28,7 @@ import {
   Sparkles,
 } from "lucide-react";
 
+
 // Professional and Soft Text Colors
 const COLOR_PALETTE = [
   "#1f2937",
@@ -53,6 +54,7 @@ const COLOR_PALETTE = [
   "#000000",
   "#111827",
 ];
+
 
 // Soft Highlight Colors
 const HIGHLIGHT_COLORS = [
@@ -82,6 +84,7 @@ const HIGHLIGHT_COLORS = [
   "#5eead4",
 ];
 
+
 const ToolbarButton = React.memo(
   ({
     onClick,
@@ -89,7 +92,6 @@ const ToolbarButton = React.memo(
     children,
     title,
     disabled = false,
-    isDark,
     shortcut,
     colorIndicator = null,
     compact = false,
@@ -105,6 +107,7 @@ const ToolbarButton = React.memo(
       [onClick, disabled]
     );
 
+
     return (
       <button
         onClick={handleClick}
@@ -119,21 +122,15 @@ const ToolbarButton = React.memo(
         backdrop-blur-sm
         ${
           isActive
-            ? isDark
-              ? "bg-gradient-to-br from-daccent to-daccent/80 text-white border-daccent shadow-lg shadow-daccent/20 scale-105"
-              : "bg-gradient-to-br from-accent to-accent/80 text-white border-accent shadow-lg shadow-accent/20 scale-105"
-            : isDark
-            ? "bg-dcard/50 text-dMuted-text border-dbordercolor/50 hover:bg-daccent/15 hover:border-daccent hover:text-daccent hover:scale-105 hover:shadow-md"
-            : "bg-white/50 text-muted-text border-bordercolor/50 hover:bg-accent/10 hover:border-accent hover:text-accent hover:scale-105 hover:shadow-md"
+            ? "bg-gradient-to-br from-accent dark:from-daccent to-accent/80 dark:to-daccent/80 text-white border-accent dark:border-daccent shadow-lg shadow-accent/20 dark:shadow-daccent/20 scale-105"
+            : "bg-white/50 dark:bg-dcard/50 text-muted-text dark:text-dMuted-text border-bordercolor/50 dark:border-dbordercolor/50 hover:bg-accent/10 dark:hover:bg-daccent/15 hover:border-accent dark:hover:border-daccent hover:text-accent dark:hover:text-daccent hover:scale-105 hover:shadow-md"
         }
         ${
           disabled
             ? "opacity-40 cursor-not-allowed hover:scale-100"
             : "cursor-pointer active:scale-95"
         }
-        border focus:outline-none focus:ring-2 focus:ring-offset-2 ${
-          isDark ? "focus:ring-daccent/50" : "focus:ring-accent/50"
-        }
+        border focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent/50 dark:focus:ring-daccent/50
       `}
         title={shortcut ? `${title} (${shortcut})` : title}
         aria-label={title}
@@ -150,40 +147,36 @@ const ToolbarButton = React.memo(
           )}
         </span>
 
+
         {isActive && (
-          <span
-            className={`absolute -top-1 -right-1 w-2 h-2 rounded-full animate-pulse ${
-              isDark ? "bg-daccent" : "bg-accent"
-            }`}
-          />
+          <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full animate-pulse bg-accent dark:bg-daccent" />
         )}
       </button>
     );
   }
 );
 
+
 ToolbarButton.displayName = "ToolbarButton";
 
-const ToolbarSeparator = React.memo(({ isDark }) => (
+
+const ToolbarSeparator = React.memo(() => (
   <div
-    className={`w-px h-6 mx-2 rounded-full ${
-      isDark
-        ? "bg-gradient-to-b from-transparent via-dbordercolor to-transparent"
-        : "bg-gradient-to-b from-transparent via-bordercolor to-transparent"
-    }`}
+    className="w-px h-6 mx-2 rounded-full bg-gradient-to-b from-transparent via-bordercolor dark:via-dbordercolor to-transparent"
     role="separator"
     aria-orientation="vertical"
   />
 ));
 
+
 ToolbarSeparator.displayName = "ToolbarSeparator";
+
 
 const ColorPicker = React.memo(
   ({
     show,
     onClose,
     editor,
-    isDark,
     type = "color",
     currentColor = null,
     isBottom = false,
@@ -192,9 +185,11 @@ const ColorPicker = React.memo(
     const title = type === "highlight" ? "Text Highlight" : "Text Color";
     const Icon = type === "highlight" ? Paintbrush : Type;
 
+
     const handleColorSelect = useCallback(
       (color) => {
         if (!editor) return;
+
 
         if (type === "highlight") {
           editor.chain().focus().setHighlight({ color }).run();
@@ -206,8 +201,10 @@ const ColorPicker = React.memo(
       [editor, onClose, type]
     );
 
+
     const handleReset = useCallback(() => {
       if (!editor) return;
+
 
       if (type === "highlight") {
         editor.chain().focus().unsetHighlight().run();
@@ -217,17 +214,15 @@ const ColorPicker = React.memo(
       onClose();
     }, [editor, onClose, type]);
 
+
     if (!show) return null;
+
 
     return (
       <div
         className={`absolute ${
           isBottom ? "bottom-full mb-3" : "top-full mt-3"
-        } right-0 p-4 rounded-xl shadow-2xl z-[1001] min-w-[300px] border backdrop-blur-xl ${
-          isDark
-            ? "bg-dcard/95 border-dbordercolor/50 shadow-black/20"
-            : "bg-white/95 border-bordercolor/50 shadow-black/10"
-        } ${
+        } right-0 p-4 rounded-xl shadow-2xl z-[1001] min-w-[300px] border backdrop-blur-xl bg-card/95 dark:bg-dcard/95 border-bordercolor/50 dark:border-dbordercolor/50 shadow-black/10 dark:shadow-black/20 ${
           isBottom
             ? "animate-in slide-in-from-bottom-2"
             : "animate-in slide-in-from-top-2"
@@ -235,22 +230,14 @@ const ColorPicker = React.memo(
         onMouseDown={(e) => e.preventDefault()} // Prevent editor blur
       >
         <div className="flex items-center justify-between mb-3">
-          <h4
-            className={`text-sm font-semibold flex items-center gap-2 ${
-              isDark ? "text-dText" : "text-text"
-            }`}
-          >
+          <h4 className="text-sm font-semibold flex items-center gap-2 text-text dark:text-dText">
             <Icon className="w-4 h-4" />
             {title}
           </h4>
           <button
             onClick={onClose}
             onMouseDown={(e) => e.preventDefault()}
-            className={`p-1 rounded-md transition-colors ${
-              isDark
-                ? "hover:bg-daccent/20 text-dMuted-text"
-                : "hover:bg-accent/20 text-muted-text"
-            }`}
+            className="p-1 rounded-md transition-colors hover:bg-accent/20 dark:hover:bg-daccent/20 text-muted-text dark:text-dMuted-text"
           >
             <svg
               className="w-4 h-4"
@@ -267,6 +254,7 @@ const ColorPicker = React.memo(
             </svg>
           </button>
         </div>
+
 
         <div className="grid grid-cols-6 gap-2 mb-3 max-h-[180px] overflow-y-auto pr-1 scrollbar-thin">
           {colors.map((color, index) => (
@@ -303,15 +291,12 @@ const ColorPicker = React.memo(
           ))}
         </div>
 
+
         <button
           onClick={handleReset}
           onMouseDown={(e) => e.preventDefault()}
           type="button"
-          className={`w-full px-4 py-2.5 text-sm font-medium rounded-lg transition-all duration-150 flex items-center justify-center gap-2 ${
-            isDark
-              ? "bg-daccent/20 hover:bg-daccent/30 text-daccent border border-daccent/30"
-              : "bg-accent/20 hover:bg-accent/30 text-accent border border-accent/30"
-          }`}
+          className="w-full px-4 py-2.5 text-sm font-medium rounded-lg transition-all duration-150 flex items-center justify-center gap-2 bg-accent/20 dark:bg-daccent/20 hover:bg-accent/30 dark:hover:bg-daccent/30 text-accent dark:text-daccent border border-accent/30 dark:border-daccent/30"
         >
           <RotateCcw className="w-3.5 h-3.5" />
           Reset {title}
@@ -321,162 +306,19 @@ const ColorPicker = React.memo(
   }
 );
 
+
 ColorPicker.displayName = "ColorPicker";
 
-// Language Selector Component
-const LanguageSelector = ({ editor, isDark }) => {
-  const [showDropdown, setShowDropdown] = useState(false);
-
-  const languages = [
-    { value: "javascript", label: "JavaScript" },
-    { value: "typescript", label: "TypeScript" },
-    { value: "python", label: "Python" },
-    { value: "java", label: "Java" },
-    { value: "cpp", label: "C++" },
-    { value: "c", label: "C" },
-    { value: "csharp", label: "C#" },
-    { value: "html", label: "HTML" },
-    { value: "css", label: "CSS" },
-    { value: "json", label: "JSON" },
-    { value: "xml", label: "XML" },
-    { value: "sql", label: "SQL" },
-    { value: "bash", label: "Bash" },
-    { value: "plaintext", label: "Plain Text" },
-  ];
-
-  const currentLanguage =
-    editor.getAttributes("codeBlock").language || "plaintext";
-  const isCodeBlockActive = editor.isActive("codeBlock");
-
-  const setLanguage = useCallback(
-    (lang) => {
-      editor
-        .chain()
-        .focus()
-        .updateAttributes("codeBlock", { language: lang })
-        .run();
-      setShowDropdown(false);
-    },
-    [editor]
-  );
-
-  // Click outside to close
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (!event.target.closest(".language-selector")) {
-        setShowDropdown(false);
-      }
-    };
-
-    if (showDropdown) {
-      document.addEventListener("mousedown", handleClickOutside);
-      return () =>
-        document.removeEventListener("mousedown", handleClickOutside);
-    }
-  }, [showDropdown]);
-
-  if (!isCodeBlockActive) return null;
-
-  return (
-    <div className="relative language-selector">
-      <button
-        onClick={() => setShowDropdown(!showDropdown)}
-        onMouseDown={(e) => e.preventDefault()}
-        type="button"
-        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all border ${
-          isDark
-            ? "bg-dcard/80 text-dText border-dbordercolor hover:bg-daccent/10 hover:border-daccent"
-            : "bg-white/80 text-text border-bordercolor hover:bg-accent/10 hover:border-accent"
-        }`}
-      >
-        <CodeSquare className="w-3.5 h-3.5" />
-        <span>
-          {languages.find((l) => l.value === currentLanguage)?.label ||
-            "Language"}
-        </span>
-        <svg
-          className={`w-3 h-3 transition-transform ${
-            showDropdown ? "rotate-180" : ""
-          }`}
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M19 9l-7 7-7-7"
-          />
-        </svg>
-      </button>
-
-      {showDropdown && (
-        <div
-          className={`absolute bottom-full mb-2 right-0 rounded-xl shadow-2xl z-[1002] w-[180px] max-h-[300px] overflow-y-auto border backdrop-blur-xl ${
-            isDark
-              ? "bg-dcard/95 border-dbordercolor/50 shadow-black/20"
-              : "bg-white/95 border-bordercolor/50 shadow-black/10"
-          } animate-in slide-in-from-bottom-2 duration-200`}
-          onMouseDown={(e) => e.preventDefault()}
-        >
-          <div
-            className={`sticky top-0 px-3 py-2 text-xs font-semibold border-b ${
-              isDark
-                ? "bg-dcard/95 border-dbordercolor/50 text-dText"
-                : "bg-white/95 border-bordercolor/50 text-text"
-            }`}
-          >
-            Select Language
-          </div>
-
-          {languages.map((lang) => (
-            <button
-              key={lang.value}
-              onClick={() => setLanguage(lang.value)}
-              onMouseDown={(e) => e.preventDefault()}
-              type="button"
-              className={`w-full px-3 py-2 text-left text-sm transition-colors flex items-center justify-between ${
-                currentLanguage === lang.value
-                  ? isDark
-                    ? "bg-daccent/20 text-daccent font-semibold"
-                    : "bg-accent/20 text-accent font-semibold"
-                  : isDark
-                  ? "text-dText hover:bg-daccent/10"
-                  : "text-text hover:bg-accent/10"
-              }`}
-            >
-              <span>{lang.label}</span>
-              {currentLanguage === lang.value && (
-                <svg
-                  className="w-4 h-4"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              )}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-};
-
-LanguageSelector.displayName = "LanguageSelector";
 
 // Bottom Sticky Toolbar Component
-const BottomStickyToolbar = ({ editor, setLink, isDark, isVisible }) => {
+const BottomStickyToolbar = ({ editor, setLink, isVisible }) => {
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [showHighlightPicker, setShowHighlightPicker] = useState(false);
 
+
   const buttonStates = useMemo(() => {
     if (!editor) return {};
+
 
     try {
       return {
@@ -504,29 +346,35 @@ const BottomStickyToolbar = ({ editor, setLink, isDark, isVisible }) => {
       console.error("Error getting button states:", error);
       return {};
     }
-  }, [editor?.state?.selection, editor?.state?.doc]);
+  }, [editor, editor?.state?.selection, editor?.state?.doc]);
+
 
   // Handlers with proper null checks
   const handleBold = useCallback(() => {
     if (editor) editor.chain().focus().toggleBold().run();
   }, [editor]);
 
+
   const handleItalic = useCallback(() => {
     if (editor) editor.chain().focus().toggleItalic().run();
   }, [editor]);
+
 
   const handleUnderline = useCallback(() => {
     if (editor) editor.chain().focus().toggleUnderline().run();
   }, [editor]);
 
+
   const handleStrike = useCallback(() => {
     if (editor) editor.chain().focus().toggleStrike().run();
   }, [editor]);
+
 
   const handleCodeBlock = useCallback(() => {
     if (editor)
       editor.chain().focus().toggleCodeBlock({ language: "plaintext" }).run();
   }, [editor]);
+
 
   const handleHeading = useCallback(
     (level) => {
@@ -534,6 +382,7 @@ const BottomStickyToolbar = ({ editor, setLink, isDark, isVisible }) => {
     },
     [editor]
   );
+
 
   const handleList = useCallback(
     (type) => {
@@ -547,6 +396,7 @@ const BottomStickyToolbar = ({ editor, setLink, isDark, isVisible }) => {
     [editor]
   );
 
+
   const handleAlign = useCallback(
     (alignment) => {
       if (editor) editor.chain().focus().setTextAlign(alignment).run();
@@ -554,17 +404,21 @@ const BottomStickyToolbar = ({ editor, setLink, isDark, isVisible }) => {
     [editor]
   );
 
+
   const handleBlockquote = useCallback(() => {
     if (editor) editor.chain().focus().toggleBlockquote().run();
   }, [editor]);
+
 
   const handleUndo = useCallback(() => {
     if (editor) editor.chain().focus().undo().run();
   }, [editor]);
 
+
   const handleRedo = useCallback(() => {
     if (editor) editor.chain().focus().redo().run();
   }, [editor]);
+
 
   // Click outside handlers
   useEffect(() => {
@@ -575,35 +429,29 @@ const BottomStickyToolbar = ({ editor, setLink, isDark, isVisible }) => {
       }
     };
 
+
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
 
   if (!editor) {
     console.warn("BottomStickyToolbar: Editor is null");
     return null;
   }
 
+
   return createPortal(
     <div
       className={`fixed bottom-0 left-0 right-0 z-[999] transition-all duration-300 ease-out ${
         isVisible ? "translate-y-0 opacity-100" : "translate-y-full opacity-0"
-      } backdrop-blur-xl ${
-        isDark
-          ? "bg-dcard/95 border-t-dbordercolor/50 shadow-[0_-8px_32px_rgba(0,0,0,0.4)]"
-          : "bg-white/95 border-t-bordercolor/50 shadow-[0_-8px_32px_rgba(0,0,0,0.12)]"
-      } border-t`}
+      } backdrop-blur-xl bg-white/95 dark:bg-dcard/95 border-t-bordercolor/50 dark:border-t-dbordercolor/50 shadow-[0_-8px_32px_rgba(0,0,0,0.12)] dark:shadow-[0_-8px_32px_rgba(0,0,0,0.4)] border-t`}
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       onMouseDown={(e) => e.stopPropagation()}
     >
       {/* Decorative Top Border */}
-      <div
-        className={`absolute top-0 left-0 right-0 h-[2px] ${
-          isDark
-            ? "bg-gradient-to-r from-transparent via-daccent to-transparent opacity-50"
-            : "bg-gradient-to-r from-transparent via-accent to-transparent opacity-50"
-        }`}
-      />
+      <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-accent dark:via-daccent to-transparent opacity-50" />
+
 
       <div className="max-w-7xl mx-auto px-3 py-3">
         <div className="flex items-center justify-center gap-1 flex-wrap">
@@ -614,7 +462,6 @@ const BottomStickyToolbar = ({ editor, setLink, isDark, isVisible }) => {
               title="Undo"
               shortcut="Ctrl+Z"
               disabled={!editor.can().undo()}
-              isDark={isDark}
             >
               <Undo className="w-4 h-4" />
             </ToolbarButton>
@@ -623,13 +470,14 @@ const BottomStickyToolbar = ({ editor, setLink, isDark, isVisible }) => {
               title="Redo"
               shortcut="Ctrl+Y"
               disabled={!editor.can().redo()}
-              isDark={isDark}
             >
               <Redo className="w-4 h-4" />
             </ToolbarButton>
           </div>
 
-          <ToolbarSeparator isDark={isDark} />
+
+          <ToolbarSeparator />
+
 
           {/* Text Formatting Group */}
           <div className="flex items-center gap-1">
@@ -638,7 +486,6 @@ const BottomStickyToolbar = ({ editor, setLink, isDark, isVisible }) => {
               isActive={buttonStates.bold}
               title="Bold"
               shortcut="Ctrl+B"
-              isDark={isDark}
             >
               <Bold className="w-4 h-4" />
             </ToolbarButton>
@@ -647,7 +494,6 @@ const BottomStickyToolbar = ({ editor, setLink, isDark, isVisible }) => {
               isActive={buttonStates.italic}
               title="Italic"
               shortcut="Ctrl+I"
-              isDark={isDark}
             >
               <Italic className="w-4 h-4" />
             </ToolbarButton>
@@ -656,7 +502,6 @@ const BottomStickyToolbar = ({ editor, setLink, isDark, isVisible }) => {
               isActive={buttonStates.underline}
               title="Underline"
               shortcut="Ctrl+U"
-              isDark={isDark}
             >
               <UnderlineIcon className="w-4 h-4" />
             </ToolbarButton>
@@ -664,13 +509,14 @@ const BottomStickyToolbar = ({ editor, setLink, isDark, isVisible }) => {
               onClick={handleStrike}
               isActive={buttonStates.strike}
               title="Strikethrough"
-              isDark={isDark}
             >
               <Strikethrough className="w-4 h-4" />
             </ToolbarButton>
           </div>
 
-          <ToolbarSeparator isDark={isDark} />
+
+          <ToolbarSeparator />
+
 
           {/* Headings Group - H1, H2, H3 together */}
           <div className="flex items-center gap-1">
@@ -678,7 +524,6 @@ const BottomStickyToolbar = ({ editor, setLink, isDark, isVisible }) => {
               onClick={() => handleHeading(1)}
               isActive={buttonStates.heading1}
               title="Heading 1"
-              isDark={isDark}
             >
               <Heading1 className="w-4 h-4" />
             </ToolbarButton>
@@ -686,7 +531,6 @@ const BottomStickyToolbar = ({ editor, setLink, isDark, isVisible }) => {
               onClick={() => handleHeading(2)}
               isActive={buttonStates.heading2}
               title="Heading 2"
-              isDark={isDark}
             >
               <Heading2 className="w-4 h-4" />
             </ToolbarButton>
@@ -694,13 +538,14 @@ const BottomStickyToolbar = ({ editor, setLink, isDark, isVisible }) => {
               onClick={() => handleHeading(3)}
               isActive={buttonStates.heading3}
               title="Heading 3"
-              isDark={isDark}
             >
               <Heading3 className="w-4 h-4" />
             </ToolbarButton>
           </div>
 
-          <ToolbarSeparator isDark={isDark} />
+
+          <ToolbarSeparator />
+
 
           {/* Lists & Structure Group */}
           <div className="flex items-center gap-1">
@@ -708,7 +553,6 @@ const BottomStickyToolbar = ({ editor, setLink, isDark, isVisible }) => {
               onClick={() => handleList("bullet")}
               isActive={buttonStates.bulletList}
               title="Bullet List"
-              isDark={isDark}
             >
               <List className="w-4 h-4" />
             </ToolbarButton>
@@ -716,7 +560,6 @@ const BottomStickyToolbar = ({ editor, setLink, isDark, isVisible }) => {
               onClick={() => handleList("ordered")}
               isActive={buttonStates.orderedList}
               title="Numbered List"
-              isDark={isDark}
             >
               <ListOrdered className="w-4 h-4" />
             </ToolbarButton>
@@ -724,7 +567,6 @@ const BottomStickyToolbar = ({ editor, setLink, isDark, isVisible }) => {
               onClick={handleBlockquote}
               isActive={buttonStates.blockquote}
               title="Quote"
-              isDark={isDark}
             >
               <Quote className="w-4 h-4" />
             </ToolbarButton>
@@ -732,13 +574,14 @@ const BottomStickyToolbar = ({ editor, setLink, isDark, isVisible }) => {
               onClick={handleCodeBlock}
               isActive={buttonStates.codeBlock}
               title="Code Block"
-              isDark={isDark}
             >
               <CodeSquare className="w-4 h-4" />
             </ToolbarButton>
           </div>
 
-          <ToolbarSeparator isDark={isDark} />
+
+          <ToolbarSeparator />
+
 
           {/* Alignment Group */}
           <div className="flex items-center gap-1">
@@ -746,7 +589,6 @@ const BottomStickyToolbar = ({ editor, setLink, isDark, isVisible }) => {
               onClick={() => handleAlign("left")}
               isActive={buttonStates.alignLeft}
               title="Align Left"
-              isDark={isDark}
             >
               <AlignLeft className="w-4 h-4" />
             </ToolbarButton>
@@ -754,7 +596,6 @@ const BottomStickyToolbar = ({ editor, setLink, isDark, isVisible }) => {
               onClick={() => handleAlign("center")}
               isActive={buttonStates.alignCenter}
               title="Center"
-              isDark={isDark}
             >
               <AlignCenter className="w-4 h-4" />
             </ToolbarButton>
@@ -762,7 +603,6 @@ const BottomStickyToolbar = ({ editor, setLink, isDark, isVisible }) => {
               onClick={() => handleAlign("right")}
               isActive={buttonStates.alignRight}
               title="Align Right"
-              isDark={isDark}
             >
               <AlignRight className="w-4 h-4" />
             </ToolbarButton>
@@ -770,13 +610,14 @@ const BottomStickyToolbar = ({ editor, setLink, isDark, isVisible }) => {
               onClick={() => handleAlign("justify")}
               isActive={buttonStates.alignJustify}
               title="Justify"
-              isDark={isDark}
             >
               <AlignJustify className="w-4 h-4" />
             </ToolbarButton>
           </div>
 
-          <ToolbarSeparator isDark={isDark} />
+
+          <ToolbarSeparator />
+
 
           {/* Color & Styling Group */}
           <div className="flex items-center gap-1">
@@ -785,7 +626,6 @@ const BottomStickyToolbar = ({ editor, setLink, isDark, isVisible }) => {
                 onClick={() => setShowHighlightPicker(!showHighlightPicker)}
                 isActive={buttonStates.highlight || showHighlightPicker}
                 title="Highlight"
-                isDark={isDark}
                 colorIndicator={buttonStates.highlightColor}
               >
                 <Highlighter className="w-4 h-4" />
@@ -794,19 +634,18 @@ const BottomStickyToolbar = ({ editor, setLink, isDark, isVisible }) => {
                 show={showHighlightPicker}
                 onClose={() => setShowHighlightPicker(false)}
                 editor={editor}
-                isDark={isDark}
                 type="highlight"
                 currentColor={buttonStates.highlightColor}
                 isBottom
               />
             </div>
 
+
             <div className="relative color-picker-container">
               <ToolbarButton
                 onClick={() => setShowColorPicker(!showColorPicker)}
                 isActive={showColorPicker || !!buttonStates.textColor}
                 title="Text Color"
-                isDark={isDark}
                 colorIndicator={buttonStates.textColor}
               >
                 <Palette className="w-4 h-4" />
@@ -815,18 +654,17 @@ const BottomStickyToolbar = ({ editor, setLink, isDark, isVisible }) => {
                 show={showColorPicker}
                 onClose={() => setShowColorPicker(false)}
                 editor={editor}
-                isDark={isDark}
                 type="color"
                 currentColor={buttonStates.textColor}
                 isBottom
               />
             </div>
 
+
             <ToolbarButton
               onClick={setLink}
               isActive={buttonStates.link}
               title="Link"
-              isDark={isDark}
             >
               <LinkIcon className="w-4 h-4" />
             </ToolbarButton>
@@ -838,9 +676,11 @@ const BottomStickyToolbar = ({ editor, setLink, isDark, isVisible }) => {
   );
 };
 
+
 // Main Toolbar Component
-const Toolbar = ({ editor, setLink, isDark }) => {
+const Toolbar = ({ editor, setLink }) => {
   const [isEditorFocused, setIsEditorFocused] = useState(false);
+
 
   useEffect(() => {
     if (!editor) {
@@ -848,10 +688,12 @@ const Toolbar = ({ editor, setLink, isDark }) => {
       return;
     }
 
+
     const handleFocus = () => {
       console.log("Editor focused");
       setIsEditorFocused(true);
     };
+
 
     const handleBlur = () => {
       setTimeout(() => {
@@ -867,8 +709,10 @@ const Toolbar = ({ editor, setLink, isDark }) => {
       }, 150);
     };
 
+
     editor.view.dom.addEventListener("focus", handleFocus);
     editor.view.dom.addEventListener("blur", handleBlur);
+
 
     return () => {
       editor.view.dom.removeEventListener("focus", handleFocus);
@@ -876,19 +720,21 @@ const Toolbar = ({ editor, setLink, isDark }) => {
     };
   }, [editor]);
 
+
   if (!editor) {
     console.warn("Toolbar: Editor not initialized yet");
     return null;
   }
 
+
   return (
     <BottomStickyToolbar
       editor={editor}
       setLink={setLink}
-      isDark={isDark}
       isVisible={isEditorFocused}
     />
   );
 };
+
 
 export default React.memo(Toolbar);
