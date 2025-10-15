@@ -1,5 +1,11 @@
 // ReportBugUI.jsx - WITH SUBTLE FRAMER MOTION
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, {
+  useState,
+  useRef,
+  useEffect,
+  useCallback,
+  useContext,
+} from "react";
 import toast, { Toaster } from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -28,6 +34,8 @@ import { MdQuestionMark } from "react-icons/md";
 import { UAParser } from "ua-parser-js";
 import { consoleErrors } from "../src/main";
 import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
+import { AuthContext } from "../context/AuthContext";
+import { uploadFilesToServer } from "../utils/UploadFileToServer";
 
 const BUG_OPTIONS = [
   {
@@ -232,6 +240,8 @@ export default function ReportBug() {
 
   const { executeRecaptcha } = useGoogleReCaptcha();
 
+  const { create_Bug } = useContext(AuthContext);
+
   const metadata = {
     browser: User_Device.browser.name || "Unknown",
     browser_version: User_Device.browser.version || "Unknown",
@@ -246,18 +256,6 @@ export default function ReportBug() {
     timestamp: new Date().toISOString(),
     pageLoadTimeMs: performance.now(),
     Console_err: consoleErrors,
-  };
-
-  const BugPayload = {
-    Bugtype: bugType,
-    Title: title || bugType,
-    Description: description,
-    Page: pageContext,
-    Custom_Page: customPage,
-    Mood: mood,
-    Attachments: files,
-    Metadata: metadata,
-    recaptchaToken: token,
   };
 
   const resetForm = useCallback(() => {
@@ -279,6 +277,7 @@ export default function ReportBug() {
       const validType = isVideo || isImage;
       const validSize = f.size <= 10 * 1024 * 1024;
       return {
+        file: f,
         name: f.name,
         sizeMB: (f.size / 1024 / 1024).toFixed(2),
         type: isVideo ? "video" : "image",
@@ -310,44 +309,48 @@ export default function ReportBug() {
 
     const token = await executeRecaptcha("report_bug");
 
-    if (!bugType) {
-      toast.error("Please select what kind of issue it is");
-      return;
-    }
+    if (!bugType) return toast.error("Please select what kind of issue it is");
+    if (!title.trim()) return toast.error("Please add a title for the bug");
+    if (title.trim().length < 5)
+      return toast.error("Title should be at least 5 characters");
+    if (!description.trim())
+      return toast.error("Please describe what happened");
+    if (description.trim().length < 20)
+      return toast.error("Description should be at least 20 characters");
 
-    if (!title.trim()) {
-      toast.error("Please add a title for the bug");
-      return;
-    }
-
-    if (title.trim().length < 5) {
-      toast.error("Title should be at least 5 characters");
-      return;
-    }
-
-    if (!description.trim()) {
-      toast.error("Please describe what happened");
-      return;
-    }
-
-    if (description.trim().length < 20) {
-      toast.error("Description should be at least 20 characters");
-      return;
-    }
-
-    setSubmitted(false);
     setSubmitting(true);
 
-    setTimeout(() => {
-      console.log(BugPayload);
-      setSubmitting(false);
-      setSubmitted(true);
-      toast.success("Bug report submitted successfully!");
+    try {
+      const uploadedUrls = await uploadFilesToServer(files);
 
-      setTimeout(() => {
+      console.log("Upload", uploadedUrls)
+
+      const BugPayload = {
+        Bugtype: bugType,
+        Title: title || bugType,
+        Description: description,
+        Page: pageContext,
+        Custom_Page: customPage,
+        Mood: mood,
+        Attachments: uploadedUrls,
+        Metadata: metadata,
+      };
+
+      const data = await create_Bug({
+        bugPayload: BugPayload,
+        recaptchaToken: token,
+      });
+
+      if (data) {
+        toast.success("🐞 Bug reported successfully!");
         resetForm();
-      }, 2000);
-    }, 1500);
+      }
+    } catch (error) {
+      console.error("Bug reporting error:", error.message);
+      toast.error("Failed to report bug. Please try again later.");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (

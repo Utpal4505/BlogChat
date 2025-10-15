@@ -4,7 +4,7 @@ import prisma from "../config/db.config.js";
 import { sanitizeInput, sanitizePosts } from "../utils/HtmlSanitize.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { slugify } from "../utils/slugify.js";
-import { uploadToCloudinary } from "../utils/Cloudinary.js";
+import { uploadToCloudinary } from "../utils/cloudinary.js";
 
 export const createPost = asyncHandler(async (req, res) => {
   try {

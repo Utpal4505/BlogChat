@@ -16,6 +16,11 @@ const Postapi = axios.create({
   withCredentials: true,
 });
 
+const Bugapi = axios.create({
+  baseURL: "http://localhost:8000/api/v1/report-bug",
+  withCredentials: true,
+});
+
 [Userapi, Postapi].forEach((instance) => {
   instance.interceptors.response.use(
     (response) => response,
@@ -187,6 +192,20 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Report Bug
+  const create_Bug = async ({ bugPayload, recaptchaToken }) => {
+    try {
+      const { data } = await Bugapi.post("/", {
+        bugPayload,
+        recaptchaToken,
+      });
+
+      return data;
+    } catch (error) {
+      throw normalizeError(error);
+    }
+  };
+
   // ---------- Helper ----------
   const normalizeError = (err) => {
     return {
@@ -213,6 +232,7 @@ export const AuthProvider = ({ children }) => {
         resetPasswordOTP,
         verifyResetPassword,
         createPost,
+        create_Bug,
       }}
     >
       {children}

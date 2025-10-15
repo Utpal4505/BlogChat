@@ -87,3 +87,16 @@ export const otpLimiter = rateLimit({
     });
   },
 });
+
+export const bugReportLimiter = rateLimit({
+  windowMs: 1 * 60 * 1000, // 1 minute
+  max: 3, // 3 reports per minute per IP
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: (req, res) => {
+    res.status(429).json({
+      success: false,
+      error: "🐞 Too many bug reports! Please slow down a bit.",
+    });
+  },
+});

@@ -41,6 +41,17 @@ enum Status {
   PUBLISHED
 }
 
+enum UserType {
+  VERIFIED
+  UNVERIFIED
+}
+
+enum BugStatus {
+  OPEN
+  RESOLVED
+  IGNORED
+}
+
 model User {
   id                    Int                @id @default(autoincrement())
   name                  String
@@ -197,4 +208,25 @@ model Token {
   token     String   @unique
   user      User     @relation(fields: [userId], references: [id])
   createdAt DateTime @default(now())
+}
+
+model BugReport {
+  id          Int       @id @default(autoincrement())
+  bugType     String
+  title       String
+  description String
+  page        String?
+  customPage  String?
+  mood        String?
+  userType    UserType
+  userId      Int? // nullable if unverified user
+  attachments Json? // supports multiple attachments
+  verificationScore Float?
+  metadata    Json
+  consoleErrors Json
+  status      BugStatus @default(OPEN)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([id, bugType, status])
 }

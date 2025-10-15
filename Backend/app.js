@@ -5,6 +5,7 @@ import userRouter from "./routes/user.routes.js";
 import authRouter from "./routes/auth.google.routes.js";
 import postRouter from "./routes/post.routes.js";
 import reportBugRouter from './routes/reportBug.routes.js'
+import fileUploadRouter from './routes/uploadFile.routes.js'
 import cors from "cors";
 import passport from "./config/passport.gauth.config.js";
 import { errorHandler } from "./middlewares/error.middlewares.js";
@@ -35,6 +36,7 @@ app.use("/api/v1/users", userRouter);
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/posts", postRouter);
 app.use("/api/v1/report-bug", reportBugRouter);
+app.use("/api/v1/upload-file", fileUploadRouter);
 
 //api error
 app.use(errorHandler);
