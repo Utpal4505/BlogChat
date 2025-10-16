@@ -1,0 +1,184 @@
+export function generateBugIssueTemplate(bugRecord) {
+  const {
+    id,
+    title,
+    description,
+    bugType,
+    stepsToReproduce = [],
+    attachments = [],
+    consoleErrors = [],
+    metadata = {},
+    mood,
+    userType,
+    status,
+    verificationScore,
+  } = bugRecord;
+
+  // Steps section
+  const stepsSection =
+    Array.isArray(stepsToReproduce) && stepsToReproduce.length
+      ? stepsToReproduce.map((step, idx) => `${idx + 1}. **${step}**`).join("\n")
+      : "> _No reproduction steps provided_";
+
+  // Attachments section
+  const attachmentsSection =
+    Array.isArray(attachments) && attachments.length
+      ? attachments
+          .map(
+            (att, idx) =>
+              `<img src="${att.url || att}" alt="Screenshot ${idx + 1}" width="700" style="border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin: 10px 0;"/>`
+          )
+          .join("\n\n")
+      : "> _No visual evidence attached_";
+
+  // Console errors section
+  const consoleErrorsSection =
+    Array.isArray(consoleErrors) && consoleErrors.length
+      ? consoleErrors
+          .map(
+            (err, idx) => `
+<details>
+<summary>🔴 <b>Error ${idx + 1}:</b> <code>${err.message}</code></summary>
+
+\`\`\`js
+Message: ${err.message}
+Time: ${err.timestamp}
+\`\`\`
+
+</details>
+`
+          )
+          .join("")
+      : "> _No console errors detected_ ✅";
+
+  // Metadata section
+  const metadataSection = Object.keys(metadata).length
+    ? `\`\`\`json\n${JSON.stringify(metadata, null, 2)}\n\`\`\``
+    : "> _No environment data available_";
+
+  const reportId = id || Math.random().toString(36).substring(2, 9).toUpperCase();
+  const timestamp = new Date().toLocaleString('en-IN', { 
+    dateStyle: 'medium', 
+    timeStyle: 'short' 
+  });
+
+  return `<div align="center">
+
+# 🐛 Bug Report
+### ${title}
+
+<br/>
+
+<table style="border-collapse: collapse; margin: 20px auto;">
+<tr>
+<td style="padding: 12px 20px; text-align: center;">
+<b>🏷️ Status</b><br/><br/>
+<code>${status}</code>
+</td>
+<td style="padding: 12px 20px; text-align: center;">
+<b>🔖 Type</b><br/><br/>
+<code>${bugType}</code>
+</td>
+<td style="padding: 12px 20px; text-align: center;">
+<b>😊 Mood</b><br/><br/>
+<code>${mood || "Neutral"}</code>
+</td>
+<td style="padding: 12px 20px; text-align: center;">
+<b>👤 Reporter</b><br/><br/>
+<code>${userType}</code>
+</td>
+</tr>
+<tr>
+<td colspan="2" style="padding: 12px 20px; text-align: center;">
+<b>⭐ Verification Score</b><br/><br/>
+<code>${verificationScore || "N/A"}</code>
+</td>
+<td colspan="2" style="padding: 12px 20px; text-align: center;">
+<b>🆔 Report ID</b><br/><br/>
+<code>${reportId}</code>
+</td>
+</tr>
+</table>
+
+<sub>📅 Reported on ${timestamp}</sub>
+
+</div>
+
+---
+
+## 📋 What Happened?
+
+${description}
+
+---
+
+## 🔁 Reproduction Steps
+
+${stepsSection}
+
+---
+
+## 📷 Visual Evidence
+
+${attachmentsSection}
+
+---
+
+## ⚠️ Console Errors
+
+${consoleErrorsSection}
+
+---
+
+## 💻 Technical Environment
+
+<details>
+<summary>🔍 <b>Click to view environment details</b></summary>
+
+<br/>
+
+${metadataSection}
+
+</details>
+
+---
+
+## ✅ Developer Checklist
+
+<table>
+<tr>
+<td>
+
+- [ ] Reproduced the issue locally
+- [ ] Reviewed all console errors
+- [ ] Examined visual evidence
+
+</td>
+<td>
+
+- [ ] Checked environment compatibility  
+- [ ] Identified root cause
+- [ ] Assigned priority level
+
+</td>
+</tr>
+</table>
+
+---
+
+<br/>
+
+<div align="center">
+
+<table style="border: none; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px; padding: 20px; margin: 20px auto;">
+<tr>
+<td style="text-align: center; color: white; border: none;">
+<b style="font-size: 16px;">🤖 Auto-Generated Report</b><br/><br/>
+<span style="font-size: 14px;">BlogChat Bug Intelligence System</span><br/>
+<code style="background: rgba(255,255,255,0.2); padding: 4px 8px; border-radius: 4px; color: white; margin-top: 10px; display: inline-block;">${reportId}</code> • <span style="font-size: 12px;">${timestamp}</span>
+</td>
+</tr>
+</table>
+
+</div>`;
+}

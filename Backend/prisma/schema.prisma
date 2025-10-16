@@ -211,22 +211,24 @@ model Token {
 }
 
 model BugReport {
-  id          Int       @id @default(autoincrement())
-  bugType     String
-  title       String
-  description String
-  page        String?
-  customPage  String?
-  mood        String?
-  userType    UserType
-  userId      Int? // nullable if unverified user
-  attachments Json? // supports multiple attachments
+  id                Int       @id @default(autoincrement())
+  githubIssueNumber Int?
+  bugType           String
+  title             String
+  description       String
+  page              String?
+  customPage        String?
+  mood              String?
+  userType          UserType
+  userId            Int? // nullable if unverified user
+  attachments       Json? // supports multiple attachments
   verificationScore Float?
-  metadata    Json
-  consoleErrors Json
-  status      BugStatus @default(OPEN)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  stepsToReproduce  Json?
+  metadata          Json
+  consoleErrors     Json
+  status            BugStatus @default(OPEN)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 
   @@index([id, bugType, status])
 }

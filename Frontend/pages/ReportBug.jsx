@@ -1,4 +1,4 @@
-// ReportBugUI.jsx - WITH SUBTLE FRAMER MOTION
+// ReportBugUI.jsx - WITH STEPS TO REPRODUCE
 import React, {
   useState,
   useRef,
@@ -28,6 +28,9 @@ import {
   NotebookPen,
   CompassIcon,
   Settings,
+  Plus,
+  GripVertical,
+  Trash2,
 } from "lucide-react";
 import { FaComment } from "react-icons/fa";
 import { MdQuestionMark } from "react-icons/md";
@@ -226,6 +229,10 @@ export default function ReportBug() {
   const [bugType, setBugType] = useState("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [steps, setSteps] = useState([
+    { id: 1, text: "" },
+    { id: 2, text: "" },
+  ]);
   const [pageContext, setPageContext] = useState("homepage");
   const [customPage, setCustomPage] = useState("");
   const [mood, setMood] = useState("");
@@ -239,7 +246,6 @@ export default function ReportBug() {
   const User_Device = parser.getResult();
 
   const { executeRecaptcha } = useGoogleReCaptcha();
-
   const { create_Bug } = useContext(AuthContext);
 
   const metadata = {
@@ -262,12 +268,33 @@ export default function ReportBug() {
     setBugType("");
     setTitle("");
     setDescription("");
+    setSteps([
+      { id: 1, text: "" },
+      { id: 2, text: "" },
+    ]);
     setPageContext("homepage");
     setCustomPage("");
     setMood("");
     setFiles([]);
     setSubmitted(false);
   }, []);
+
+  // Steps to Reproduce handlers
+  const addStep = () => {
+    const newId =
+      steps.length > 0 ? Math.max(...steps.map((s) => s.id)) + 1 : 1;
+    setSteps([...steps, { id: newId, text: "" }]);
+  };
+
+  const removeStep = (id) => {
+    if (steps.length > 1) {
+      setSteps(steps.filter((step) => step.id !== id));
+    }
+  };
+
+  const updateStep = (id, text) => {
+    setSteps(steps.map((step) => (step.id === id ? { ...step, text } : step)));
+  };
 
   function addMockFiles(list) {
     if (!list) return;
@@ -323,12 +350,16 @@ export default function ReportBug() {
     try {
       const uploadedUrls = await uploadFilesToServer(files);
 
-      console.log("Upload", uploadedUrls)
+      // Filter out empty steps
+      const filledSteps = steps
+        .filter((step) => step.text.trim())
+        .map((step, index) => `${index + 1}. ${step.text}`);
 
       const BugPayload = {
         Bugtype: bugType,
         Title: title || bugType,
         Description: description,
+        Steps_to_reproduce: filledSteps.length > 0 ? filledSteps : null,
         Page: pageContext,
         Custom_Page: customPage,
         Mood: mood,
@@ -504,6 +535,78 @@ export default function ReportBug() {
                 {description.length} characters
               </p>
             </div>
+          </motion.div>
+
+          {/* Steps to Reproduce - NEW SECTION */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.35 }}
+            className="bg-card dark:bg-dcard rounded-2xl border border-bordercolor dark:border-dbordercolor p-6 shadow-sm backdrop-blur-sm relative z-10"
+          >
+            <div className="mb-4">
+              <label className="block text-sm font-semibold text-text dark:text-dText mb-1">
+                Steps to Reproduce (optional)
+              </label>
+              <p className="text-xs text-muted-text dark:text-dMuted-text">
+                Describe the steps to reproduce the issue. The more details you
+                provide, the easier it will be for us to fix it.
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              <AnimatePresence mode="popLayout">
+                {steps.map((step, index) => (
+                  <motion.div
+                    key={step.id}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    transition={{ duration: 0.2 }}
+                    className="flex items-start gap-3 group"
+                  >
+                    <div className="flex-shrink-0 flex items-center gap-2 mt-3">
+                      <GripVertical
+                        size={16}
+                        className="text-muted-text/30 dark:text-dMuted-text/30 cursor-grab"
+                      />
+                      <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 dark:bg-dPrimary/10 text-primary dark:text-dPrimary text-xs font-semibold">
+                        {index + 1}
+                      </span>
+                    </div>
+                    <input
+                      type="text"
+                      value={step.text}
+                      onChange={(e) => updateStep(step.id, e.target.value)}
+                      placeholder={`Step ${index + 1}...`}
+                      className="flex-1 rounded-xl border border-bordercolor dark:border-dbordercolor bg-bg dark:bg-dbg text-text dark:text-dText px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/50 dark:focus:ring-dPrimary/50 transition-all placeholder:text-muted-text/50 dark:placeholder:text-dMuted-text/50"
+                    />
+                    {steps.length > 1 && (
+                      <motion.button
+                        type="button"
+                        onClick={() => removeStep(step.id)}
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        className="flex-shrink-0 mt-1 p-2 items-center rounded-lg text-danger hover:bg-danger/10 transition-colors opacity-0 group-hover:opacity-100"
+                      >
+                        <Trash2 size={16} />
+                      </motion.button>
+                    )}
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </div>
+
+            <motion.button
+              type="button"
+              onClick={addStep}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="mt-4 w-full flex items-center justify-center gap-2 rounded-xl border-2 border-dashed border-bordercolor dark:border-dbordercolor hover:border-primary/50 dark:hover:border-dPrimary/50 hover:bg-primary/5 dark:hover:bg-dPrimary/5 text-muted-text dark:text-dMuted-text hover:text-primary dark:hover:text-dPrimary px-4 py-3 text-sm font-medium transition-all"
+            >
+              <Plus size={16} />
+              Add Step
+            </motion.button>
           </motion.div>
 
           {/* Two Column Layout */}

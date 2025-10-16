@@ -16,9 +16,7 @@ export async function uploadFilesToServer(files) {
       body: formData,
     });
 
-    console.log("Uploading...");
     const data = await res.json();
-    console.log("Response:", data);
 
     if (!data.success) throw new Error(data.message || "Upload failed");
 

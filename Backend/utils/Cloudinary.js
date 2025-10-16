@@ -17,7 +17,7 @@ const removeLocalFile = (filePath) => {
   });
 };
 
-const uploadToCloudinary = async (localFilePath, folder = "avatars") => {
+const uploadToCloudinary = async (localFilePath, folder = "uploads") => {
   try {
     if (!localFilePath) return null;
 
@@ -31,7 +31,7 @@ const uploadToCloudinary = async (localFilePath, folder = "avatars") => {
   } catch (error) {
     removeLocalFile(localFilePath); // even on error cleanup
     console.error("Cloudinary upload error:", error);
-    throw new ApiError(500, "Avatar upload failed");
+    throw new ApiError(500, "Cloudinary upload failed");
   }
 };
 
