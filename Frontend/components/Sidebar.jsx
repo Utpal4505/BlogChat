@@ -56,8 +56,8 @@ const NavigationSidebar = () => {
       title: "Support",
       items: [
         { icon: Bug, label: "Report Bug", href: "/report-bug" },
-        { icon: Settings, label: "Settings", href: "/settings" },
         { icon: MessageCircle, label: "Give Feedback", href: "/feedback" },
+        { icon: Settings, label: "Settings", href: "/settings" },
       ],
     },
     {

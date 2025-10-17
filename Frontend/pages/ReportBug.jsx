@@ -248,6 +248,7 @@ export default function ReportBug() {
   const { executeRecaptcha } = useGoogleReCaptcha();
   const { create_Bug } = useContext(AuthContext);
 
+
   const metadata = {
     browser: User_Device.browser.name || "Unknown",
     browser_version: User_Device.browser.version || "Unknown",
