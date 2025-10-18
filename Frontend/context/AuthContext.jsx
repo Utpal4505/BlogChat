@@ -1,4 +1,3 @@
-// src/context/AuthContext.jsx
 import { createContext, useEffect, useState } from "react";
 import axios from "axios";
 
@@ -18,6 +17,11 @@ const Postapi = axios.create({
 
 const Bugapi = axios.create({
   baseURL: "http://localhost:8000/api/v1/report-bug",
+  withCredentials: true,
+});
+
+const Feedbackapi = axios.create({
+  baseURL: "http://localhost:8000/api/v1/feedback",
   withCredentials: true,
 });
 
@@ -206,6 +210,19 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const create_Feedback = async ({ feedbackPayload, recaptchaToken }) => {
+    try {
+      const { data } = await Feedbackapi.post("/", {
+        feedbackPayload,
+        recaptchaToken,
+      });
+
+      return data;
+    } catch (error) {
+      throw normalizeError(error);
+    }
+  };
+
   // ---------- Helper ----------
   const normalizeError = (err) => {
     return {
@@ -233,11 +250,10 @@ export const AuthProvider = ({ children }) => {
         verifyResetPassword,
         createPost,
         create_Bug,
+        create_Feedback,
       }}
     >
       {children}
     </AuthContext.Provider>
   );
 };
-
-// Remove useAuth hook from this file

@@ -1,10 +1,10 @@
 import sanitizeHtml from "sanitize-html";
 
-// Plain text only, koi HTML tags allow nahi
 export const sanitizeInput = (input) => {
+  if (!input || typeof input !== "string") return "";
   return sanitizeHtml(input, {
-    allowedTags: [], // koi tag allow nahi
-    allowedAttributes: {}, // koi attribute allow nahi
+    allowedTags: [], // no HTML allowed
+    allowedAttributes: {}, // no attributes
   });
 };
 

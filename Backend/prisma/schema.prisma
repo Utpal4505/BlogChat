@@ -77,6 +77,7 @@ model User {
   followers             Follow[]           @relation("followee")
   followees             Follow[]           @relation("follower")
   tokens                Token[]
+  feedback              Feedback[]
   createdAt             DateTime           @default(now())
   updatedAt             DateTime           @updatedAt
   deletedAt             DateTime?
@@ -231,4 +232,30 @@ model BugReport {
   updatedAt         DateTime  @updatedAt
 
   @@index([id, bugType, status])
+}
+
+model Feedback {
+  id     Int  @id @default(autoincrement())
+  user   User @relation(fields: [userId], references: [id])
+  userId Int
+
+  // core feedback inputs
+  experienceMood String // mood or rating
+  liked          String? // optional to avoid forcing text
+  issues         String? // optional in case user only praises
+  page           String // where feedback came from
+  improvement    String? // optional if they just liked something
+  hasBug         Boolean @default(false)
+  bugDescription String?
+  screenshotUrl  Json?
+  recommendScore Int?
+
+  // meta data (system-collected)
+  metadata Json? // device info, session, etc.
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([page])
+  @@index([hasBug])
 }

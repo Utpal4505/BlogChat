@@ -202,7 +202,6 @@ function CustomDropdown({ options, value, onChange, placeholder }) {
   );
 }
 
-
 export default function FeedbackForm() {
   // Question 1: Overall experience mood
   const [experienceMood, setExperienceMood] = useState("");
@@ -307,11 +306,11 @@ export default function FeedbackForm() {
     if (!experienceMood)
       return toast.error("Please tell us about your experience today");
     if (!issues.trim())
-      return toast.error(
-        "Please share what annoyed, confused, or didn't work"
-      );
+      return toast.error("Please share what annoyed, confused, or didn't work");
     if (issues.trim().length < 10)
-      return toast.error("Please provide more details (at least 10 characters)");
+      return toast.error(
+        "Please provide more details (at least 10 characters)"
+      );
     if (!pageContext) return toast.error("Please tell us where this happened");
     if (pageContext === "other" && !customPage.trim())
       return toast.error("Please specify which page");
@@ -331,6 +330,8 @@ export default function FeedbackForm() {
         hasBug && bugScreenshots.length > 0
           ? await uploadFilesToServer(bugScreenshots)
           : [];
+
+      console.log(uploadedUrls.length > 0 ? uploadedUrls : null);
 
       const feedbackPayload = {
         experience_mood: experienceMood,
@@ -355,7 +356,7 @@ export default function FeedbackForm() {
         setSubmitted(true);
         setTimeout(() => {
           resetForm();
-        }, 3000);
+        }, 4500);
       }
     } catch (error) {
       console.error("Feedback submission error:", error.message);
@@ -367,8 +368,13 @@ export default function FeedbackForm() {
 
   // Get NPS category
   const getNPSCategory = (score) => {
-    if (score >= 9) return { label: "Promoter", color: "text-green-600 dark:text-green-500" };
-    if (score >= 6) return { label: "Passive", color: "text-yellow-600 dark:text-yellow-500" };
+    if (score >= 9)
+      return { label: "Promoter", color: "text-green-600 dark:text-green-500" };
+    if (score >= 6)
+      return {
+        label: "Passive",
+        color: "text-yellow-600 dark:text-yellow-500",
+      };
     return { label: "Detractor", color: "text-red-600 dark:text-red-500" };
   };
 
@@ -628,7 +634,11 @@ export default function FeedbackForm() {
                         {pageContext === "other" && (
                           <motion.input
                             initial={{ opacity: 0, height: 0, marginTop: 0 }}
-                            animate={{ opacity: 1, height: "auto", marginTop: 12 }}
+                            animate={{
+                              opacity: 1,
+                              height: "auto",
+                              marginTop: 12,
+                            }}
                             exit={{ opacity: 0, height: 0, marginTop: 0 }}
                             transition={{ duration: 0.2 }}
                             type="text"
@@ -767,7 +777,7 @@ export default function FeedbackForm() {
                       </label>
                       <textarea
                         rows={4}
-                        className="w-full resize-none rounded-xl border border-bordercolor dark:border-dbordercolor bg-bg dark:bg-dbg text-text dark:text-dText px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary/50 dark:focus:ring-dPrimary/50 transition-all placeholder:text-muted-text dark:placeholder:text-dMuted-text"
+                        className="w-full resize-none rounded-xl border border-bordercolor dark:border-dbordercolor bg-bg dark:bg-dbg text-text dark:text-dText px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-0 dark:focus:ring-dPrimary/50 transition-all placeholder:text-muted-text dark:placeholder:text-dMuted-text box-border"
                         placeholder="What happened? What did you expect to happen?"
                         value={bugDescription}
                         onChange={(e) => setBugDescription(e.target.value)}
@@ -962,8 +972,15 @@ export default function FeedbackForm() {
                     exit={{ opacity: 0, y: -10 }}
                     className="mt-4 flex items-center justify-center gap-2"
                   >
-                    <Target size={16} className={getNPSCategory(npsScore).color} />
-                    <p className={`text-sm font-semibold ${getNPSCategory(npsScore).color}`}>
+                    <Target
+                      size={16}
+                      className={getNPSCategory(npsScore).color}
+                    />
+                    <p
+                      className={`text-sm font-semibold ${
+                        getNPSCategory(npsScore).color
+                      }`}
+                    >
                       You're a {getNPSCategory(npsScore).label}!
                     </p>
                   </motion.div>
@@ -995,17 +1012,13 @@ export default function FeedbackForm() {
                     Submitting...
                   </>
                 ) : (
-                  <>
-                    <Sparkles size={18} />
-                    Submit Feedback
-                  </>
+                  <>Submit Feedback</>
                 )}
               </motion.button>
             </motion.div>
           </form>
         )}
       </div>
-      <Toaster position="bottom-center" />
     </div>
   );
 }

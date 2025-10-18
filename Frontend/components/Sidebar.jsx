@@ -324,7 +324,8 @@ const NavigationSidebar = () => {
                 const isLogout = item.label === "Logout";
 
                 return (
-                  <motion.button
+                  <MotionLink
+                    to={item.href}
                     key={globalIndex}
                     onClick={() => handleItemClick(globalIndex)}
                     className={`
@@ -345,7 +346,7 @@ const NavigationSidebar = () => {
                     <span className="text-xs font-medium mt-2 text-center">
                       {item.label}
                     </span>
-                  </motion.button>
+                  </MotionLink>
                 );
               })}
             </motion.div>
