@@ -460,30 +460,141 @@ const verifyResetPassword = asyncHandler(async (req, res) => {
 });
 
 const getUserProfile = asyncHandler(async (req, res) => {
-  const { username } = req.params;
+  try {
+    const { username } = req.params;
+    const currentUserId = req.user?.id; // ✅ This will be undefined if not logged in
 
-  if (!username) {
-    return res.status(400).json({ message: "Username is required" });
+    // Find the profile user
+    const profileUser = await prisma.user.findUnique({
+      where: { username },
+      select: {
+        id: true,
+        username: true,
+        name: true,
+        bio: true,
+        avatar: true,
+        _count: {
+          select: {
+            followers: true,
+            followees: true,
+          },
+        },
+      },
+    });
+
+    if (!profileUser) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    // ✅ Check if current user follows this profile (only if logged in)
+    let isFollowing = false;
+    if (currentUserId && currentUserId !== profileUser.id) {
+      const followRecord = await prisma.follow.findUnique({
+        where: {
+          followerId_followeeId: {
+            followerId: currentUserId,
+            followeeId: profileUser.id,
+          },
+        },
+      });
+
+      isFollowing = !!followRecord;
+    }
+
+    res.status(200).json({
+      success: true,
+      data: {
+        ...profileUser,
+        isFollowing, // ✅ false if not logged in
+        canFollow: !!currentUserId && currentUserId !== profileUser.id, // ✅ Can follow only if logged in
+      },
+    });
+  } catch (error) {
+    console.error("Error in getUserProfile:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
   }
+});
 
-  const user = await prisma.user.findUnique({
-    where: { username },
-    select: {
-      id: true,
-      email: true,
-      name: true,
-      username: true,
-      bio: true,
-      avatar: true,
-      registration_status: true,
-    },
-  });
+const getUserPosts = asyncHandler(async (req, res) => {
+  try {
+    const { username } = req.params;
 
-  if (!user) {
-    return res.status(404).json({ message: "User not found" });
+    // Check if user exists first
+    const user = await prisma.user.findUnique({
+      where: { username },
+      select: { id: true },
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    const posts = await prisma.post.findMany({
+      where: {
+        author: {
+          username: username,
+        },
+      },
+      select: {
+        id: true,
+        title: true,
+        content: true,
+        coverImage: true,
+        postTags: {
+          select: {
+            tag: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
+        authorId: true,
+        createdAt: true,
+        publishedAt: true,
+        updatedAt: true,
+        // ✅ Include author details in select
+        author: {
+          select: {
+            id: true,
+            username: true,
+            name: true,
+            avatar: true,
+          },
+        },
+        // ✅ Optional: Add like/comment counts
+        _count: {
+          select: {
+            postLikes: true,
+            comments: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    res.status(200).json({
+      success: true,
+      data: posts,
+    });
+  } catch (error) {
+    console.error("Error in getUserPosts:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
   }
-
-  return res.status(200).json(new ApiResponse(200, user));
 });
 
 const updateMe = asyncHandler(async (req, res) => {
@@ -606,4 +717,5 @@ export {
   updateMe,
   updateAvatar,
   deleteUser,
+  getUserPosts,
 };

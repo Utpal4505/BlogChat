@@ -1,19 +1,20 @@
 import React, { useContext, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
-import { MessageCircle, Bookmark } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { MessageCircle, Bookmark, FileText } from "lucide-react";
+import { motion as Motion, AnimatePresence } from "framer-motion";
 import ProfileHeader from "../components/profile/ProfileHeader/ProfileHeader";
 import TabsNavigation from "../components/profile/ProfileTabs/TabButton";
 import PostList from "../components/posts/Postlist";
 import EmptyState from "../components/profile/EmptyState";
 import LoadingScreen from "../components/LoadingScreen";
+import ErrorScreen from "../components/ErrorScreen";
 
 const ProfilePage = () => {
-  const { username } = useParams(); // Get username from URL (/profile/utpal)
-  const { user, getUserProfile, toggleFollow } = useContext(AuthContext);
+  const { username } = useParams();
+  const { user, getUserProfile, toggleFollow, getUserPosts } =
+    useContext(AuthContext);
 
-  // Local state for this profile page
   const [profileUser, setProfileUser] = useState(null);
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -33,67 +34,34 @@ const ProfilePage = () => {
 
         // If no username in URL, show current user's profile
         const usernameToFetch = username || user?.username;
-
         if (!usernameToFetch) {
           setError("No user specified");
           return;
         }
 
-        // Fetch user profile
+        // Fetch profile from backend
         const profileData = await getUserProfile(usernameToFetch);
 
-        console.log(profileData)
-
-        // ✅ Add default _count if backend doesn't send it
+        // Ensure _count exists
         const userData = profileData.data;
         if (!userData._count) {
-          userData._count = {
-            followers: 0,
-            followees: 0,
-          };
+          userData._count = { followers: 0, followees: 0 };
         }
 
-        setProfileUser(profileData.data);
+        setProfileUser(userData);
+        setIsFollowing(profileData.data.isFollowing ?? false);
 
-        setPosts([
-          {
-            id: 1,
-            title: "Building a Modern Blog Platform with React and Tailwind",
-            excerpt:
-              "Learn how to create a beautiful, responsive blog platform using React, Tailwind CSS, and Framer Motion with smooth animations and dark mode support.",
-            coverImage:
-              "https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=800&h=400&fit=crop",
-            author: {
-              name: profileData.data.name,
-              avatar: profileData.data.avatar,
-            },
-            publishedDate: "2h ago",
-            readTime: 8,
-            likes: 234,
-            comments: 45,
-            tags: ["React", "Tailwind", "Web Dev"],
-          },
-          {
-            id: 2,
-            title: "The Art of Writing Clean and Maintainable Code",
-            excerpt:
-              "Discover essential principles and best practices for writing code that's easy to read, understand, and maintain for long-term project success.",
-            coverImage:
-              "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=800&h=400&fit=crop",
-            author: {
-              name: profileData.data.name,
-              avatar: profileData.data.avatar,
-            },
-            publishedDate: "1d ago",
-            readTime: 6,
-            likes: 567,
-            comments: 89,
-            tags: ["Clean Code", "Best Practices", "Programming"],
-          },
-        ]);
+        // ✅ Fetch user's posts
 
-        // Set following status from backend response
-        setIsFollowing(profileData.data.isFollowing || false);
+        try {
+          const Postdata = await getUserPosts(usernameToFetch);
+
+          setPosts(Postdata.data || []);
+
+        } catch (error) {
+          console.error("Error fetching posts:", error);
+          setPosts([]); // Empty array if fetch fails
+        }
       } catch (err) {
         console.error("Error fetching profile:", err);
         setError(err.message || "Failed to load profile");
@@ -103,29 +71,21 @@ const ProfilePage = () => {
     };
 
     fetchProfileData();
-  }, [username, user, getUserProfile]);
+  }, [username, getUserProfile, getUserPosts]);
 
   // Handle follow/unfollow
   const handleFollowToggle = async () => {
+    if (!user) {
+      window.location.href = "/login";
+      return;
+    }
+
     if (!profileUser) return;
 
     try {
       const result = await toggleFollow(profileUser.id);
-
-      // Update following status
-      const newFollowingStatus = result.data.isFollowing;
+      const newFollowingStatus = result.data.following;
       setIsFollowing(newFollowingStatus);
-
-      // Update follower count optimistically
-      setProfileUser((prev) => ({
-        ...prev,
-        _count: {
-          ...prev._count,
-          followers: newFollowingStatus
-            ? prev._count.followers + 1
-            : prev._count.followers - 1,
-        },
-      }));
     } catch (err) {
       console.error("Error toggling follow:", err);
       alert(err.message || "Failed to follow/unfollow");
@@ -142,46 +102,68 @@ const ProfilePage = () => {
     // TODO: Call backend API to bookmark post
   };
 
+  // ✅ Retry handler
+  const handleRetry = () => {
+    setError(null);
+    setLoading(true);
+    // Re-trigger useEffect by updating a dependency (already happens automatically)
+    window.location.reload();
+  };
+
   // Loading state
   if (loading) {
     return <LoadingScreen text="Loading profile..." />;
   }
 
-  // Error state
+  // Error state - Use ErrorScreen
   if (error) {
+    // Determine error type based on error message
+    let errorType = "error";
+    if (
+      error.toLowerCase().includes("not found") ||
+      error.toLowerCase().includes("user")
+    ) {
+      errorType = "404";
+    } else if (
+      error.toLowerCase().includes("network") ||
+      error.toLowerCase().includes("connection")
+    ) {
+      errorType = "network";
+    } else if (
+      error.toLowerCase().includes("permission") ||
+      error.toLowerCase().includes("access")
+    ) {
+      errorType = "403";
+    }
+
     return (
-      <div className="min-h-screen flex items-center justify-center bg-bg dark:bg-dbg">
-        <div className="text-center">
-          <p className="text-xl text-danger mb-4">{error}</p>
-          <button
-            onClick={() => window.history.back()}
-            className="px-4 py-2 bg-accent dark:bg-daccent text-bg dark:text-dText rounded-lg"
-          >
-            Go Back
-          </button>
-        </div>
-      </div>
+      <ErrorScreen
+        type={errorType}
+        title={errorType === "404" ? "User Not Found" : undefined}
+        message={error}
+        showRefresh={true}
+        showHome={true}
+        showBack={true}
+        onRetry={handleRetry}
+      />
     );
   }
 
-  // User not found
+  // ✅ User not found - Use ErrorScreen instead
   if (!profileUser) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-bg dark:bg-dbg">
-        <div className="text-center">
-          <p className="text-xl text-muted-text dark:text-dMuted-text mb-4">
-            User not found
-          </p>
-          <button
-            onClick={() => window.history.back()}
-            className="px-4 py-2 bg-accent dark:bg-daccent text-bg dark:text-dText rounded-lg"
-          >
-            Go Back
-          </button>
-        </div>
-      </div>
+      <ErrorScreen
+        type="404"
+        title="User Not Found"
+        message="This profile doesn't exist or has been removed."
+        showRefresh={false}
+        showHome={true}
+        showBack={true}
+      />
     );
   }
+
+  console.log("Profile page posts", posts);
 
   // Check if viewing own profile
   const isOwnProfile = user?.username === profileUser.username;
@@ -199,22 +181,33 @@ const ProfilePage = () => {
         <TabsNavigation activeTab={activeTab} onTabChange={setActiveTab} />
 
         <AnimatePresence mode="wait">
-          <motion.div
+          <Motion.div
             key={activeTab}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.25 }}
           >
-            {activeTab === "posts" && (
-              <PostList
-                posts={posts}
-                likedPosts={likedPosts}
-                bookmarkedPosts={bookmarkedPosts}
-                onLike={handleLike}
-                onBookmark={handleBookmark}
-              />
-            )}
+            {activeTab === "posts" &&
+              (posts.length > 0 ? (
+                <PostList
+                  posts={posts}
+                  likedPosts={likedPosts}
+                  bookmarkedPosts={bookmarkedPosts}
+                  onLike={handleLike}
+                  onBookmark={handleBookmark}
+                />
+              ) : (
+                <EmptyState
+                  icon={FileText}
+                  title="No posts yet"
+                  subtitle={
+                    isOwnProfile
+                      ? "Start sharing your thoughts!"
+                      : "This user hasn't posted anything yet."
+                  }
+                />
+              ))}
 
             {activeTab === "replies" && (
               <EmptyState
@@ -239,7 +232,7 @@ const ProfilePage = () => {
                 }
               />
             )}
-          </motion.div>
+          </Motion.div>
         </AnimatePresence>
       </div>
     </div>

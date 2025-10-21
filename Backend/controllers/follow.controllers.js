@@ -32,12 +32,12 @@ export const follow = asyncHandler(async (req, res) => {
     if (existingfollow) {
       await prisma.follow.delete({
         where: {
-          followerId_followingId: {
-            followerId,
-            followingId: Number(userId),
-          },
-        },
-      });
+          followerId_followeeId: {
+            followerId: followerId,
+            followeeId: Number(userId)
+          }
+        }
+      })
 
       return res
         .status(200)
@@ -46,8 +46,8 @@ export const follow = asyncHandler(async (req, res) => {
 
     await prisma.follow.create({
       data: {
-        followerId,
-        followingId: Number(userId),
+        follower: { connect: { id: followerId } },
+        followee: { connect: { id: Number(userId) } },
       },
     });
 

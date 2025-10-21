@@ -7,6 +7,18 @@ import PostTags from "./PostTags";
 import PostActions from "./PostActions";
 
 const PostCard = ({ post, index, liked, bookmarked, onLike, onBookmark }) => {
+  console.log("PostCard received:", post);
+
+  const calculateReadTime = (content) => {
+    const wordsPerMinute = 200;
+    const words = content.trim().split(/\s+/).length;
+    const minutes = Math.ceil(words / wordsPerMinute);
+
+    return minutes < 1 ? "1 min read" : `${minutes} min read`;
+  };
+
+  const tags = post.postTags?.map((tagObj) => tagObj.tag.name) || [];
+
   return (
     <Motion.article
       initial={{ opacity: 0, y: 20 }}
@@ -22,8 +34,8 @@ const PostCard = ({ post, index, liked, bookmarked, onLike, onBookmark }) => {
         {/* Author & Meta */}
         <PostAuthor
           author={post.author}
-          publishedDate={post.publishedDate}
-          readTime={post.readTime}
+          publishedDate={post.publishedAt}
+          readTime={calculateReadTime(post.content)}
         />
 
         {/* Title */}
@@ -33,12 +45,12 @@ const PostCard = ({ post, index, liked, bookmarked, onLike, onBookmark }) => {
         <PostExcerpt excerpt={post.excerpt} />
 
         {/* Tags */}
-        <PostTags tags={post.tags} />
+        <PostTags tags={tags} />
 
         {/* Stats & Actions */}
         <PostActions
-          likes={post.likes}
-          comments={post.comments}
+          likes={post._count?.postLikes || 0}
+          comments={post._count?.comments || 0}
           liked={liked}
           bookmarked={bookmarked}
           onLike={() => onLike(post.id)}

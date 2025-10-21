@@ -3,6 +3,7 @@ import {
   createUser,
   deleteUser,
   getMe,
+  getUserPosts,
   getUserProfile,
   LoggedOutUser,
   LoginUser,
@@ -26,6 +27,7 @@ import {
 } from "../middlewares/rateLimiters.middlewares.js";
 import { verifyRefreshToken } from "../middlewares/VerifyRefreshToken.js";
 import { follow } from "../controllers/follow.controllers.js";
+import { verifyJWTSoft } from "../middlewares/verifyJWTSoft.middlewares.js";
 
 const router = Router();
 
@@ -43,12 +45,13 @@ router.route("/me").get(verifyJWT, getMe);
 router.route("/verifyOTP").post(registerLimiter, verifyOTP);
 router.route("/reset-password").post(verifyResetPassword);
 router.route("/resetOTPsent").post(otpLimiter, resetPasswordOTP);
-router.route("/profile/:username").get(getUserProfile);
+router.route("/profile/:username").get(verifyJWTSoft, getUserProfile);
 router.route("/me/update").patch(verifyJWT, updateMe);
 router
   .route("/me/avatar")
   .patch(verifyJWT, upload.single("avatar"), updateAvatar);
 router.route("/delete").delete(verifyJWT, deleteUser);
 router.route("/:userId/follow").post(verifyJWT, follow);
+router.route("/profile/:username/posts").get(getUserPosts);
 
 export default router;

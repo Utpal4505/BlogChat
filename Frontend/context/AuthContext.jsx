@@ -24,26 +24,69 @@ const Feedbackapi = axios.create({
   withCredentials: true,
 });
 
+// Add these flags at the top, BEFORE the AuthProvider component
+let isRefreshing = false;
+let failedQueue = [];
+
+const processQueue = (error) => {
+  failedQueue.forEach((prom) => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve();
+    }
+  });
+  failedQueue = [];
+};
+
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null); // Only current logged-in user
+  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Interceptors
-  [Userapi, Postapi].forEach((instance) => {
+  // Interceptors - FIXED VERSION
+  [Userapi, Postapi, Bugapi, Feedbackapi].forEach((instance) => {
     instance.interceptors.response.use(
       (response) => response,
       async (error) => {
         const originalRequest = error.config;
 
         if (error.response?.status === 401 && !originalRequest._retry) {
+          // ❌ PREVENT: Don't refresh if it's the refresh-token or /me endpoint failing
+          if (
+            originalRequest.url?.includes("/refresh-token") ||
+            originalRequest.url?.includes("/me")
+          ) {
+            isRefreshing = false;
+            return Promise.reject(error);
+          }
+
+          // ❌ PREVENT: Don't refresh if user is not logged in (guest)
+          if (!user) {
+            return Promise.reject(error);
+          }
+
+          // ⏳ Queue requests if refresh is already in progress
+          if (isRefreshing) {
+            return new Promise((resolve, reject) => {
+              failedQueue.push({ resolve, reject });
+            })
+              .then(() => instance(originalRequest))
+              .catch((err) => Promise.reject(err));
+          }
+
           originalRequest._retry = true;
+          isRefreshing = true;
 
           try {
             await Userapi.post("/refresh-token");
+            processQueue(null);
+            isRefreshing = false;
             return instance(originalRequest);
           } catch (refreshError) {
+            processQueue(refreshError);
+            isRefreshing = false;
+            setUser(null); // Clear user session
             console.error("Token refresh failed:", refreshError);
-            setUser(null);
             return Promise.reject(refreshError);
           }
         }
@@ -154,6 +197,9 @@ export const AuthProvider = ({ children }) => {
     try {
       await Userapi.post("/logout");
       setUser(null);
+
+      isRefreshing = false; // ✅ Reset refresh flag
+      failedQueue = []; // ✅ Clear queue
     } catch (err) {
       throw normalizeError(err);
     }
@@ -228,6 +274,15 @@ export const AuthProvider = ({ children }) => {
     try {
       const { data } = await Userapi.delete("/delete");
       setUser(null);
+      return data;
+    } catch (error) {
+      throw normalizeError(error);
+    }
+  };
+
+  const getUserPosts = async (username) => {
+    try {
+      const { data } = await Userapi.get(`/profile/${username}/posts`);
       return data;
     } catch (error) {
       throw normalizeError(error);
@@ -387,6 +442,7 @@ export const AuthProvider = ({ children }) => {
         updateAvatar,
         deleteUser,
         toggleFollow,
+        getUserPosts,
 
         // Post methods
         createPost,
