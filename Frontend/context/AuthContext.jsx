@@ -1,10 +1,9 @@
 import { createContext, useEffect, useState } from "react";
 import axios from "axios";
 
-// eslint-disable-next-line react-refresh/only-export-components
 export const AuthContext = createContext();
 
-// ✅ axios instance with credentials for cookies
+// ✅ axios instances
 const Userapi = axios.create({
   baseURL: "http://localhost:8000/api/v1/users",
   withCredentials: true,
@@ -25,40 +24,55 @@ const Feedbackapi = axios.create({
   withCredentials: true,
 });
 
-[Userapi, Postapi].forEach((instance) => {
-  instance.interceptors.response.use(
-    (response) => response,
-    (error) => {
-      // Agar backend se response aaya hai
-      if (error.response) {
-        const { message, errors } = error.response.data;
+export const AuthProvider = ({ children }) => {
+  const [user, setUser] = useState(null); // Only current logged-in user
+  const [loading, setLoading] = useState(true);
 
+  // Interceptors
+  [Userapi, Postapi].forEach((instance) => {
+    instance.interceptors.response.use(
+      (response) => response,
+      async (error) => {
+        const originalRequest = error.config;
+
+        if (error.response?.status === 401 && !originalRequest._retry) {
+          originalRequest._retry = true;
+
+          try {
+            await Userapi.post("/refresh-token");
+            return instance(originalRequest);
+          } catch (refreshError) {
+            console.error("Token refresh failed:", refreshError);
+            setUser(null);
+            return Promise.reject(refreshError);
+          }
+        }
+
+        const { message, errors } = error.response?.data || {};
         return Promise.reject({
           message: message || "Something went wrong",
           errors: errors || [],
         });
       }
+    );
+  });
 
-      // Agar network error / server down ho
-      return Promise.reject({
-        message: "Network error. Please try again later.",
-        errors: [],
-      });
-    }
-  );
-});
+  // Helper
+  const normalizeError = (err) => {
+    return {
+      message:
+        err.response?.data?.message || err.message || "Something went wrong",
+      errors: err.response?.data?.errors || [],
+    };
+  };
 
-export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [posts, setPosts] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  // ✅ Get current user from backend (/me)
+  // Get current logged-in user
   const fetchUser = async () => {
     try {
       const { data } = await Userapi.get("/me");
       setUser(data.data);
-    } catch {
+    } catch (err) {
+      console.error("Fetching user failed:", err);
       setUser(null);
     } finally {
       setLoading(false);
@@ -69,7 +83,19 @@ export const AuthProvider = ({ children }) => {
     fetchUser();
   }, []);
 
-  // ---------- User Methods ----------
+  // ---------- Auth Methods ----------
+
+  const register = async ({ name, email }) => {
+    try {
+      const { data } = await Userapi.post("/register", { name, email });
+      if (data.data.status === "PENDING") {
+        setUser(data.data);
+      }
+      return data;
+    } catch (err) {
+      throw normalizeError(err);
+    }
+  };
 
   const verifyOTP = async ({ verificationId, otp }) => {
     try {
@@ -84,7 +110,6 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  //onboard user
   const onBoardUser = async ({ username, password, bio, email }) => {
     try {
       const { data } = await Userapi.patch("/onboarding", {
@@ -100,7 +125,6 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  //check-username availability
   const checkUsernameAvailability = async (username) => {
     try {
       const { data } = await Userapi.get("/username-check", {
@@ -112,23 +136,6 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // ✅ Register
-  const register = async ({ name, email }) => {
-    try {
-      const { data } = await Userapi.post("/register", {
-        name,
-        email,
-      });
-      if (data.data.status === "PENDING") {
-        setUser(data.data);
-      }
-      return data;
-    } catch (err) {
-      throw normalizeError(err);
-    }
-  };
-
-  // ✅ Login with username + password
   const login = async ({ username, password }) => {
     try {
       const { data } = await Userapi.post("/login", { username, password });
@@ -139,12 +146,10 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // ✅ Login with Google
   const loginWithGoogle = () => {
     window.location.href = "http://localhost:8000/api/v1/auth/google";
   };
 
-  // ✅ Logout
   const logout = async () => {
     try {
       await Userapi.post("/logout");
@@ -176,9 +181,72 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // ---------- User Profile Methods ----------
+
+  const getUserProfile = async (username) => {
+    try {
+      const { data } = await Userapi.get(`/profile/${username}`);
+      return data;
+    } catch (error) {
+      throw normalizeError(error);
+    }
+  };
+
+  const updateUserProfile = async ({ bio, name, email }) => {
+    try {
+      const { data } = await Userapi.patch("/me/update", {
+        bio,
+        name,
+        email,
+      });
+      setUser(data.data);
+      return data;
+    } catch (error) {
+      throw normalizeError(error);
+    }
+  };
+
+  const updateAvatar = async (avatarFile) => {
+    try {
+      const formData = new FormData();
+      formData.append("avatar", avatarFile);
+
+      const { data } = await Userapi.patch("/me/avatar", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      setUser(data.data);
+      return data;
+    } catch (error) {
+      throw normalizeError(error);
+    }
+  };
+
+  const deleteUser = async () => {
+    try {
+      const { data } = await Userapi.delete("/delete");
+      setUser(null);
+      return data;
+    } catch (error) {
+      throw normalizeError(error);
+    }
+  };
+
+  // ---------- Follow Method ----------
+
+  const toggleFollow = async (userId) => {
+    try {
+      const { data } = await Userapi.post(`/${userId}/follow`);
+      return data;
+    } catch (error) {
+      throw normalizeError(error);
+    }
+  };
+
   // ---------- Post Methods ----------
 
-  // Create Post
   const createPost = async ({ title, content, tags, coverImage }) => {
     try {
       const { data } = await Postapi.post("/create", {
@@ -187,23 +255,95 @@ export const AuthProvider = ({ children }) => {
         tags,
         coverImage,
       });
-
-      setPosts(data);
-
       return data;
     } catch (err) {
       throw normalizeError(err);
     }
   };
 
-  // Report Bug
+  const getPostById = async (postId) => {
+    try {
+      const { data } = await Postapi.get(`/post/${postId}`);
+      return data;
+    } catch (error) {
+      throw normalizeError(error);
+    }
+  };
+
+  const getFeedPosts = async () => {
+    try {
+      const { data } = await Postapi.get("/feed");
+      return data;
+    } catch (error) {
+      throw normalizeError(error);
+    }
+  };
+
+  const likePost = async (postId) => {
+    try {
+      const { data } = await Postapi.post(`/post/${postId}/like`);
+      return data;
+    } catch (error) {
+      throw normalizeError(error);
+    }
+  };
+
+  const updatePost = async (postId, { title, content, tags, coverImage }) => {
+    try {
+      const formData = new FormData();
+      if (title) formData.append("title", title);
+      if (content) formData.append("content", content);
+      if (tags) formData.append("tags", JSON.stringify(tags));
+      if (coverImage) formData.append("coverImage", coverImage);
+
+      const { data } = await Postapi.patch(`/update/${postId}`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      return data;
+    } catch (error) {
+      throw normalizeError(error);
+    }
+  };
+
+  const deletePost = async (postId) => {
+    try {
+      const { data } = await Postapi.delete(`/delete/${postId}`);
+      return data;
+    } catch (error) {
+      throw normalizeError(error);
+    }
+  };
+
+  const getPostComments = async (postId) => {
+    try {
+      const { data } = await Postapi.get(`/post/${postId}/comments`);
+      return data;
+    } catch (error) {
+      throw normalizeError(error);
+    }
+  };
+
+  const createComment = async (postId, commentContent) => {
+    try {
+      const { data } = await Postapi.post(`/post/${postId}/comment`, {
+        content: commentContent,
+      });
+      return data;
+    } catch (error) {
+      throw normalizeError(error);
+    }
+  };
+
+  // ---------- Bug & Feedback ----------
+
   const create_Bug = async ({ bugPayload, recaptchaToken }) => {
     try {
       const { data } = await Bugapi.post("/", {
         bugPayload,
         recaptchaToken,
       });
-
       return data;
     } catch (error) {
       throw normalizeError(error);
@@ -216,28 +356,20 @@ export const AuthProvider = ({ children }) => {
         feedbackPayload,
         recaptchaToken,
       });
-
       return data;
     } catch (error) {
       throw normalizeError(error);
     }
   };
 
-  // ---------- Helper ----------
-  const normalizeError = (err) => {
-    return {
-      message:
-        err.response?.data?.message || err.message || "Something went wrong",
-      errors: err.response?.data?.errors || [],
-    };
-  };
-
   return (
     <AuthContext.Provider
       value={{
+        // Current user state
         user,
-        posts,
         loading,
+
+        // Auth methods
         login,
         loginWithGoogle,
         register,
@@ -248,7 +380,25 @@ export const AuthProvider = ({ children }) => {
         verifyOTP,
         resetPasswordOTP,
         verifyResetPassword,
+
+        // User profile methods
+        getUserProfile,
+        updateUserProfile,
+        updateAvatar,
+        deleteUser,
+        toggleFollow,
+
+        // Post methods
         createPost,
+        getPostById,
+        getFeedPosts,
+        likePost,
+        updatePost,
+        deletePost,
+        getPostComments,
+        createComment,
+
+        // Bug & Feedback
         create_Bug,
         create_Feedback,
       }}

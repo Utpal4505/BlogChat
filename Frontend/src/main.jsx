@@ -18,6 +18,7 @@ import BlogEditor from "../pages/Write.jsx";
 import ReportBug from "../pages/ReportBug.jsx";
 import { GoogleReCaptchaProvider } from "react-google-recaptcha-v3";
 import Feedback from "../pages/Feedback.jsx";
+import ProfilePage from "../pages/Profile.jsx";
 
 const MAX_CONSOLE_ERRORS = 5;
 export const consoleErrors = [];
@@ -51,7 +52,6 @@ const withReCaptcha = (Component) => (
     reCaptchaKey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}
     scriptProps={{ async: true, defer: true, appendTo: "body" }}
   >
-
     <Component />
   </GoogleReCaptchaProvider>
 );
@@ -69,15 +69,28 @@ const router = createBrowserRouter([
             path: "dashboard",
             element: <Dashboard />,
           },
+          {
+            path: "Write-Blog",
+            element: <BlogEditor />,
+          },
         ],
       },
       {
         path: "report-bug",
-        element: withReCaptcha(ReportBug)
+        element: withReCaptcha(ReportBug),
       },
       {
         path: "feedback",
-        element: withReCaptcha(Feedback)
+        element: withReCaptcha(Feedback),
+      },
+      // ✅ Profile routes (order matters!)
+      {
+        path: "profile/:username", // Dynamic username route
+        element: <ProfilePage />,
+      },
+      {
+        path: "profile", // Own profile (no username)
+        element: <ProfilePage />,
       },
     ],
   },
@@ -116,10 +129,6 @@ const router = createBrowserRouter([
           {
             path: "onboarding",
             element: <Onboarding />,
-          },
-          {
-            path: "Write-Blog",
-            element: <BlogEditor />,
           },
         ],
       },

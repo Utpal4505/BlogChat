@@ -223,7 +223,10 @@ export const getPostById = asyncHandler(async (req, res) => {
         content: true,
         slug: true,
         authorId: true,
-        author: { select: {} },
+        author: { select: {
+          username: true,
+          avatar: true,
+        } },
         coverImage: true,
         commentCount: true,
         comments: true,
@@ -280,6 +283,12 @@ export const getFeedPost = asyncHandler(async (req, res) => {
         content: true,
         slug: true,
         authorId: true,
+        author: {
+          select: {
+            username: true,
+            avatar: true,
+          }
+        },
         coverImage: true,
         commentCount: true,
         createdAt: true,

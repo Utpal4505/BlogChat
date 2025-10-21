@@ -472,6 +472,7 @@ const getUserProfile = asyncHandler(async (req, res) => {
       id: true,
       email: true,
       name: true,
+      username: true,
       bio: true,
       avatar: true,
       registration_status: true,
