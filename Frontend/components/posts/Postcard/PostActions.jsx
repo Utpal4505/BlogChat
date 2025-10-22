@@ -1,7 +1,15 @@
 import { Heart, MessageCircle, Bookmark } from "lucide-react";
 
-const PostActions = ({ likes, comments, liked, bookmarked, onLike, onBookmark }) => {
-
+const PostActions = ({ 
+  likes, 
+  comments, 
+  liked, 
+  bookmarked, 
+  onLike, 
+  onBookmark,
+  onCommentClick,
+  showingComments = false
+}) => {
   return (
     <div className="flex items-center justify-between pt-4 border-t border-bordercolor/50 dark:border-dbordercolor/50">
       {/* Engagement Stats */}
@@ -36,15 +44,28 @@ const PostActions = ({ likes, comments, liked, bookmarked, onLike, onBookmark })
 
         {/* Comments */}
         <button
-          onClick={(e) => e.stopPropagation()}
+          onClick={(e) => {
+            e.stopPropagation();
+            onCommentClick();
+          }}
           className="flex items-center gap-2 group/comment transition-all"
         >
           <MessageCircle
             size={19}
             strokeWidth={2.2}
-            className="stroke-muted-text dark:stroke-dMuted-text group-hover/comment:stroke-accent dark:group-hover/comment:stroke-daccent group-hover/comment:scale-110 transition-all duration-200"
+            className={`transition-all duration-200 ${
+              showingComments
+                ? "stroke-accent dark:stroke-daccent scale-110"
+                : "stroke-muted-text dark:stroke-dMuted-text group-hover/comment:stroke-accent dark:group-hover/comment:stroke-daccent group-hover/comment:scale-110"
+            }`}
           />
-          <span className="text-[14px] font-bold tabular-nums text-muted-text dark:text-dMuted-text group-hover/comment:text-accent dark:group-hover/comment:text-daccent transition-colors">
+          <span 
+            className={`text-[14px] font-bold tabular-nums transition-colors ${
+              showingComments
+                ? "text-accent dark:text-daccent"
+                : "text-muted-text dark:text-dMuted-text group-hover/comment:text-accent dark:group-hover/comment:text-daccent"
+            }`}
+          >
             {comments}
           </span>
         </button>

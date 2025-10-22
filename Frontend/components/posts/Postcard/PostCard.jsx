@@ -1,12 +1,15 @@
-import { motion as Motion } from "framer-motion";
+import { motion as Motion, AnimatePresence } from "framer-motion";
 import PostCoverImage from "./PostCoverImage";
 import PostAuthor from "./PostAuthor";
 import PostTitle from "./PostTitle";
 import PostExcerpt from "./PostExcerpt";
 import PostTags from "./PostTags";
 import PostActions from "./PostActions";
+import { useState } from "react";
+import CommentSection from "./Comments";
 
 const PostCard = ({ post, liked, index, bookmarked, onLike, onBookmark }) => {
+  const [showComments, setShowComments] = useState(false);
 
   const calculateReadTime = (content) => {
     const wordsPerMinute = 200;
@@ -52,9 +55,16 @@ const PostCard = ({ post, liked, index, bookmarked, onLike, onBookmark }) => {
           comments={post._count?.comments || 0}
           liked={liked}
           bookmarked={bookmarked}
-          onLike={() => onLike(post.id)}
-          onBookmark={() => onBookmark(post.id)}
+          onLike={onLike}
+          onBookmark={onBookmark}
+          onCommentClick={() => setShowComments(!showComments)} // ✅ Toggle
+          showingComments={showComments}
         />
+
+        {/* ✅ Comment Section - Add this */}
+        <AnimatePresence>
+          {showComments && <CommentSection postId={post.id} />}
+        </AnimatePresence>
       </div>
     </Motion.article>
   );
