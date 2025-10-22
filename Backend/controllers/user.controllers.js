@@ -524,6 +524,7 @@ const getUserProfile = asyncHandler(async (req, res) => {
 const getUserPosts = asyncHandler(async (req, res) => {
   try {
     const { username } = req.params;
+    const currentUserId = req.user?.id;
 
     // Check if user exists first
     const user = await prisma.user.findUnique({
@@ -558,6 +559,17 @@ const getUserPosts = asyncHandler(async (req, res) => {
             },
           },
         },
+        postLikes: currentUserId
+          ? {
+              where: {
+                userId: currentUserId,
+              },
+              select: {
+                id: true,
+                postId: true,
+              },
+            }
+          : false,
         authorId: true,
         createdAt: true,
         publishedAt: true,
@@ -584,9 +596,15 @@ const getUserPosts = asyncHandler(async (req, res) => {
       },
     });
 
+    const postsWithStatus = posts.map((post) => ({
+      ...post,
+      isLiked: post.postLikes?.length > 0,
+      postLikes: undefined, // Remove from response
+    }));
+
     res.status(200).json({
       success: true,
-      data: posts,
+      data: postsWithStatus,
     });
   } catch (error) {
     console.error("Error in getUserPosts:", error);

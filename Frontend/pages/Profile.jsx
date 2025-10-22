@@ -12,7 +12,7 @@ import ErrorScreen from "../components/ErrorScreen";
 
 const ProfilePage = () => {
   const { username } = useParams();
-  const { user, getUserProfile, toggleFollow, getUserPosts } =
+  const { user, getUserProfile, toggleFollow, getUserPosts, likePost } =
     useContext(AuthContext);
 
   const [profileUser, setProfileUser] = useState(null);
@@ -25,24 +25,22 @@ const ProfilePage = () => {
   const [likedPosts, setLikedPosts] = useState({});
   const [bookmarkedPosts, setBookmarkedPosts] = useState({});
 
-  // Fetch profile data when component mounts or username changes
+  // ❌ Remove this - not needed
+  // const [likedData, setLikedData] = useState({});
+
   useEffect(() => {
     const fetchProfileData = async () => {
       try {
         setLoading(true);
         setError(null);
 
-        // If no username in URL, show current user's profile
         const usernameToFetch = username || user?.username;
         if (!usernameToFetch) {
           setError("No user specified");
           return;
         }
 
-        // Fetch profile from backend
         const profileData = await getUserProfile(usernameToFetch);
-
-        // Ensure _count exists
         const userData = profileData.data;
         if (!userData._count) {
           userData._count = { followers: 0, followees: 0 };
@@ -51,17 +49,23 @@ const ProfilePage = () => {
         setProfileUser(userData);
         setIsFollowing(profileData.data.isFollowing ?? false);
 
-        // ✅ Fetch user's posts
+        // Fetch posts
+        const postsData = await getUserPosts(usernameToFetch);
 
-        try {
-          const Postdata = await getUserPosts(usernameToFetch);
+        setPosts(postsData.data || []);
 
-          setPosts(Postdata.data || []);
+        // Initialize liked status
+        const initialLikedPosts = {};
+        const initialBookmarkedPosts = {};
 
-        } catch (error) {
-          console.error("Error fetching posts:", error);
-          setPosts([]); // Empty array if fetch fails
-        }
+        postsData.data?.forEach((post) => {
+          initialLikedPosts[post.id] = post.isLiked || false;
+          initialBookmarkedPosts[post.id] = post.isBookmarked || false;
+        });
+
+
+        setLikedPosts(initialLikedPosts);
+        setBookmarkedPosts(initialBookmarkedPosts);
       } catch (err) {
         console.error("Error fetching profile:", err);
         setError(err.message || "Failed to load profile");
@@ -73,7 +77,6 @@ const ProfilePage = () => {
     fetchProfileData();
   }, [username, getUserProfile, getUserPosts]);
 
-  // Handle follow/unfollow
   const handleFollowToggle = async () => {
     if (!user) {
       window.location.href = "/login";
@@ -92,9 +95,57 @@ const ProfilePage = () => {
     }
   };
 
-  const handleLike = (postId) => {
-    setLikedPosts((prev) => ({ ...prev, [postId]: !prev[postId] }));
-    // TODO: Call backend API to like post
+  const handleLike = async (postId) => {
+    if (!user) {
+      window.location.href = "/login";
+      return;
+    }
+
+    const wasLiked = likedPosts[postId] || false;
+    const currentPost = posts.find((p) => p.id === postId);
+    const currentCount = currentPost?._count?.postLikes || 0;
+
+
+    // Optimistic update
+    setLikedPosts((prev) => ({ ...prev, [postId]: !wasLiked }));
+
+    setPosts((prev) =>
+      prev.map((post) =>
+        post.id === postId
+          ? {
+              ...post,
+              _count: {
+                ...post._count,
+                postLikes: wasLiked ? currentCount - 1 : currentCount + 1,
+              },
+            }
+          : post
+      )
+    );
+
+    try {
+      await likePost(postId); // ✅ Just call, don't need response
+    } catch (error) {
+      console.error("❌ Like failed, reverting...", error);
+
+      // Revert optimistic update
+      setLikedPosts((prev) => ({ ...prev, [postId]: wasLiked }));
+      setPosts((prev) =>
+        prev.map((post) =>
+          post.id === postId
+            ? {
+                ...post,
+                _count: {
+                  ...post._count,
+                  postLikes: currentCount,
+                },
+              }
+            : post
+        )
+      );
+
+      alert("Failed to like post");
+    }
   };
 
   const handleBookmark = (postId) => {
@@ -102,22 +153,17 @@ const ProfilePage = () => {
     // TODO: Call backend API to bookmark post
   };
 
-  // ✅ Retry handler
   const handleRetry = () => {
     setError(null);
     setLoading(true);
-    // Re-trigger useEffect by updating a dependency (already happens automatically)
     window.location.reload();
   };
 
-  // Loading state
   if (loading) {
     return <LoadingScreen text="Loading profile..." />;
   }
 
-  // Error state - Use ErrorScreen
   if (error) {
-    // Determine error type based on error message
     let errorType = "error";
     if (
       error.toLowerCase().includes("not found") ||
@@ -149,7 +195,6 @@ const ProfilePage = () => {
     );
   }
 
-  // ✅ User not found - Use ErrorScreen instead
   if (!profileUser) {
     return (
       <ErrorScreen
@@ -163,9 +208,6 @@ const ProfilePage = () => {
     );
   }
 
-  console.log("Profile page posts", posts);
-
-  // Check if viewing own profile
   const isOwnProfile = user?.username === profileUser.username;
 
   return (

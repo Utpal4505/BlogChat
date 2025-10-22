@@ -6,8 +6,7 @@ import PostExcerpt from "./PostExcerpt";
 import PostTags from "./PostTags";
 import PostActions from "./PostActions";
 
-const PostCard = ({ post, index, liked, bookmarked, onLike, onBookmark }) => {
-  console.log("PostCard received:", post);
+const PostCard = ({ post, liked, index, bookmarked, onLike, onBookmark }) => {
 
   const calculateReadTime = (content) => {
     const wordsPerMinute = 200;

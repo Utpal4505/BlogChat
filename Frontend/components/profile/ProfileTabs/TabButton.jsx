@@ -8,7 +8,7 @@ const TabsNavigation = ({ activeTab, onTabChange }) => {
   ];
 
   return (
-    <div className="border-y border-bordercolor dark:border-dbordercolor sticky top-0 bg-bg/98 dark:bg-dbg/98 backdrop-blur-2xl z-20 -mx-4 px-4 shadow-sm">
+    <div className="border-y border-bordercolor dark:border-dbordercolor sticky top-0 bg-bg/98 dark:bg-dbg/98 backdrop-blur-2xl z-20 -mx-4 px-4 mb-4 shadow-sm">
       <div className="flex">
         {tabs.map((tab) => (
           <button

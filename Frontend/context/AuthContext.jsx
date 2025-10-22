@@ -24,81 +24,71 @@ const Feedbackapi = axios.create({
   withCredentials: true,
 });
 
-// Add these flags at the top, BEFORE the AuthProvider component
 let isRefreshing = false;
 let failedQueue = [];
 
-const processQueue = (error) => {
+const processQueue = (error, token = null) => {
   failedQueue.forEach((prom) => {
     if (error) {
       prom.reject(error);
     } else {
-      prom.resolve();
+      prom.resolve(token);
     }
   });
   failedQueue = [];
 };
 
+[Userapi, Postapi, Bugapi, Feedbackapi].forEach((instance) => {
+  instance.interceptors.response.use(
+    (response) => response,
+    async (error) => {
+      const originalRequest = error.config;
+
+      if (error.response?.status === 401 && !originalRequest._retry) {
+        // Skip only refresh-token endpoint
+        if (originalRequest.url?.includes("/refresh-token")) {
+          isRefreshing = false;
+          processQueue(error, null);
+          return Promise.reject(error);
+        }
+
+        // Queue check
+        if (isRefreshing) {
+          return new Promise((resolve, reject) => {
+            failedQueue.push({ resolve, reject });
+          })
+            .then(() => instance(originalRequest))
+            .catch((err) => Promise.reject(err));
+        }
+
+        originalRequest._retry = true;
+        isRefreshing = true;
+
+        try {
+          await Userapi.post("/refresh-token");
+          processQueue(null);
+          isRefreshing = false;
+          return instance(originalRequest);
+        } catch (refreshError) {
+          processQueue(refreshError);
+          isRefreshing = false;
+          console.error("Token refresh failed:", refreshError);
+          return Promise.reject(refreshError);
+        }
+      }
+
+      const { message, errors } = error.response?.data || {};
+      return Promise.reject({
+        message: message || "Something went wrong",
+        errors: errors || [],
+      });
+    }
+  );
+});
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-
-  // Interceptors - FIXED VERSION
-  [Userapi, Postapi, Bugapi, Feedbackapi].forEach((instance) => {
-    instance.interceptors.response.use(
-      (response) => response,
-      async (error) => {
-        const originalRequest = error.config;
-
-        if (error.response?.status === 401 && !originalRequest._retry) {
-          // ❌ PREVENT: Don't refresh if it's the refresh-token or /me endpoint failing
-          if (
-            originalRequest.url?.includes("/refresh-token") ||
-            originalRequest.url?.includes("/me")
-          ) {
-            isRefreshing = false;
-            return Promise.reject(error);
-          }
-
-          // ❌ PREVENT: Don't refresh if user is not logged in (guest)
-          if (!user) {
-            return Promise.reject(error);
-          }
-
-          // ⏳ Queue requests if refresh is already in progress
-          if (isRefreshing) {
-            return new Promise((resolve, reject) => {
-              failedQueue.push({ resolve, reject });
-            })
-              .then(() => instance(originalRequest))
-              .catch((err) => Promise.reject(err));
-          }
-
-          originalRequest._retry = true;
-          isRefreshing = true;
-
-          try {
-            await Userapi.post("/refresh-token");
-            processQueue(null);
-            isRefreshing = false;
-            return instance(originalRequest);
-          } catch (refreshError) {
-            processQueue(refreshError);
-            isRefreshing = false;
-            setUser(null); // Clear user session
-            console.error("Token refresh failed:", refreshError);
-            return Promise.reject(refreshError);
-          }
-        }
-
-        const { message, errors } = error.response?.data || {};
-        return Promise.reject({
-          message: message || "Something went wrong",
-          errors: errors || [],
-        });
-      }
-    );
-  });
 
   // Helper
   const normalizeError = (err) => {
@@ -197,9 +187,8 @@ export const AuthProvider = ({ children }) => {
     try {
       await Userapi.post("/logout");
       setUser(null);
-
-      isRefreshing = false; // ✅ Reset refresh flag
-      failedQueue = []; // ✅ Clear queue
+      isRefreshing = false;
+      failedQueue = [];
     } catch (err) {
       throw normalizeError(err);
     }
@@ -420,11 +409,8 @@ export const AuthProvider = ({ children }) => {
   return (
     <AuthContext.Provider
       value={{
-        // Current user state
         user,
         loading,
-
-        // Auth methods
         login,
         loginWithGoogle,
         register,
@@ -435,16 +421,12 @@ export const AuthProvider = ({ children }) => {
         verifyOTP,
         resetPasswordOTP,
         verifyResetPassword,
-
-        // User profile methods
         getUserProfile,
         updateUserProfile,
         updateAvatar,
         deleteUser,
         toggleFollow,
         getUserPosts,
-
-        // Post methods
         createPost,
         getPostById,
         getFeedPosts,
@@ -453,8 +435,6 @@ export const AuthProvider = ({ children }) => {
         deletePost,
         getPostComments,
         createComment,
-
-        // Bug & Feedback
         create_Bug,
         create_Feedback,
       }}

@@ -1,6 +1,6 @@
 import PostCard from "./Postcard/PostCard";
 
-const PostList = ({ posts, likedPosts, bookmarkedPosts, onLike, onBookmark }) => {
+const PostList = ({ posts ,likedPosts, bookmarkedPosts, onLike, onBookmark }) => {
 
   // ✅ Add guard
   if (!posts) {

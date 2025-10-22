@@ -52,6 +52,6 @@ router
   .patch(verifyJWT, upload.single("avatar"), updateAvatar);
 router.route("/delete").delete(verifyJWT, deleteUser);
 router.route("/:userId/follow").post(verifyJWT, follow);
-router.route("/profile/:username/posts").get(getUserPosts);
+router.route("/profile/:username/posts").get(verifyJWTSoft, getUserPosts);
 
 export default router;

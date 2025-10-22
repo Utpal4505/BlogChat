@@ -547,7 +547,7 @@ export const postFiltering = asyncHandler(async (req, res) => {
 
 export const postLike = asyncHandler(async (req, res) => {
   try {
-    const { postId } = req.params;
+    let { postId } = req.params;
     const userID = req.user.id;
 
     postId = Number(postId);
@@ -592,7 +592,7 @@ export const postLike = asyncHandler(async (req, res) => {
 
     return res
       .status(200)
-      .json(new ApiResponse(200, { Liked: true }, "👍 Post liked"));
+      .json(new ApiResponse(200, { liked: true }, "👍 Post liked"));
   } catch (error) {
     console.error("❌ Failed to toggle like", error);
     throw new ApiError(500, "Something went wrong");
