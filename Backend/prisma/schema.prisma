@@ -78,6 +78,8 @@ model User {
   followees             Follow[]           @relation("follower")
   tokens                Token[]
   feedback              Feedback[]
+  bookmarkedPosts       BookmarkPost[]
+  bugReports            BugReport[]
   createdAt             DateTime           @default(now())
   updatedAt             DateTime           @updatedAt
   deletedAt             DateTime?
@@ -95,22 +97,23 @@ model EmailVerification {
 }
 
 model Post {
-  id           Int        @id @default(autoincrement())
-  author       User       @relation("authorPosts", fields: [authorId], references: [id])
+  id           Int            @id @default(autoincrement())
+  author       User           @relation("authorPosts", fields: [authorId], references: [id])
   authorId     Int
   title        String
-  slug         String?    @unique
+  slug         String?        @unique
   content      String
   coverImage   String?
-  commentCount Int        @default(0)
-  visibility   Visibility @default(PUBLIC)
-  status       Status     @default(DRAFT)
+  commentCount Int            @default(0)
+  visibility   Visibility     @default(PUBLIC)
+  status       Status         @default(DRAFT)
   publishedAt  DateTime?
   comments     Comment[]
   postLikes    PostLike[]
   postTags     PostTag[]
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
+  bookmarks    BookmarkPost[]
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
   deletedAt    DateTime?
 
   @@index([authorId])
@@ -222,6 +225,7 @@ model BugReport {
   mood              String?
   userType          UserType
   userId            Int? // nullable if unverified user
+  user              User?     @relation(fields: [userId], references: [id])
   attachments       Json? // supports multiple attachments
   verificationScore Float?
   stepsToReproduce  Json?
@@ -258,4 +262,16 @@ model Feedback {
 
   @@index([page])
   @@index([hasBug])
+}
+
+model BookmarkPost {
+  id        Int      @id @default(autoincrement())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+  post      Post     @relation(fields: [postId], references: [id])
+  postId    Int
+  createdAt DateTime @default(now())
+
+  @@unique([userId, postId])
+  @@index([postId])
 }

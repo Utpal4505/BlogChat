@@ -12,11 +12,19 @@ import ErrorScreen from "../components/ErrorScreen";
 
 const ProfilePage = () => {
   const { username } = useParams();
-  const { user, getUserProfile, toggleFollow, getUserPosts, likePost } =
-    useContext(AuthContext);
+  const {
+    user,
+    getUserProfile,
+    toggleFollow,
+    getUserPosts,
+    likePost,
+    toggleBookmark,
+    getBookmarkPosts,
+  } = useContext(AuthContext);
 
   const [profileUser, setProfileUser] = useState(null);
   const [posts, setPosts] = useState([]);
+  const [savedPosts, setSavedPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -24,9 +32,6 @@ const ProfilePage = () => {
   const [isFollowing, setIsFollowing] = useState(false);
   const [likedPosts, setLikedPosts] = useState({});
   const [bookmarkedPosts, setBookmarkedPosts] = useState({});
-
-  // ❌ Remove this - not needed
-  // const [likedData, setLikedData] = useState({});
 
   useEffect(() => {
     const fetchProfileData = async () => {
@@ -63,7 +68,6 @@ const ProfilePage = () => {
           initialBookmarkedPosts[post.id] = post.isBookmarked || false;
         });
 
-
         setLikedPosts(initialLikedPosts);
         setBookmarkedPosts(initialBookmarkedPosts);
       } catch (err) {
@@ -76,6 +80,39 @@ const ProfilePage = () => {
 
     fetchProfileData();
   }, [username, getUserProfile, getUserPosts]);
+
+  useEffect(() => {
+    const fetchSavedPosts = async () => {
+      if (activeTab === "posts" && profileUser) {
+        try {
+          setLoading(true);
+          const bookmarksData = await getBookmarkPosts();
+          setSavedPosts(bookmarksData.data || []);
+
+          // Initialize status for saved posts
+          const initialLikedPosts = {};
+          const initialBookmarkedPosts = {};
+
+          bookmarksData.data?.forEach((post) => {
+            initialLikedPosts[post.id] = post.isLiked || false;
+            initialBookmarkedPosts[post.id] = true; // All saved posts are bookmarked
+          });
+
+          setLikedPosts((prev) => ({ ...prev, ...initialLikedPosts }));
+          setBookmarkedPosts((prev) => ({
+            ...prev,
+            ...initialBookmarkedPosts,
+          }));
+        } catch (err) {
+          console.error("Error fetching bookmarks:", err);
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchSavedPosts();
+  }, [activeTab, getBookmarkPosts, profileUser]);
 
   const handleFollowToggle = async () => {
     if (!user) {
@@ -104,7 +141,6 @@ const ProfilePage = () => {
     const wasLiked = likedPosts[postId] || false;
     const currentPost = posts.find((p) => p.id === postId);
     const currentCount = currentPost?._count?.postLikes || 0;
-
 
     // Optimistic update
     setLikedPosts((prev) => ({ ...prev, [postId]: !wasLiked }));
@@ -148,9 +184,32 @@ const ProfilePage = () => {
     }
   };
 
-  const handleBookmark = (postId) => {
-    setBookmarkedPosts((prev) => ({ ...prev, [postId]: !prev[postId] }));
-    // TODO: Call backend API to bookmark post
+  const handleBookmark = async (postId) => {
+    if (!user) {
+      window.location.href = "/login";
+      return;
+    }
+
+    const wasBookmarked = likedPosts[postId] || false;
+
+    setBookmarkedPosts((prev) => ({ ...prev, [postId]: !wasBookmarked }));
+
+    // Call toggleBookmark API
+    try {
+      const result = await toggleBookmark(postId);
+      console.log("Bookmark toggled:", result);
+
+      setBookmarkedPosts((prev) => ({
+        ...prev,
+        [postId]: result.bookmarked,
+      }));
+    } catch (error) {
+      console.error("❌ Bookmark failed, reverting...", error);
+
+      // Revert on error
+      setBookmarkedPosts((prev) => ({ ...prev, [postId]: wasBookmarked }));
+      alert("Failed to bookmark post");
+    }
   };
 
   const handleRetry = () => {
@@ -263,17 +322,30 @@ const ProfilePage = () => {
               />
             )}
 
-            {activeTab === "saved" && (
-              <EmptyState
-                icon={Bookmark}
-                title="No saved posts yet"
-                subtitle={
-                  isOwnProfile
-                    ? "Save posts to easily find them later."
-                    : "Saved posts are private."
-                }
-              />
-            )}
+            {activeTab === "saved" &&
+              (isOwnProfile ? (
+                savedPosts.length > 0 ? (
+                  <PostList
+                    posts={savedPosts}
+                    likedPosts={likedPosts}
+                    bookmarkedPosts={bookmarkedPosts}
+                    onLike={handleLike}
+                    onBookmark={handleBookmark}
+                  />
+                ) : (
+                  <EmptyState
+                    icon={Bookmark}
+                    title="No saved posts yet"
+                    subtitle="Save posts to easily find them later."
+                  />
+                )
+              ) : (
+                <EmptyState
+                  icon={Bookmark}
+                  title="Saved posts are private"
+                  subtitle="Only you can see what you've saved."
+                />
+              ))}
           </Motion.div>
         </AnimatePresence>
       </div>

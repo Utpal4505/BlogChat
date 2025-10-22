@@ -570,6 +570,17 @@ const getUserPosts = asyncHandler(async (req, res) => {
               },
             }
           : false,
+        bookmarks: currentUserId
+          ? {
+              where: {
+                userId: currentUserId,
+              },
+              select: {
+                id: true,
+                postId: true,
+              },
+            }
+          : false,
         authorId: true,
         createdAt: true,
         publishedAt: true,
@@ -599,6 +610,7 @@ const getUserPosts = asyncHandler(async (req, res) => {
     const postsWithStatus = posts.map((post) => ({
       ...post,
       isLiked: post.postLikes?.length > 0,
+      isBookmarked: post.bookmarks?.length > 0,
       postLikes: undefined, // Remove from response
     }));
 

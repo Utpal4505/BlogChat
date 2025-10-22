@@ -380,6 +380,24 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const toggleBookmark = async (postId) => {
+    try {
+      const { data } = await Postapi.post(`/post/${postId}/bookmarks`);
+      return data;
+    } catch (error) {
+      throw normalizeError(error);
+    }
+  };
+
+  const getBookmarkPosts = async () => {
+    try {
+      const { data } = await Postapi.get("/bookmarks");
+      return data;
+    } catch (error) {
+      throw normalizeError(error);
+    }
+  }
+
   // ---------- Bug & Feedback ----------
 
   const create_Bug = async ({ bugPayload, recaptchaToken }) => {
@@ -437,6 +455,8 @@ export const AuthProvider = ({ children }) => {
         createComment,
         create_Bug,
         create_Feedback,
+        toggleBookmark,
+        getBookmarkPosts,
       }}
     >
       {children}
