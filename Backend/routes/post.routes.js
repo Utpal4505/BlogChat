@@ -46,8 +46,7 @@ router
 router
   .route("/post/:postId/comment/:commentId")
   .delete(verifyJWT, checkPostAccess, deletePostComment);
-router.route("/post/:postId/comments").get(checkPostAccess, getComments);
-router.route("/post/:postId/comments").get(checkPostAccess, getComments);
+router.route("/post/:postId/comments").get(getComments);
 router.route("/post/:postId/bookmarks").post(verifyJWT, bookmarkToggle);
 router.route("/bookmarks").get(verifyJWT, getBookmarkPosts);
 

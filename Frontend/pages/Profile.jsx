@@ -9,6 +9,7 @@ import PostList from "../components/posts/Postlist";
 import EmptyState from "../components/profile/EmptyState";
 import LoadingScreen from "../components/LoadingScreen";
 import ErrorScreen from "../components/ErrorScreen";
+import { useInfiniteScroll } from "../hooks/useInfiniteScroll";
 
 const ProfilePage = () => {
   const { username } = useParams();
@@ -20,6 +21,9 @@ const ProfilePage = () => {
     likePost,
     toggleBookmark,
     getBookmarkPosts,
+    getPostComments,
+    createComment,
+    deleteComment,
   } = useContext(AuthContext);
 
   const [profileUser, setProfileUser] = useState(null);
@@ -32,6 +36,12 @@ const ProfilePage = () => {
   const [isFollowing, setIsFollowing] = useState(false);
   const [likedPosts, setLikedPosts] = useState({});
   const [bookmarkedPosts, setBookmarkedPosts] = useState({});
+
+  const [postComments, setPostComments] = useState({});
+  const [commentsLoading, setCommentsLoading] = useState({});
+  const [commentsCursor, setCommentsCursor] = useState({});
+
+  const [showingPostIdForScroll, setShowingPostIdForScroll] = useState(null);
 
   useEffect(() => {
     const fetchProfileData = async () => {
@@ -218,6 +228,112 @@ const ProfilePage = () => {
     window.location.reload();
   };
 
+  const fetchPostComments = async (postId, limit = 10, cursor = null) => {
+    if (!user) {
+      window.location.href = "/login";
+      return;
+    }
+
+    try {
+      setCommentsLoading((prev) => ({ ...prev, [postId]: true }));
+
+      console.log("Comments fetching start");
+
+      // API call
+      const response = await getPostComments(postId, limit, cursor);
+
+      if (response && response.success) {
+        const commentsArray = response.data.comments || [];
+        const nextCursorValue = response.nextCursor || null;
+
+        setPostComments((prev) => ({
+          ...prev,
+          [postId]: cursor
+            ? [...(prev[postId] || []), ...commentsArray]
+            : commentsArray,
+        }));
+
+        setCommentsCursor((prev) => ({
+          ...prev,
+          [postId]: nextCursorValue,
+        }));
+
+        console.log("Backend fetched data for comments", commentsArray);
+      } else {
+        console.error("Failed to fetch comments or empty data", response);
+      }
+    } catch (error) {
+      console.error("Error fetching comments:", error);
+    } finally {
+      setCommentsLoading((prev) => ({ ...prev, [postId]: false }));
+    }
+  };
+
+  const loadMoreComments = () => {
+    if (
+      showingPostIdForScroll &&
+      commentsCursor[showingPostIdForScroll] &&
+      !commentsLoading[showingPostIdForScroll]
+    ) {
+      fetchPostComments(
+        showingPostIdForScroll,
+        10,
+        commentsCursor[showingPostIdForScroll]
+      );
+    }
+  };
+
+  const lastCommentRef = useInfiniteScroll(loadMoreComments);
+
+  const toggleComments = (postId) => {
+    console.log(
+      "Toggle comment work start in profile page for this postId....",
+      postId
+    );
+    if (showingPostIdForScroll === postId) {
+      setShowingPostIdForScroll(null);
+    } else {
+      setShowingPostIdForScroll(postId);
+      if (!postComments[postId]) {
+        fetchPostComments(postId, 10);
+      }
+    }
+  };
+
+  const handleAddComment = async (postId, content) => {
+    if (!user) {
+      window.location.href = "/login";
+      return;
+    }
+
+    try {
+      const { data } = await createComment(postId, content);
+      setPostComments((prev) => ({
+        ...prev,
+        [postId]: [...(prev[postId] || []), data],
+      }));
+    } catch (error) {
+      console.error("Error adding comment:", error);
+    }
+  };
+
+  const handleDeleteComment = async (postId, commentId) => {
+    console.log("PostId", postId, "CommentId", commentId);
+    try {
+      await deleteComment(postId, commentId);
+
+      setPostComments((prev) => {
+        console.log("Before delete, postComments[postId]:", prev[postId]);
+        return {
+          ...prev,
+          [postId]: (prev[postId] || []).filter((c) => c.id !== commentId),
+        };
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   if (loading) {
     return <LoadingScreen text="Loading profile..." />;
   }
@@ -297,6 +413,14 @@ const ProfilePage = () => {
                   bookmarkedPosts={bookmarkedPosts}
                   onLike={handleLike}
                   onBookmark={handleBookmark}
+                  postComments={postComments}
+                  commentsLoading={commentsLoading}
+                  onAddComment={handleAddComment}
+                  onDeleteComment={handleDeleteComment}
+                  currentUser={user}
+                  showingPostIdForScroll={showingPostIdForScroll}
+                  toggleComments={toggleComments}
+                  lastCommentRef={lastCommentRef}
                 />
               ) : (
                 <EmptyState

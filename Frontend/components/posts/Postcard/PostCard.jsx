@@ -8,48 +8,68 @@ import PostActions from "./PostActions";
 import { useState } from "react";
 import CommentSection from "./Comments";
 
-const PostCard = ({ post, liked, index, bookmarked, onLike, onBookmark }) => {
+const PostCard = ({
+  post,
+  liked,
+  bookmarked,
+  onLike,
+  onBookmark,
+  comments = {},
+  commentsLoading = false,
+  onAddComment,
+  onDeleteComment,
+  onLikeComment,
+  currentUser,
+  lastCommentRef,
+  showingPostIdForScroll,
+  toggleComments,
+}) => {
   const [showComments, setShowComments] = useState(false);
+
+  if (!comments) {
+    console.error("Comments is undefined!");
+    return null;
+  }
 
   const calculateReadTime = (content) => {
     const wordsPerMinute = 200;
     const words = content.trim().split(/\s+/).length;
     const minutes = Math.ceil(words / wordsPerMinute);
-
     return minutes < 1 ? "1 min read" : `${minutes} min read`;
   };
 
   const tags = post.postTags?.map((tagObj) => tagObj.tag.name) || [];
 
+  // Toggle comments and optionally set post id to trigger scrolling fetch
+  const toggleCommentsHandler = () => {
+    setShowComments((prev) => !prev);
+    console.log("Comment box open or not", showComments);
+    console.log("toggleComments start...");
+
+    toggleComments(post.id);
+  };
+
+  const commentsData = Array.isArray(comments)
+    ? comments
+    : comments.comments || [];
+
   return (
     <Motion.article
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.05, duration: 0.4, ease: "easeOut" }}
+      transition={{ duration: 0.4, ease: "easeOut" }}
       className="group relative bg-card dark:bg-dcard rounded-[22px] overflow-hidden border border-bordercolor/60 dark:border-dbordercolor/60 hover:border-accent/40 dark:hover:border-daccent/40 hover:shadow-2xl hover:shadow-accent/5 dark:hover:shadow-daccent/5 transition-all duration-300 cursor-pointer"
     >
-      {/* Cover Image */}
       <PostCoverImage coverImage={post.coverImage} title={post.title} />
-
-      {/* Content Section */}
       <div className="p-6">
-        {/* Author & Meta */}
         <PostAuthor
           author={post.author}
           publishedDate={post.publishedAt}
           readTime={calculateReadTime(post.content)}
         />
-
-        {/* Title */}
         <PostTitle title={post.title} />
-
-        {/* Excerpt */}
         <PostExcerpt excerpt={post.excerpt} />
-
-        {/* Tags */}
         <PostTags tags={tags} />
-
-        {/* Stats & Actions */}
         <PostActions
           likes={post._count?.postLikes || 0}
           comments={post._count?.comments || 0}
@@ -57,13 +77,28 @@ const PostCard = ({ post, liked, index, bookmarked, onLike, onBookmark }) => {
           bookmarked={bookmarked}
           onLike={onLike}
           onBookmark={onBookmark}
-          onCommentClick={() => setShowComments(!showComments)} // ✅ Toggle
+          onCommentClick={toggleCommentsHandler}
           showingComments={showComments}
         />
 
-        {/* ✅ Comment Section - Add this */}
         <AnimatePresence>
-          {showComments && <CommentSection postId={post.id} />}
+          {showComments && (
+            <div>
+              <CommentSection
+                postId={post.id}
+                comments={commentsData || []}
+                currentUser={currentUser}
+                onAddComment={onAddComment}
+                onDeleteComment={onDeleteComment}
+                onLikeComment={onLikeComment}
+                isLoading={commentsLoading}
+              />
+              {/* Attach lastCommentRef to the last comment element for infinite scroll */}
+              {comments.length > 0 && post.id === showingPostIdForScroll && (
+                <div ref={lastCommentRef} />
+              )}
+            </div>
+          )}
         </AnimatePresence>
       </div>
     </Motion.article>

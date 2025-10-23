@@ -1,14 +1,14 @@
 import { Heart, MessageCircle, Bookmark } from "lucide-react";
 
-const PostActions = ({ 
-  likes, 
-  comments, 
-  liked, 
-  bookmarked, 
-  onLike, 
+const PostActions = ({
+  likes,
+  comments,
+  liked,
+  bookmarked,
+  onLike,
   onBookmark,
   onCommentClick,
-  showingComments = false
+  showingComments = false,
 }) => {
   return (
     <div className="flex items-center justify-between pt-4 border-t border-bordercolor/50 dark:border-dbordercolor/50">
@@ -46,6 +46,8 @@ const PostActions = ({
         <button
           onClick={(e) => {
             e.stopPropagation();
+
+            console.log("Comments clicked");
             onCommentClick();
           }}
           className="flex items-center gap-2 group/comment transition-all"
@@ -59,7 +61,7 @@ const PostActions = ({
                 : "stroke-muted-text dark:stroke-dMuted-text group-hover/comment:stroke-accent dark:group-hover/comment:stroke-daccent group-hover/comment:scale-110"
             }`}
           />
-          <span 
+          <span
             className={`text-[14px] font-bold tabular-nums transition-colors ${
               showingComments
                 ? "text-accent dark:text-daccent"

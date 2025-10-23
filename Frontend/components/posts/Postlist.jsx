@@ -1,6 +1,24 @@
 import PostCard from "./Postcard/PostCard";
 
-const PostList = ({ posts ,likedPosts, bookmarkedPosts, onLike, onBookmark }) => {
+const PostList = ({
+  posts,
+  likedPosts,
+  bookmarkedPosts,
+  onLike,
+  onBookmark,
+  // ✅ New props for comments
+  postComments = {},
+  currentUser,
+  onAddComment,
+  onDeleteComment,
+  onLikeComment,
+  commentsLoading = {},
+  lastCommentRef,
+  showingPostIdForScroll,
+  toggleComments,
+}) => {
+
+  console.log("Post List comments reached", postComments)
 
   // ✅ Add guard
   if (!posts) {
@@ -22,6 +40,16 @@ const PostList = ({ posts ,likedPosts, bookmarkedPosts, onLike, onBookmark }) =>
           bookmarked={bookmarkedPosts?.[post.id]}
           onLike={() => onLike(post.id)}
           onBookmark={() => onBookmark(post.id)}
+          // ✅ Pass comments and handlers
+          comments={postComments[post.id] || []}
+          currentUser={currentUser}
+          onAddComment={onAddComment}
+          onDeleteComment={onDeleteComment}
+          onLikeComment={onLikeComment}
+          commentsLoading={commentsLoading[post.id]}
+          lastCommentRef={lastCommentRef}
+          showingPostIdForScroll={showingPostIdForScroll}
+          toggleComments={toggleComments}
         />
       ))}
     </div>

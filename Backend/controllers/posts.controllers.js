@@ -601,7 +601,7 @@ export const postLike = asyncHandler(async (req, res) => {
 
 export const createPostComment = asyncHandler(async (req, res) => {
   try {
-    const { postId } = req.params;
+    let { postId } = req.params;
     const { content } = req.body;
 
     const userId = req.user.id;
@@ -634,6 +634,7 @@ export const createPostComment = asyncHandler(async (req, res) => {
         author: {
           select: {
             username: true,
+            avatar: true,
           },
         },
       },
@@ -740,23 +741,27 @@ export const updatePostComment = asyncHandler(async (req, res) => {
 });
 
 export const getComments = asyncHandler(async (req, res) => {
+
+  console.log("➰ Fetching comments for post:");
   try {
-    const { postId } = req.params;
-    const { limit = 10, cursor } = req.query; // optional query params
-    const postIdNum = Number(postId);
+    let { postId } = req.params;
+    const { limit = 10, cursor } = req.query;
+    let postIdNum = Number(postId);
     const take = Number(limit);
 
-    // Ensure post exists
     const post = await prisma.post.findUnique({ where: { id: postIdNum } });
-    if (!post) return res.status(404).json({ message: "❌ Post not found." });
+    if (!post) {
+      return res.status(404).json({ success: false, message: "Post not found." });
+    }
 
-    // Build query
+    console.log("➰ Fetching comments for post:", postIdNum);
+
     const comments = await prisma.comment.findMany({
       where: { postId: postIdNum },
-      orderBy: { createdAt: "desc" }, // newest first
-      take: take + 1, // fetch one extra to check if more exist
+      orderBy: { createdAt: "desc" },
+      take: take + 1,
       ...(cursor && {
-        skip: 1, // skip cursor itself
+        skip: 1,
         cursor: { id: Number(cursor) },
       }),
       select: {
@@ -764,22 +769,34 @@ export const getComments = asyncHandler(async (req, res) => {
         content: true,
         createdAt: true,
         updatedAt: true,
-        author: { select: { username: true } },
+        author: { select: { id: true, username: true, avatar: true } },
       },
     });
 
+    console.log("➰ Fetched comments for post:", postIdNum, comments);
+
     let nextCursor = null;
     if (comments.length > take) {
-      const nextItem = comments.pop(); // last item is cursor for next batch
+      const nextItem = comments.pop();
       nextCursor = nextItem.id;
     }
 
+    console.log("➰ Returning comments for post:", postIdNum, comments);
+
     return res.status(200).json({
-      comments,
-      nextCursor,
+      success: true,
+      data: {
+        comments,
+        nextCursor,
+      },
+      message: null,
     });
   } catch (error) {
-    console.error("❌ Failed to fetch comments", error);
-    throw new ApiError(500, "Something went wrong");
+    console.error("Failed to fetch comments", error);
+    return res.status(500).json({
+      success: false,
+      message: "Something went wrong",
+    });
   }
 });
+

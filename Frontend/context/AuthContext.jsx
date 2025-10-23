@@ -360,9 +360,20 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const getPostComments = async (postId) => {
+  const getPostComments = async (postId, limit = 10, cursor = null) => {
     try {
-      const { data } = await Postapi.get(`/post/${postId}/comments`);
+      const params = { limit };
+      if (cursor) params.cursor = cursor;
+
+      console.log("Authcontext sending url", postId, limit, cursor);
+
+      // Axios GET call with params
+      const { data } = await Postapi.get(`/post/${postId}/comments`, {
+        params,
+      });
+
+      console.log("authcontext data", data)
+
       return data;
     } catch (error) {
       throw normalizeError(error);
@@ -374,6 +385,17 @@ export const AuthProvider = ({ children }) => {
       const { data } = await Postapi.post(`/post/${postId}/comment`, {
         content: commentContent,
       });
+      return data;
+    } catch (error) {
+      throw normalizeError(error);
+    }
+  };
+
+  const deleteComment = async (postId, commentId) => {
+    try {
+      const { data } = await Postapi.delete(
+        `/post/${postId}/comment/${commentId}`
+      );
       return data;
     } catch (error) {
       throw normalizeError(error);
@@ -396,7 +418,7 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       throw normalizeError(error);
     }
-  }
+  };
 
   // ---------- Bug & Feedback ----------
 
@@ -457,6 +479,7 @@ export const AuthProvider = ({ children }) => {
         create_Feedback,
         toggleBookmark,
         getBookmarkPosts,
+        deleteComment,
       }}
     >
       {children}
