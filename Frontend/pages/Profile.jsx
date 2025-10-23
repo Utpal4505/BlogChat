@@ -10,6 +10,7 @@ import EmptyState from "../components/profile/EmptyState";
 import LoadingScreen from "../components/LoadingScreen";
 import ErrorScreen from "../components/ErrorScreen";
 import { useInfiniteScroll } from "../hooks/useInfiniteScroll";
+import RepliesSection from "../components/replies/RepliesSection";
 
 const ProfilePage = () => {
   const { username } = useParams();
@@ -452,15 +453,18 @@ const ProfilePage = () => {
               ))}
 
             {activeTab === "replies" && (
-              <EmptyState
-                icon={MessageCircle}
-                title="No replies yet"
-                subtitle={
-                  isOwnProfile
-                    ? "When you reply to posts, they'll show up here."
-                    : "No replies from this user yet."
-                }
-              />
+              <RepliesSection />
+              // ) : (
+              //   <EmptyState
+              //     icon={MessageCircle}
+              //     title="No replies yet"
+              //     subtitle={
+              //       isOwnProfile
+              //         ? "When you reply to posts, they'll show up here."
+              //         : "No replies from this user yet."
+              //     }
+              //   />
+              // )
             )}
 
             {activeTab === "saved" &&

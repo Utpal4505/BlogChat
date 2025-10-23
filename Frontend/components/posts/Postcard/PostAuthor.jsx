@@ -1,7 +1,6 @@
 import { Clock, Dot, MoreHorizontal } from "lucide-react";
 
 const PostAuthor = ({ author, publishedDate, readTime }) => {
-
   const formatDate = (date) => {
     const now = new Date();
     const postDate = new Date(date);
@@ -14,11 +13,11 @@ const PostAuthor = ({ author, publishedDate, readTime }) => {
     if (diffMins < 60) return `${diffMins}m`;
     if (diffHours < 24) return `${diffHours}h`;
     if (diffDays < 7) return `${diffDays}d`;
-    
+
     // 7 days ke baad full date
-    return postDate.toLocaleDateString('en-IN', { 
-      day: 'numeric',
-      month: 'short'
+    return postDate.toLocaleDateString("en-IN", {
+      day: "numeric",
+      month: "short",
     });
   };
 
@@ -57,14 +56,6 @@ const PostAuthor = ({ author, publishedDate, readTime }) => {
           </div>
         </div>
       </div>
-
-      {/* More Menu */}
-      <button
-        onClick={(e) => e.stopPropagation()}
-        className="p-2 rounded-xl hover:bg-bg dark:hover:bg-dbg transition-all opacity-0 group-hover:opacity-100 flex-shrink-0"
-      >
-        <MoreHorizontal size={18} className="text-muted-text dark:text-dMuted-text" />
-      </button>
     </div>
   );
 };

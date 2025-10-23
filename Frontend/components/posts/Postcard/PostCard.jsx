@@ -60,7 +60,7 @@ const PostCard = ({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: "easeOut" }}
-      className="group relative bg-card dark:bg-dcard rounded-[22px] overflow-hidden border border-bordercolor/60 dark:border-dbordercolor/60 hover:border-accent/40 dark:hover:border-daccent/40 hover:shadow-2xl hover:shadow-accent/5 dark:hover:shadow-daccent/5 transition-all duration-300 cursor-pointer"
+      className="group relative bg-card dark:bg-dcard rounded-[22px] overflow-hidden border border-bordercolor/60 dark:border-dbordercolor/60 hover:border-accent/40 dark:hover:border-daccent/40 hover:shadow-2xl hover:shadow-accent/5 dark:hover:shadow-daccent/5 transition-all duration-300 mb-2 cursor-pointer"
     >
       <PostCoverImage coverImage={post.coverImage} title={post.title} />
       <div className="p-6">

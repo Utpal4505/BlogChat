@@ -2,30 +2,30 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --color-dbg: #0F1217;
-  --color-dText: #E5E7E6;
-  --color-dMuted-text: #9AA1B5;
-  --color-dPrimary: #7A999E;
-  --color-daccent: #6A8C9E;
-  --color-dbordercolor: #272B33;
-  --color-dcard: #1A1D23;
-  --color-card: #FFFFFFD9;
-  --color-bg: #F5F5F3;
-  --color-text: #1A1F1D;
-  --color-primary: #4A5A5D;
-  --color-muted-text: #7B7F95;
-  --color-accent: #5C7B8A;
-  --color-bordercolor: #E5E7EB;
-  --color-danger: #EF4444;
+  --color-dbg: #0f1217;
+  --color-dText: #e5e7e6;
+  --color-dMuted-text: #9aa1b5;
+  --color-dPrimary: #7a999e;
+  --color-daccent: #6a8c9e;
+  --color-dbordercolor: #272b33;
+  --color-dcard: #1a1d23;
+  --color-card: #ffffffd9;
+  --color-bg: #f5f5f3;
+  --color-text: #1a1f1d;
+  --color-primary: #4a5a5d;
+  --color-muted-text: #7b7f95;
+  --color-accent: #5c7b8a;
+  --color-bordercolor: #e5e7eb;
+  --color-danger: #ef4444;
 }
 
-@import 'highlight.js/styles/github-dark.css';
+@import "highlight.js/styles/github-dark.css";
 
 /* ============================================
    EDITOR BASE STYLES - FIXED
    ============================================ */
 .enhanced-blog-editor {
-  font-family: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: "Manrope", -apple-system, BlinkMacSystemFont, sans-serif;
   font-size: 1.125rem;
   line-height: 1.75;
   color: var(--color-text);
@@ -68,7 +68,9 @@
 }
 
 /* Focus mode - larger, more visible placeholder */
-.enhanced-blog-editor.focus-mode .ProseMirror p.is-editor-empty:first-child::before {
+.enhanced-blog-editor.focus-mode
+  .ProseMirror
+  p.is-editor-empty:first-child::before {
   font-size: 1.25rem;
   opacity: 0.7;
   color: #a8b3c5;
@@ -99,7 +101,7 @@
 .enhanced-blog-editor h1,
 .enhanced-blog-editor h2,
 .enhanced-blog-editor h3 {
-  font-family: 'Merriweather', Georgia, serif;
+  font-family: "Merriweather", Georgia, serif;
   color: inherit;
   font-weight: 700;
   letter-spacing: -0.02em;
@@ -189,7 +191,7 @@
   margin: 1.75rem 0;
   font-style: italic;
   font-size: 1.0625rem;
-  background: #5C7B8A14;
+  background: #5c7b8a14;
   border-radius: 0 8px 8px 0;
   position: relative;
   color: inherit;
@@ -197,7 +199,7 @@
 
 .dark .enhanced-blog-editor blockquote {
   border-left-color: var(--color-daccent);
-  background: #6A8C9E14;
+  background: #6a8c9e14;
 }
 
 .enhanced-blog-editor blockquote::before {
@@ -224,21 +226,21 @@
    CODE - INLINE
    ============================================ */
 .enhanced-blog-editor code {
-  background: #5C7B8A1F !important;
+  background: #5c7b8a1f !important;
   color: var(--color-accent) !important;
   padding: 0.25rem 0.5rem;
   border-radius: 6px;
-  font-family: 'JetBrains Mono', 'Fira Code', 'Monaco', 'Consolas', monospace;
+  font-family: "JetBrains Mono", "Fira Code", "Monaco", "Consolas", monospace;
   font-size: 0.9em;
   font-weight: 600;
-  border: 1px solid #5C7B8A40;
+  border: 1px solid #5c7b8a40;
   white-space: nowrap;
 }
 
 .dark .enhanced-blog-editor code {
-  background: #6A8C9E26 !important;
+  background: #6a8c9e26 !important;
   color: var(--color-daccent) !important;
-  border-color: #6A8C9E40;
+  border-color: #6a8c9e40;
 }
 
 /* ============================================
@@ -251,7 +253,7 @@
   padding: 1.5rem;
   margin: 1.75rem 0;
   overflow-x: auto;
-  font-family: 'JetBrains Mono', 'Fira Code', 'Monaco', 'Consolas', monospace;
+  font-family: "JetBrains Mono", "Fira Code", "Monaco", "Consolas", monospace;
   font-size: 0.9375rem;
   line-height: 1.6;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
@@ -265,7 +267,7 @@
 }
 
 .enhanced-blog-editor pre::before {
-  content: '';
+  content: "";
   position: absolute;
   left: 0;
   top: 0;
@@ -296,7 +298,7 @@
 .enhanced-blog-editor .text-link {
   color: var(--color-accent) !important;
   text-decoration: none;
-  border-bottom: 2px solid #5C7B8A66;
+  border-bottom: 2px solid #5c7b8a66;
   transition: all 0.2s ease;
   font-weight: 600;
   padding-bottom: 1px;
@@ -305,7 +307,7 @@
 .dark .enhanced-blog-editor a,
 .dark .enhanced-blog-editor .text-link {
   color: var(--color-daccent) !important;
-  border-bottom-color: #6A8C9E66;
+  border-bottom-color: #6a8c9e66;
 }
 
 .enhanced-blog-editor a:hover,
@@ -340,34 +342,44 @@
 .enhanced-blog-editor hr {
   border: none;
   height: 2px;
-  background: linear-gradient(90deg, transparent, var(--color-bordercolor), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--color-bordercolor),
+    transparent
+  );
   margin: 2.5rem 0;
   border-radius: 2px;
 }
 
 .dark .enhanced-blog-editor hr {
-  background: linear-gradient(90deg, transparent, var(--color-dbordercolor), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--color-dbordercolor),
+    transparent
+  );
 }
 
 /* ============================================
    SELECTION - FIXED
    ============================================ */
 .enhanced-blog-editor ::selection {
-  background: #5C7B8A4D;
+  background: #5c7b8a4d;
   color: inherit;
 }
 
 .enhanced-blog-editor ::-moz-selection {
-  background: #5C7B8A4D;
+  background: #5c7b8a4d;
   color: inherit;
 }
 
 .dark .enhanced-blog-editor ::selection {
-  background: #6A8C9E4D;
+  background: #6a8c9e4d;
 }
 
 .dark .enhanced-blog-editor ::-moz-selection {
-  background: #6A8C9E4D;
+  background: #6a8c9e4d;
 }
 
 /* ============================================
@@ -408,24 +420,24 @@
     font-size: 1rem;
     padding: 1.25rem;
   }
-  
+
   .enhanced-blog-editor h1 {
     font-size: 2rem;
   }
-  
+
   .enhanced-blog-editor h2 {
     font-size: 1.75rem;
   }
-  
+
   .enhanced-blog-editor h3 {
     font-size: 1.5rem;
   }
-  
+
   .enhanced-blog-editor pre {
     padding: 1rem;
     font-size: 0.875rem;
   }
-  
+
   .enhanced-blog-editor.focus-mode {
     padding: 1.5rem;
   }
@@ -436,7 +448,7 @@
    ============================================ */
 .blog-preview-content,
 .blog-post-content {
-  font-family: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: "Manrope", -apple-system, BlinkMacSystemFont, sans-serif;
   font-size: 1.1875rem;
   line-height: 1.8;
   color: var(--color-text);
@@ -455,22 +467,22 @@
 
 .blog-preview-content ::selection,
 .blog-post-content ::selection {
-  background: #5C7B8A4D;
+  background: #5c7b8a4d;
 }
 
 .blog-preview-content ::-moz-selection,
 .blog-post-content ::-moz-selection {
-  background: #5C7B8A4D;
+  background: #5c7b8a4d;
 }
 
 .dark .blog-preview-content ::selection,
 .dark .blog-post-content ::selection {
-  background: #6A8C9E4D;
+  background: #6a8c9e4d;
 }
 
 .dark .blog-preview-content ::-moz-selection,
 .dark .blog-post-content ::-moz-selection {
-  background: #6A8C9E4D;
+  background: #6a8c9e4d;
 }
 
 .blog-preview-content p,
@@ -496,7 +508,7 @@
 
 .blog-preview-content h1,
 .blog-post-content h1 {
-  font-family: 'Merriweather', Georgia, serif;
+  font-family: "Merriweather", Georgia, serif;
   font-size: 2.75rem;
   font-weight: 700;
   line-height: 1.25;
@@ -507,7 +519,7 @@
 
 .blog-preview-content h2,
 .blog-post-content h2 {
-  font-family: 'Merriweather', Georgia, serif;
+  font-family: "Merriweather", Georgia, serif;
   font-size: 2.125rem;
   font-weight: 600;
   line-height: 1.3;
@@ -515,17 +527,17 @@
   color: inherit;
   letter-spacing: -0.015em;
   padding-bottom: 0.5rem;
-  border-bottom: 1px solid #E5E7EB;
+  border-bottom: 1px solid #e5e7eb;
 }
 
 .dark .blog-preview-content h2,
 .dark .blog-post-content h2 {
-  border-bottom-color: #272B3352;
+  border-bottom-color: #272b3352;
 }
 
 .blog-preview-content h3,
 .blog-post-content h3 {
-  font-family: 'Merriweather', Georgia, serif;
+  font-family: "Merriweather", Georgia, serif;
   font-size: 1.75rem;
   font-weight: 500;
   line-height: 1.4;
@@ -555,12 +567,12 @@
   text-decoration: underline;
   text-decoration-thickness: 2px;
   text-underline-offset: 3px;
-  text-decoration-color: #5C7B8A80;
+  text-decoration-color: #5c7b8a80;
 }
 
 .dark .blog-preview-content u,
 .dark .blog-post-content u {
-  text-decoration-color: #6A8C9E80;
+  text-decoration-color: #6a8c9e80;
 }
 
 .blog-preview-content s,
@@ -597,7 +609,7 @@
 
 .blog-preview-content ul > li::before,
 .blog-post-content ul > li::before {
-  content: '•';
+  content: "•";
   position: absolute;
   left: -1.5rem;
   color: var(--color-accent);
@@ -635,7 +647,7 @@
   font-style: italic;
   font-size: 1.3125rem;
   line-height: 1.7;
-  background: linear-gradient(90deg, #5C7B8A0F 0%, transparent 100%);
+  background: linear-gradient(90deg, #5c7b8a0f 0%, transparent 100%);
   border-radius: 0 8px 8px 0;
   position: relative;
   color: inherit;
@@ -644,7 +656,7 @@
 .dark .blog-preview-content blockquote,
 .dark .blog-post-content blockquote {
   border-left-color: var(--color-daccent);
-  background: linear-gradient(90deg, #6A8C9E14 0%, transparent 100%);
+  background: linear-gradient(90deg, #6a8c9e14 0%, transparent 100%);
 }
 
 .blog-preview-content blockquote::before,
@@ -673,22 +685,22 @@
 
 .blog-preview-content code,
 .blog-post-content code {
-  background: #5C7B8A1A;
+  background: #5c7b8a1a;
   color: var(--color-accent);
   padding: 0.25rem 0.6rem;
   border-radius: 6px;
-  font-family: 'JetBrains Mono', 'Fira Code', 'Monaco', 'Consolas', monospace;
+  font-family: "JetBrains Mono", "Fira Code", "Monaco", "Consolas", monospace;
   font-size: 0.9em;
   font-weight: 600;
-  border: 1px solid #5C7B8A33;
+  border: 1px solid #5c7b8a33;
   white-space: nowrap;
 }
 
 .dark .blog-preview-content code,
 .dark .blog-post-content code {
-  background: #6A8C9E1F;
+  background: #6a8c9e1f;
   color: var(--color-daccent);
-  border-color: #6A8C9E33;
+  border-color: #6a8c9e33;
 }
 
 .blog-preview-content pre,
@@ -699,7 +711,7 @@
   padding: 1.5rem;
   margin: 2.5rem 0;
   overflow-x: auto;
-  font-family: 'JetBrains Mono', 'Fira Code', 'Monaco', 'Consolas', monospace;
+  font-family: "JetBrains Mono", "Fira Code", "Monaco", "Consolas", monospace;
   font-size: 0.9375rem;
   line-height: 1.6;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
@@ -715,19 +727,19 @@
 
 .blog-preview-content pre::before,
 .blog-post-content pre::before {
-  content: '';
+  content: "";
   position: absolute;
   left: 0;
   top: 0;
   bottom: 0;
   width: 4px;
-  background: linear-gradient(180deg, var(--color-accent) 0%, #5C7B8A80 100%);
+  background: linear-gradient(180deg, var(--color-accent) 0%, #5c7b8a80 100%);
   border-radius: 12px 0 0 12px;
 }
 
 .dark .blog-preview-content pre::before,
 .dark .blog-post-content pre::before {
-  background: linear-gradient(180deg, var(--color-daccent) 0%, #6A8C9E80 100%);
+  background: linear-gradient(180deg, var(--color-daccent) 0%, #6a8c9e80 100%);
 }
 
 .blog-preview-content pre code,
@@ -749,7 +761,7 @@
   color: var(--color-accent);
   text-decoration: none;
   font-weight: 600;
-  border-bottom: 2px solid #5C7B8A4D;
+  border-bottom: 2px solid #5c7b8a4d;
   transition: all 0.2s ease;
   padding-bottom: 2px;
 }
@@ -759,7 +771,7 @@
 .dark .blog-post-content a,
 .dark .blog-post-content .text-link {
   color: var(--color-daccent);
-  border-bottom-color: #6A8C9E4D;
+  border-bottom-color: #6a8c9e4d;
 }
 
 .blog-preview-content a:hover,
@@ -767,7 +779,7 @@
 .blog-post-content a:hover,
 .blog-post-content .text-link:hover {
   border-bottom-color: var(--color-accent);
-  background: #5C7B8A14;
+  background: #5c7b8a14;
   padding: 0 0.25rem 2px 0.25rem;
   margin: 0 -0.25rem;
   border-radius: 4px 4px 0 0;
@@ -778,7 +790,7 @@
 .dark .blog-post-content a:hover,
 .dark .blog-post-content .text-link:hover {
   border-bottom-color: var(--color-daccent);
-  background: #6A8C9E14;
+  background: #6a8c9e14;
 }
 
 .blog-preview-content mark,
@@ -794,19 +806,29 @@
 .blog-post-content hr {
   border: none;
   height: 1px;
-  background: linear-gradient(90deg, transparent 0%, var(--color-bordercolor) 50%, transparent 100%);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--color-bordercolor) 50%,
+    transparent 100%
+  );
   margin: 3.5rem 0;
   position: relative;
 }
 
 .dark .blog-preview-content hr,
 .dark .blog-post-content hr {
-  background: linear-gradient(90deg, transparent 0%, var(--color-dbordercolor) 50%, transparent 100%);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--color-dbordercolor) 50%,
+    transparent 100%
+  );
 }
 
 .blog-preview-content hr::after,
 .blog-post-content hr::after {
-  content: '***';
+  content: "***";
   position: absolute;
   left: 50%;
   top: 50%;
@@ -843,36 +865,36 @@
     max-width: 100%;
     padding: 0 1rem;
   }
-  
+
   .blog-preview-content p,
   .blog-post-content p {
     font-size: 1.0625rem;
     margin: 1.5rem 0;
   }
-  
+
   .blog-preview-content h1,
   .blog-post-content h1 {
     font-size: 2.25rem;
     margin: 2.5rem 0 1.25rem;
   }
-  
+
   .blog-preview-content h2,
   .blog-post-content h2 {
     font-size: 1.875rem;
     margin: 2rem 0 1rem;
   }
-  
+
   .blog-preview-content h3,
   .blog-post-content h3 {
     font-size: 1.5rem;
   }
-  
+
   .blog-preview-content blockquote,
   .blog-post-content blockquote {
     font-size: 1.125rem;
     padding: 1.25rem 0 1.25rem 1.5rem;
   }
-  
+
   .blog-preview-content pre,
   .blog-post-content pre {
     font-size: 0.875rem;

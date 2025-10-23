@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { motion as Motion } from "framer-motion";
 import Avatar from "./Avatar";
 import ProfileStats from "./Stats";
 import SettingsButton from "./SettingsButton";
@@ -6,7 +6,7 @@ import ProfileActions from "./Actions";
 
 const ProfileHeader = ({ user, isFollowing, onFollowToggle, isOwnProfile }) => {
   return (
-    <motion.div
+    <Motion.div
       className="pt-10 pb-6"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
@@ -46,7 +46,7 @@ const ProfileHeader = ({ user, isFollowing, onFollowToggle, isOwnProfile }) => {
         isOwnProfile={isOwnProfile}
         username={user.username} // ✅ Pass username
       />
-    </motion.div>
+    </Motion.div>
   );
 };
 
