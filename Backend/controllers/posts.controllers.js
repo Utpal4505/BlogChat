@@ -633,6 +633,7 @@ export const createPostComment = asyncHandler(async (req, res) => {
         createdAt: true,
         author: {
           select: {
+            id: true,
             username: true,
             avatar: true,
           },
@@ -689,7 +690,7 @@ export const deletePostComment = asyncHandler(async (req, res) => {
 
 export const updatePostComment = asyncHandler(async (req, res) => {
   try {
-    const { postId, commentId } = req.params;
+    let { postId, commentId } = req.params;
     const userId = req.user.id;
     const { content } = req.body;
 

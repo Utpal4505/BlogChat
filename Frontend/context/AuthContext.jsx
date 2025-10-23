@@ -402,6 +402,17 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const updateComment = async (postId, commentId, content) => {
+    try {
+      const { data } = await Postapi.patch(`/post/${postId}/comment/${commentId}`, {
+        content,
+      });
+      return data;
+    } catch (error) {
+      throw normalizeError(error);
+    }
+  };
+
   const toggleBookmark = async (postId) => {
     try {
       const { data } = await Postapi.post(`/post/${postId}/bookmarks`);
@@ -475,6 +486,7 @@ export const AuthProvider = ({ children }) => {
         deletePost,
         getPostComments,
         createComment,
+        updateComment,
         create_Bug,
         create_Feedback,
         toggleBookmark,

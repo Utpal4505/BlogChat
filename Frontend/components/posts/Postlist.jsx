@@ -11,7 +11,7 @@ const PostList = ({
   currentUser,
   onAddComment,
   onDeleteComment,
-  onLikeComment,
+  onEditComment,
   commentsLoading = {},
   lastCommentRef,
   showingPostIdForScroll,
@@ -45,7 +45,7 @@ const PostList = ({
           currentUser={currentUser}
           onAddComment={onAddComment}
           onDeleteComment={onDeleteComment}
-          onLikeComment={onLikeComment}
+          onEditComment={onEditComment}
           commentsLoading={commentsLoading[post.id]}
           lastCommentRef={lastCommentRef}
           showingPostIdForScroll={showingPostIdForScroll}

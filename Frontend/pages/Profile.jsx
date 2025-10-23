@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import { MessageCircle, Bookmark, FileText } from "lucide-react";
@@ -24,6 +24,7 @@ const ProfilePage = () => {
     getPostComments,
     createComment,
     deleteComment,
+    updateComment,
   } = useContext(AuthContext);
 
   const [profileUser, setProfileUser] = useState(null);
@@ -89,7 +90,7 @@ const ProfilePage = () => {
     };
 
     fetchProfileData();
-  }, [username, getUserProfile, getUserPosts]);
+  }, [username, getUserProfile, getUserPosts, user?.username]);
 
   useEffect(() => {
     const fetchSavedPosts = async () => {
@@ -237,8 +238,6 @@ const ProfilePage = () => {
     try {
       setCommentsLoading((prev) => ({ ...prev, [postId]: true }));
 
-      console.log("Comments fetching start");
-
       // API call
       const response = await getPostComments(postId, limit, cursor);
 
@@ -257,8 +256,6 @@ const ProfilePage = () => {
           ...prev,
           [postId]: nextCursorValue,
         }));
-
-        console.log("Backend fetched data for comments", commentsArray);
       } else {
         console.error("Failed to fetch comments or empty data", response);
       }
@@ -331,6 +328,25 @@ const ProfilePage = () => {
       });
     } catch (err) {
       console.error(err);
+    }
+  };
+
+  const handleEditComment = async (postId, commentId, content) => {
+    if (!user) {
+      window.location.href = "/login";
+      return;
+    }
+
+    try {
+      const { data } = await updateComment(postId, commentId, content);
+      setPostComments((prev) => ({
+        ...prev,
+        [postId]: (prev[postId] || []).map((c) =>
+          c.id === commentId ? { ...c, content: data.content } : c
+        ),
+      }));
+    } catch (error) {
+      console.error("Error editing comment:", error);
     }
   };
 
@@ -417,6 +433,7 @@ const ProfilePage = () => {
                   commentsLoading={commentsLoading}
                   onAddComment={handleAddComment}
                   onDeleteComment={handleDeleteComment}
+                  onEditComment={handleEditComment}
                   currentUser={user}
                   showingPostIdForScroll={showingPostIdForScroll}
                   toggleComments={toggleComments}

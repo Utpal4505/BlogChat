@@ -18,7 +18,7 @@ const PostCard = ({
   commentsLoading = false,
   onAddComment,
   onDeleteComment,
-  onLikeComment,
+  onEditComment,
   currentUser,
   lastCommentRef,
   showingPostIdForScroll,
@@ -53,6 +53,8 @@ const PostCard = ({
     ? comments
     : comments.comments || [];
 
+  console.log("Postcard data", comments);
+
   return (
     <Motion.article
       initial={{ opacity: 0, y: 20 }}
@@ -72,7 +74,7 @@ const PostCard = ({
         <PostTags tags={tags} />
         <PostActions
           likes={post._count?.postLikes || 0}
-          comments={post._count?.comments || 0}
+          comments={commentsData?.length || post._count?.comments || 0}
           liked={liked}
           bookmarked={bookmarked}
           onLike={onLike}
@@ -90,7 +92,7 @@ const PostCard = ({
                 currentUser={currentUser}
                 onAddComment={onAddComment}
                 onDeleteComment={onDeleteComment}
-                onLikeComment={onLikeComment}
+                onEditComment={onEditComment}
                 isLoading={commentsLoading}
               />
               {/* Attach lastCommentRef to the last comment element for infinite scroll */}
