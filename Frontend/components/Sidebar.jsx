@@ -1,5 +1,4 @@
-"use client";
-import React, { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Home,
@@ -14,7 +13,9 @@ import {
   ChevronLeft,
   MoreHorizontal,
 } from "lucide-react";
-import { Link, NavLink } from "react-router-dom";
+import { Link } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext";
+import { toast } from "react-hot-toast";
 
 const NavigationSidebar = () => {
   const [activeItem, setActiveItem] = useState(0);
@@ -23,6 +24,8 @@ const NavigationSidebar = () => {
   const [windowWidth, setWindowWidth] = useState(() =>
     typeof window !== "undefined" ? window.innerWidth : 1024
   );
+
+  const { logout, user } = useContext(AuthContext);
 
   // Window resize handler for responsive design
   useEffect(() => {
@@ -40,7 +43,11 @@ const NavigationSidebar = () => {
   }, []);
 
   const MotionLink = motion(Link);
-  const MotionNavLink = motion(NavLink);
+
+  const handleLogOut = () => {
+    logout();
+    toast.success("Logged out successfully");
+  };
 
   const sections = [
     {
@@ -64,7 +71,7 @@ const NavigationSidebar = () => {
       title: "Account",
       items: [
         { icon: UserCircle, label: "Profile", href: "/profile" },
-        { icon: LogOut, label: "Logout", href: "/logout" },
+        { icon: LogOut, label: "Logout", onClick: handleLogOut },
       ],
     },
   ];
@@ -148,11 +155,13 @@ const NavigationSidebar = () => {
     },
   };
 
-  const handleItemClick = (globalIndex) => {
+  const handleItemClick = (globalIndex, item) => {
     setActiveItem(globalIndex);
     if (isMobile) {
       setShowMoreMenu(false);
     }
+
+    if (item?.onClick) item.onClick();
   };
 
   // Desktop/Tablet Sidebar
@@ -208,7 +217,7 @@ const NavigationSidebar = () => {
                     <MotionLink
                       to={item.href}
                       key={globalIndex}
-                      onClick={() => handleItemClick(globalIndex)}
+                      onClick={() => handleItemClick(globalIndex, item)}
                       className={`
                         w-full flex items-center rounded-lg px-2 py-1.5 text-xs sm:text-sm transition-all
                         ${isExpanded ? "" : "justify-center"} 
@@ -270,16 +279,19 @@ const NavigationSidebar = () => {
             <motion.div className="mt-2 pt-2 border-t border-bordercolor/60 dark:border-dbordercolor/60">
               <div className="flex items-center p-2 rounded-lg bg-primary/5 dark:bg-dPrimary/5">
                 <img
-                  src="https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png"
-                  alt="User Avatar"
+                  src={
+                    user?.avatar ||
+                    "https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png"
+                  }
+                  alt={"User Avatar"}
                   className="w-5 sm:w-6 h-5 sm:h-6 rounded-full mr-2"
                 />
                 <div className="flex-1 min-w-0">
                   <div className="font-semibold text-[10px] sm:text-xs text-text dark:text-dText truncate">
-                    John Doe
+                    {user?.username || "@johndoe"}
                   </div>
                   <div className="text-[9px] sm:text-[10px] text-muted-text dark:text-dMuted-text truncate">
-                    john.doe@example.com
+                    {user?.name || "John Doe"}
                   </div>
                 </div>
               </div>
@@ -327,7 +339,7 @@ const NavigationSidebar = () => {
                   <MotionLink
                     to={item.href}
                     key={globalIndex}
-                    onClick={() => handleItemClick(globalIndex)}
+                    onClick={() => handleItemClick(globalIndex, item)}
                     className={`
                       flex flex-col items-center p-4 rounded-xl transition-all
                       ${
@@ -358,16 +370,19 @@ const NavigationSidebar = () => {
             >
               <div className="flex items-center p-3 rounded-xl bg-primary/5 dark:bg-dPrimary/5">
                 <img
-                  src="https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png"
-                  alt="User Avatar"
+                  src={
+                    user?.avatar ||
+                    "https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png"
+                  }
+                  alt={"User Avatar"}
                   className="w-8 h-8 rounded-full mr-3"
                 />
                 <div className="flex-1 min-w-0">
                   <div className="font-semibold text-sm text-text dark:text-dText truncate">
-                    John Doe
+                    {user?.username || "@johndoe"}
                   </div>
                   <div className="text-xs text-muted-text dark:text-dMuted-text truncate">
-                    john.doe@example.com
+                    {user?.name || "John Doe"}
                   </div>
                 </div>
               </div>
@@ -393,7 +408,7 @@ const NavigationSidebar = () => {
               <MotionLink
                 to={item.href}
                 key={idx}
-                onClick={() => handleItemClick(idx)}
+                onClick={() => handleItemClick(idx, item)}
                 className={`
                   flex flex-col items-center p-2 rounded-xl transition-all min-w-0 flex-1
                   ${
