@@ -431,6 +431,15 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const getUserReplies = async (username) => {
+    try {
+      const { data } = await Postapi.get(`/replies/${username}`);
+      return data;
+    } catch (error) {
+      throw normalizeError(error);
+    }
+  }
+
   // ---------- Bug & Feedback ----------
 
   const create_Bug = async ({ bugPayload, recaptchaToken }) => {
@@ -492,6 +501,7 @@ export const AuthProvider = ({ children }) => {
         toggleBookmark,
         getBookmarkPosts,
         deleteComment,
+        getUserReplies,
       }}
     >
       {children}

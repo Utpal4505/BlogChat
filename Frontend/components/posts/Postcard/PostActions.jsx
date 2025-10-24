@@ -48,8 +48,6 @@ const PostActions = ({
         <button
           onClick={(e) => {
             e.stopPropagation();
-
-            console.log("Comments clicked");
             onCommentClick();
           }}
           className="flex items-center gap-2 group/comment transition-all"

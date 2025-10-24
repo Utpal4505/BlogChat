@@ -1,59 +1,6 @@
 import { MessageCircle } from "lucide-react";
 import PostCard from "../posts/Postcard/PostCard";
 
-const dummyReplies = [
-  {
-    id: 1,
-    originalPost: {
-      id: "post-1",
-      author: {
-        username: "TechGuru",
-        avatar: "https://i.pravatar.cc/40?img=1",
-      },
-      title: "Building Modern React Applications with Performance in Mind",
-      coverImage:
-        "https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=800&h=400&fit=crop",
-      content:
-        "Just finished building a new React component library. The performance improvements are incredible! 🚀",
-      createdAt: new Date(Date.now() - 7200000).toISOString(),
-      readTime: "3 min read",
-      likes: 245,
-      replies: 12,
-      tags: ["react", "performance", "webdev"],
-    },
-    yourReply: {
-      content:
-        "This looks amazing! Would love to see the documentation. How did you handle the bundle size optimization?",
-      createdAt: new Date(Date.now() - 600000).toISOString(),
-    },
-  },
-  {
-    id: 2,
-    originalPost: {
-      id: "post-2",
-      author: {
-        username: "WebDevDaily",
-        avatar: "https://i.pravatar.cc/40?img=2",
-      },
-      title: "CSS Modules vs Tailwind: The Great Debate",
-      coverImage:
-        "https://images.unsplash.com/photo-1507721999472-8ed4421c4af2?w=800&h=400&fit=crop",
-      content:
-        "Hot take: Tailwind CSS is overrated. CSS Modules are still the best way to handle styling in React applications.",
-      createdAt: new Date(Date.now() - 10800000).toISOString(),
-      readTime: "5 min read",
-      likes: 89,
-      replies: 45,
-      tags: ["css", "tailwind", "webdev"],
-    },
-    yourReply: {
-      content:
-        "I respectfully disagree. Tailwind's utility-first approach has significantly improved my development speed.",
-      createdAt: new Date(Date.now() - 300000).toISOString(),
-    },
-  },
-];
-
 const formatTimeAgo = (dateStr) => {
   const seconds = Math.floor((new Date() - new Date(dateStr)) / 1000);
   if (seconds < 60) return "just now";
@@ -62,10 +9,25 @@ const formatTimeAgo = (dateStr) => {
   return `${Math.floor(seconds / 86400)}d`;
 };
 
-const RepliesView = () => {
+const RepliesView = ({
+  replies,
+  onLike,
+  onBookmark,
+  onAddComment,
+  onDeleteComment,
+  onEditComment,
+  toggleComments,
+  currentUser,
+  postComments,
+  commentsLoading,
+  showingPostIdForScroll,
+  lastCommentRef,
+  likedPosts,
+  bookmarkedPosts,
+}) => {
   return (
     <div className="w-full max-w-3xl mx-auto bg-bg dark:bg-dbg min-h-screen p-4">
-      {dummyReplies.length === 0 ? (
+      {replies.length === 0 ? (
         <div className="flex flex-col items-center justify-center p-16 text-center">
           <div className="w-16 h-16 rounded-full bg-card dark:bg-dcard flex items-center justify-center mb-4">
             <MessageCircle className="w-8 h-8 text-muted-text dark:text-dMuted-text" />
@@ -79,14 +41,30 @@ const RepliesView = () => {
         </div>
       ) : (
         <div className="space-y-6">
-          {dummyReplies.map((item) => (
+          {replies.map((replies) => (
             <div
-              key={item.id}
+              key={replies.id}
               className="bg-card dark:bg-dcard rounded-2xl border border-bordercolor dark:border-dbordercolor overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200"
             >
+              {console.log("The reply post is", replies)}
               {/* Original Post */}
               <div className="p-5 border-b border-bordercolor dark:border-dbordercolor">
-                <PostCard post={item.originalPost} />
+                <PostCard
+                  post={replies.post}
+                  liked={likedPosts?.[replies.post.id]}
+                  bookmarked={bookmarkedPosts?.[replies.post.id]}
+                  onLike={() => onLike(replies.post.id)}
+                  onBookmark={() => onBookmark(replies.post.id)}
+                  onAddComment={onAddComment}
+                  onDeleteComment={onDeleteComment}
+                  onEditComment={onEditComment}
+                  currentUser={currentUser}
+                  comments={postComments?.[replies.post.id] || []}
+                  commentsLoading={commentsLoading?.[replies.post.id]}
+                  showingPostIdForScroll={showingPostIdForScroll}
+                  toggleComments={toggleComments}
+                  lastCommentRef={lastCommentRef}
+                />
               </div>
 
               {/* Reply Section with connecting line */}
@@ -98,8 +76,8 @@ const RepliesView = () => {
                   {/* Avatar with subtle border */}
                   <div className="relative flex-shrink-0 z-10">
                     <img
-                      src="https://i.pravatar.cc/40?img=10"
-                      alt="You"
+                      src={replies.author?.avatar}
+                      alt={replies.author?.username}
                       className="w-11 h-11 rounded-full border-2 border-bordercolor dark:border-dbordercolor bg-card dark:bg-dcard"
                     />
                     {/* Reply indicator */}
@@ -119,14 +97,14 @@ const RepliesView = () => {
                         replied
                       </span>
                       <span className="text-xs text-muted-text dark:text-dMuted-text opacity-70">
-                        · {formatTimeAgo(item.yourReply.createdAt)}
+                        · {formatTimeAgo(replies.createdAt)}
                       </span>
                     </div>
 
                     {/* Reply Text in a nice card */}
                     <div className="bg-card dark:bg-dcard rounded-xl border border-bordercolor/60 dark:border-dbordercolor/60 px-4 py-3.5 shadow-sm">
                       <p className="text-[15px] text-text dark:text-dText leading-relaxed">
-                        {item.yourReply.content}
+                        {replies.content}
                       </p>
                     </div>
                   </div>

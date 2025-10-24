@@ -1,4 +1,4 @@
-import { Clock, Dot, MoreHorizontal } from "lucide-react";
+import { Clock, Dot } from "lucide-react";
 
 const PostAuthor = ({ author, publishedDate, readTime }) => {
   const formatDate = (date) => {

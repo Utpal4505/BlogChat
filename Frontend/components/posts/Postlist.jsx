@@ -18,7 +18,7 @@ const PostList = ({
   toggleComments,
 }) => {
 
-  console.log("Post List comments reached", postComments)
+  console.log("Post List comments reached", posts)
 
   // ✅ Add guard
   if (!posts) {

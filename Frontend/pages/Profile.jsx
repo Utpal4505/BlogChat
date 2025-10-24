@@ -26,6 +26,7 @@ const ProfilePage = () => {
     createComment,
     deleteComment,
     updateComment,
+    getUserReplies,
   } = useContext(AuthContext);
 
   const [profileUser, setProfileUser] = useState(null);
@@ -42,6 +43,8 @@ const ProfilePage = () => {
   const [postComments, setPostComments] = useState({});
   const [commentsLoading, setCommentsLoading] = useState({});
   const [commentsCursor, setCommentsCursor] = useState({});
+
+  const [replies, setReplies] = useState([]);
 
   const [showingPostIdForScroll, setShowingPostIdForScroll] = useState(null);
 
@@ -126,6 +129,26 @@ const ProfilePage = () => {
     fetchSavedPosts();
   }, [activeTab, getBookmarkPosts, profileUser]);
 
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchReplies = async () => {
+      try {
+        const data = await getUserReplies("its_utpall");
+        console.log("User replies:", data);
+        if (isMounted) setReplies(data.replies);
+      } catch (err) {
+        console.error("Failed to fetch replies:", err);
+      }
+    };
+
+    fetchReplies();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [username, getUserReplies]);
+
   const handleFollowToggle = async () => {
     if (!user) {
       window.location.href = "/login";
@@ -145,18 +168,12 @@ const ProfilePage = () => {
   };
 
   const handleLike = async (postId) => {
-    if (!user) {
-      window.location.href = "/login";
-      return;
-    }
+    if (!user) return (window.location.href = "/login");
 
     const wasLiked = likedPosts[postId] || false;
-    const currentPost = posts.find((p) => p.id === postId);
-    const currentCount = currentPost?._count?.postLikes || 0;
 
     // Optimistic update
     setLikedPosts((prev) => ({ ...prev, [postId]: !wasLiked }));
-
     setPosts((prev) =>
       prev.map((post) =>
         post.id === postId
@@ -164,20 +181,37 @@ const ProfilePage = () => {
               ...post,
               _count: {
                 ...post._count,
-                postLikes: wasLiked ? currentCount - 1 : currentCount + 1,
+                postLikes: post._count.postLikes + (wasLiked ? -1 : 1),
               },
             }
           : post
       )
     );
+    setReplies((prev) =>
+      prev.map((r) =>
+        r.post.id === postId
+          ? {
+              ...r,
+              post: {
+                ...r.post,
+                _count: {
+                  ...r.post._count,
+                  postLikes: r.post._count.postLikes + (wasLiked ? -1 : 1),
+                },
+              },
+            }
+          : r
+      )
+    );
 
     try {
-      await likePost(postId); // ✅ Just call, don't need response
-    } catch (error) {
-      console.error("❌ Like failed, reverting...", error);
+      await likePost(postId);
+    } catch (err) {
+      console.error("Like failed, reverting", err);
 
-      // Revert optimistic update
+      // Revert counts using **previous values** from state snapshot
       setLikedPosts((prev) => ({ ...prev, [postId]: wasLiked }));
+
       setPosts((prev) =>
         prev.map((post) =>
           post.id === postId
@@ -185,10 +219,27 @@ const ProfilePage = () => {
                 ...post,
                 _count: {
                   ...post._count,
-                  postLikes: currentCount,
+                  postLikes: post._count.postLikes + (wasLiked ? 0 : 0), // <-- tricky, you need a snapshot
                 },
               }
             : post
+        )
+      );
+
+      setReplies((prev) =>
+        prev.map((r) =>
+          r.post.id === postId
+            ? {
+                ...r,
+                post: {
+                  ...r.post,
+                  _count: {
+                    ...r.post._count,
+                    postLikes: r.post._count.postLikes + (wasLiked ? 0 : 0),
+                  },
+                },
+              }
+            : r
         )
       );
 
@@ -202,7 +253,7 @@ const ProfilePage = () => {
       return;
     }
 
-    const wasBookmarked = likedPosts[postId] || false;
+    const wasBookmarked = bookmarkedPosts[postId] || false;
 
     setBookmarkedPosts((prev) => ({ ...prev, [postId]: !wasBookmarked }));
 
@@ -452,20 +503,35 @@ const ProfilePage = () => {
                 />
               ))}
 
-            {activeTab === "replies" && (
-              <RepliesSection />
-              // ) : (
-              //   <EmptyState
-              //     icon={MessageCircle}
-              //     title="No replies yet"
-              //     subtitle={
-              //       isOwnProfile
-              //         ? "When you reply to posts, they'll show up here."
-              //         : "No replies from this user yet."
-              //     }
-              //   />
-              // )
-            )}
+            {activeTab === "replies" &&
+              (replies.length > 0 ? (
+                <RepliesSection
+                  replies={replies}
+                  onLike={handleLike}
+                  onBookmark={handleBookmark}
+                  onAddComment={handleAddComment}
+                  onDeleteComment={handleDeleteComment}
+                  onEditComment={handleEditComment}
+                  toggleComments={toggleComments}
+                  likedPosts={likedPosts}
+                  bookmarkedPosts={bookmarkedPosts}
+                  currentUser={user}
+                  postComments={postComments}
+                  commentsLoading={commentsLoading}
+                  showingPostIdForScroll={showingPostIdForScroll}
+                  lastCommentRef={lastCommentRef}
+                />
+              ) : (
+                <EmptyState
+                  icon={MessageCircle}
+                  title="No replies yet"
+                  subtitle={
+                    isOwnProfile
+                      ? "When you reply to posts, they'll show up here."
+                      : "No replies from this user yet."
+                  }
+                />
+              ))}
 
             {activeTab === "saved" &&
               (isOwnProfile ? (

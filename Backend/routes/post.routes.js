@@ -21,6 +21,7 @@ import {
   bookmarkToggle,
   getBookmarkPosts,
 } from "../controllers/bookmark.controllers.js";
+import { getUserReplies } from "../controllers/comments.controllers.js";
 
 const router = Router();
 
@@ -36,7 +37,7 @@ router.route("/feed").get(getFeedPost);
 router.route("/tags/:tagName/posts").get(getPostsByTag);
 router.route("/search").get(searchBasedDetail);
 router.route("/search/filter").get(postFiltering);
-router.route("/post/:postId/like").post(verifyJWT, checkPostAccess, postLike);
+router.route("/post/:postId/like").post(verifyJWT, postLike);
 router
   .route("/post/:postId/comment")
   .post(verifyJWT, checkPostAccess, createPostComment);
@@ -46,8 +47,9 @@ router
 router
   .route("/post/:postId/comment/:commentId")
   .delete(verifyJWT, checkPostAccess, deletePostComment);
-router.route("/post/:postId/comments").get(getComments);
+router.route("/post/:postId/comments").get(verifyJWT, getComments);
 router.route("/post/:postId/bookmarks").post(verifyJWT, bookmarkToggle);
 router.route("/bookmarks").get(verifyJWT, getBookmarkPosts);
+router.route("/replies/:username").get(verifyJWT, getUserReplies);
 
 export default router;
