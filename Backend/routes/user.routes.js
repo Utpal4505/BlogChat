@@ -9,7 +9,6 @@ import {
   LoginUser,
   refreshAccessToken,
   resetPasswordOTP,
-  updateAvatar,
   updateMe,
   verifyOTP,
   verifyResetPassword,
@@ -47,9 +46,6 @@ router.route("/reset-password").post(verifyResetPassword);
 router.route("/resetOTPsent").post(otpLimiter, resetPasswordOTP);
 router.route("/profile/:username").get(verifyJWTSoft, getUserProfile);
 router.route("/me/update").patch(verifyJWT, updateMe);
-router
-  .route("/me/avatar")
-  .patch(verifyJWT, upload.single("avatar"), updateAvatar);
 router.route("/delete").delete(verifyJWT, deleteUser);
 router.route("/:userId/follow").post(verifyJWT, follow);
 router.route("/profile/:username/posts").get(verifyJWTSoft, getUserPosts);

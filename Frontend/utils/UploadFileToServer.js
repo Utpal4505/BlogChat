@@ -4,11 +4,7 @@ export async function uploadFilesToServer(files) {
   if (!files || files.length === 0) return [];
 
   const formData = new FormData();
-  files.forEach(({ file }) => {
-    if (file && !file.error) {
-      formData.append("files", file);
-    }
-  });
+  files.forEach((file) => formData.append("files", file));
 
   try {
     const res = await fetch("http://localhost:8000/api/v1/upload-file/", {
@@ -20,6 +16,7 @@ export async function uploadFilesToServer(files) {
 
     if (!data.success) throw new Error(data.message || "Upload failed");
 
+    // data.urls = [{ url, public_id }]
     return data.urls;
   } catch (err) {
     console.error("File upload error:", err);

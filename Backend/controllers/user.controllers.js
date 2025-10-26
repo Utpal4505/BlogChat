@@ -629,7 +629,7 @@ const getUserPosts = asyncHandler(async (req, res) => {
 
 const updateMe = asyncHandler(async (req, res) => {
   const userId = req.user.id;
-  const { name, bio, Newpassword } = req.body;
+  const { username, name, bio, avatarUrl, Newpassword } = req.body;
 
   if (Newpassword) {
     if (Newpassword.length < 8) {
@@ -642,6 +642,8 @@ const updateMe = asyncHandler(async (req, res) => {
   const updateData = {};
   if (name !== undefined) updateData.name = name;
   if (bio !== undefined) updateData.bio = bio;
+  if (username !== undefined) updateData.username = username;
+  if (avatarUrl !== undefined) updateData.avatar = avatarUrl;
   if (Newpassword !== undefined)
     updateData.password = await bcrypt.hash(Newpassword, 10);
 
@@ -670,36 +672,6 @@ const updateMe = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, updatedUser, "✅ Profile updated successfully"));
 });
 
-const updateAvatar = asyncHandler(async (req, res) => {
-  const userId = req.user.id;
-
-  if (!req.file?.path) {
-    return res.status(400).json({ message: "No avatar file uploaded" });
-  }
-
-  const avatarCloudPath = await uploadToCloudinary(req.file.path);
-  if (!avatarCloudPath) {
-    return res.status(500).json({ message: "Avatar upload failed" });
-  }
-
-  const updatedUser = await prisma.user.update({
-    where: { id: userId },
-    data: { avatar: avatarCloudPath.secure_url },
-    select: {
-      id: true,
-      username: true,
-      email: true,
-      name: true,
-      bio: true,
-      avatar: true,
-      createdAt: true,
-    },
-  });
-
-  return res
-    .status(200)
-    .json(new ApiResponse(200, updatedUser, "✅ Avatar updated successfully"));
-});
 
 const deleteUser = asyncHandler(async (req, res) => {
   const userID = req.user.id;
@@ -745,7 +717,6 @@ export {
   verifyResetPassword,
   getUserProfile,
   updateMe,
-  updateAvatar,
   deleteUser,
   getUserPosts,
 };

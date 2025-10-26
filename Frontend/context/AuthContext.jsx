@@ -227,31 +227,15 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const updateUserProfile = async ({ bio, name, email }) => {
+  const updateUserProfile = async ({ bio, name, username, email, avatarUrl }) => {
     try {
       const { data } = await Userapi.patch("/me/update", {
         bio,
         name,
+        username,
         email,
+        avatarUrl
       });
-      setUser(data.data);
-      return data;
-    } catch (error) {
-      throw normalizeError(error);
-    }
-  };
-
-  const updateAvatar = async (avatarFile) => {
-    try {
-      const formData = new FormData();
-      formData.append("avatar", avatarFile);
-
-      const { data } = await Userapi.patch("/me/avatar", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-
       setUser(data.data);
       return data;
     } catch (error) {
@@ -483,7 +467,6 @@ export const AuthProvider = ({ children }) => {
         verifyResetPassword,
         getUserProfile,
         updateUserProfile,
-        updateAvatar,
         deleteUser,
         toggleFollow,
         getUserPosts,

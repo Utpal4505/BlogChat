@@ -10,8 +10,11 @@ import {
   Sun,
   Moon,
 } from "lucide-react";
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useContext } from "react";
 import { NavLink } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext";
+import { toast } from "react-hot-toast";
+import LoadingScreen from "./LoadingScreen";
 
 function Navbar() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -62,11 +65,8 @@ function Navbar() {
   const toggleDropdown = () => setIsDropdownOpen(!isDropdownOpen);
   const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
 
-  const user = {
-    name: "John Doe",
-    email: "john.doe@example.com",
-    avatarUrl: null,
-  };
+  const { user, logout } = useContext(AuthContext)
+
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -75,6 +75,12 @@ function Navbar() {
       // Add your search logic here
     }
   };
+
+  const handleLogOut = () => {
+    logout();
+    toast.success("Logged out successfully");
+    setIsDropdownOpen(false);
+  }
 
   // Responsive breakpoints
   const isMobile = windowWidth < 640;
@@ -205,7 +211,7 @@ function Navbar() {
               >
                 <img
                   src={
-                    user?.avatarUrl ||
+                    user?.avatar ||
                     "https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png"
                   }
                   alt="User avatar"
@@ -237,7 +243,7 @@ function Navbar() {
                     <div className="flex items-center space-x-2 sm:space-x-3">
                       <img
                         src={
-                          user?.avatarUrl ||
+                          user?.avatar ||
                           "https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png"
                         }
                         alt="User avatar"
@@ -251,14 +257,14 @@ function Navbar() {
                             isMobile ? "text-xs" : "text-sm"
                           } font-semibold text-text dark:text-dText truncate`}
                         >
-                          {user.name}
+                          {user?.username || "@johndoe"}
                         </p>
                         <p
                           className={`${
                             isMobile ? "text-xs" : "text-xs"
                           } text-muted-text dark:text-dMuted-text truncate`}
                         >
-                          {user.email}
+                          {user?.name || "John Doe"}
                         </p>
                       </div>
                     </div>
@@ -309,10 +315,7 @@ function Navbar() {
                     className={`flex items-center space-x-2 sm:space-x-3 w-full px-3 sm:px-4 py-2 sm:py-3 ${
                       isMobile ? "text-xs" : "text-sm"
                     } text-danger hover:bg-danger/5 transition-all duration-200 group`}
-                    onClick={() => {
-                      setIsDropdownOpen(false);
-                      console.log("Sign out clicked");
-                    }}
+                    onClick={handleLogOut}
                   >
                     <LogOut
                       className={`${isMobile ? "w-3.5 h-3.5" : "w-4 h-4"}`}
@@ -389,7 +392,7 @@ function Navbar() {
               >
                 <img
                   src={
-                    user?.avatarUrl ||
+                    user?.avatar ||
                     "https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png"
                   }
                   alt="User avatar"
@@ -403,14 +406,14 @@ function Navbar() {
                       isMobile ? "text-sm" : "text-base"
                     } font-semibold text-text dark:text-dText truncate`}
                   >
-                    {user.name}
+                    {user?.username || "@johndoe"}
                   </p>
                   <p
                     className={`${
                       isMobile ? "text-xs" : "text-sm"
                     } text-muted-text dark:text-dMuted-text truncate`}
                   >
-                    {user.email}
+                    {user?.name || "John Doe"}
                   </p>
                 </div>
               </div>

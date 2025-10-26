@@ -19,6 +19,7 @@ import ReportBug from "../pages/ReportBug.jsx";
 import { GoogleReCaptchaProvider } from "react-google-recaptcha-v3";
 import Feedback from "../pages/Feedback.jsx";
 import ProfilePage from "../pages/Profile.jsx";
+import SettingsPage from "../pages/Setings.jsx";
 
 const MAX_CONSOLE_ERRORS = 5;
 export const consoleErrors = [];
@@ -92,6 +93,10 @@ const router = createBrowserRouter([
         path: "profile", // Own profile (no username)
         element: <ProfilePage />,
       },
+      {
+        path: "settings",
+        element: <SettingsPage />,
+      }
     ],
   },
 
