@@ -1,16 +1,46 @@
 // components/settings/modals/PasswordModal.jsx
 import React, { useState } from "react";
 import ModalWrapper from "../shared/ModalWrapper";
+import PasswordInput, { GetStrength } from "../../PasswordStrengthCheck";
+import toast from "react-hot-toast";
+import { useContext } from "react";
+import { AuthContext } from "../../../context/AuthContext";
 
 const PasswordModal = ({ show, onClose }) => {
-  const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  const handleSave = () => {
+  const { updateUserProfile } = useContext(AuthContext);
+
+  const handleSave = async () => {
+    // Check password strength
+    const strength = GetStrength(newPassword);
+    const isStrong = strength.label === "Strong";
+    if (!isStrong) {
+      toast.error("Please choose a stronger password!");
+    }
+
+    // Check if passwords match and meet length requirement
     if (newPassword === confirmPassword && newPassword.length >= 8) {
-      alert("Password changed successfully!");
+      toast.success("Password changed successfully!");
       onClose();
+    } else if (newPassword !== confirmPassword) {
+      return toast.error("Passwords do not match!");
+    } else if (newPassword.length < 8) {
+      return toast.error("Password must be at least 8 characters long!");
+    }
+
+    // Now calling API to change password can be done here
+    try {
+      await updateUserProfile({ Newpassword: newPassword });
+      toast.success("Password changed successfully!");
+
+      setNewPassword("");
+      setConfirmPassword("");
+      onClose();
+    } catch (error) {
+      console.error("Error changing password:", error);
+      toast.error("Failed to change password!");
     }
   };
 
@@ -38,28 +68,15 @@ const PasswordModal = ({ show, onClose }) => {
     >
       <div className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-text dark:text-dText mb-2">Current password</label>
-          <input
-            type="password"
-            value={currentPassword}
-            onChange={(e) => setCurrentPassword(e.target.value)}
-            className="w-full px-4 py-3 border border-bordercolor dark:border-dbordercolor rounded-lg bg-bg dark:bg-dbg text-text dark:text-dText focus:outline-none focus:border-accent dark:focus:border-daccent transition-colors"
-            placeholder="Enter current password"
-          />
+          <label className="block text-sm font-medium text-text dark:text-dText mb-2">
+            New password
+          </label>
+          <PasswordInput password={newPassword} setPassword={setNewPassword} />
         </div>
         <div>
-          <label className="block text-sm font-medium text-text dark:text-dText mb-2">New password</label>
-          <input
-            type="password"
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-            className="w-full px-4 py-3 border border-bordercolor dark:border-dbordercolor rounded-lg bg-bg dark:bg-dbg text-text dark:text-dText focus:outline-none focus:border-accent dark:focus:border-daccent transition-colors"
-            placeholder="Enter new password"
-          />
-          <p className="text-xs text-muted-text dark:text-dMuted-text mt-2">Must be at least 8 characters</p>
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-text dark:text-dText mb-2">Confirm new password</label>
+          <label className="block text-sm font-medium text-text dark:text-dText mb-2">
+            Confirm new password
+          </label>
           <input
             type="password"
             value={confirmPassword}

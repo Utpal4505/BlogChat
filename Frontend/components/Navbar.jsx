@@ -1,5 +1,4 @@
 import {
-  Bell,
   ChevronDown,
   Search,
   LogOut,
@@ -7,14 +6,14 @@ import {
   Settings,
   Menu,
   X,
-  Sun,
-  Moon,
+  LogIn,
+  Lightbulb,
+  LightbulbOff,
 } from "lucide-react";
-import React, { useEffect, useState, useRef, useContext } from "react";
-import { NavLink } from "react-router-dom";
+import { useEffect, useState, useRef, useContext } from "react";
+import { NavLink, useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import { toast } from "react-hot-toast";
-import LoadingScreen from "./LoadingScreen";
 
 function Navbar() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -27,6 +26,7 @@ function Navbar() {
     typeof window !== "undefined" ? window.innerWidth : 1024
   );
   const dropdownRef = useRef(null);
+  const navigate = useNavigate();
 
   // Window resize handler for responsive design
   useEffect(() => {
@@ -65,8 +65,7 @@ function Navbar() {
   const toggleDropdown = () => setIsDropdownOpen(!isDropdownOpen);
   const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
 
-  const { user, logout } = useContext(AuthContext)
-
+  const { user, logout } = useContext(AuthContext);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -80,7 +79,11 @@ function Navbar() {
     logout();
     toast.success("Logged out successfully");
     setIsDropdownOpen(false);
-  }
+  };
+
+  const handleLogin = () => {
+    navigate("/login"); // Update with your login route
+  };
 
   // Responsive breakpoints
   const isMobile = windowWidth < 640;
@@ -128,7 +131,7 @@ function Navbar() {
           </div>
 
           {/* Right Side Icons */}
-          <div className="flex items-center space-x-1 sm:space-x-2 lg:space-x-3">
+          <div className="flex items-center gap-2 space-x-1 sm:space-x-2 lg:space-x-3">
             {/* Enhanced Theme Toggle - Responsive sizing */}
             <div className="relative">
               <button
@@ -141,7 +144,7 @@ function Navbar() {
                 }
               >
                 {/* Toggle Track */}
-                <div className="absolute inset-0 rounded-full bg-gradient-to-r from-blue-400 to-blue-600 dark:from-purple-600 dark:to-indigo-700 opacity-0 dark:opacity-100 transition-opacity duration-300"></div>
+                <div className="absolute inset-0 rounded-full bg-gradient-to-r from-primary to-accent dark:from-dPrimary dark:to-daccent opacity-0 dark:opacity-100 transition-opacity duration-300"></div>
 
                 {/* Toggle Knob - Responsive sizing */}
                 <div
@@ -162,19 +165,19 @@ function Navbar() {
                   }`}
                 >
                   {/* Icons - Responsive sizing */}
-                  <Sun
+                  <LightbulbOff
                     className={`absolute ${
                       isMobile ? "h-3 w-3" : "h-3.5 w-3.5"
-                    } text-yellow-500 transition-all duration-300 ${
+                    } text-accent transition-all duration-300 ${
                       isDark
                         ? "opacity-0 rotate-180 scale-0"
                         : "opacity-100 rotate-0 scale-100"
                     }`}
                   />
-                  <Moon
+                  <Lightbulb
                     className={`absolute ${
                       isMobile ? "h-3 w-3" : "h-3.5 w-3.5"
-                    } text-indigo-400 transition-all duration-300 ${
+                    } text-daccent transition-all duration-300 ${
                       isDark
                         ? "opacity-100 rotate-0 scale-100"
                         : "opacity-0 -rotate-180 scale-0"
@@ -184,147 +187,158 @@ function Navbar() {
               </button>
             </div>
 
-            {/* Notifications - Hidden on very small screens */}
-            {windowWidth > 480 && (
-              <NavLink
-                to="/notifications"
-                className={`relative ${
-                  isMobile ? "p-2" : "p-2.5"
-                } rounded-xl text-muted-text dark:text-dMuted-text hover:bg-primary/10 dark:hover:bg-dPrimary/10 hover:text-primary dark:hover:text-dPrimary transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-accent/40 dark:focus:ring-daccent/40`}
-                aria-label="Notifications"
-              >
-                <Bell className={`${isMobile ? "h-4 w-4" : "h-5 w-5"}`} />
-                {/* Notification badge */}
-                <span className="absolute -top-1 -right-1 h-3 w-3 bg-danger rounded-full animate-pulse"></span>
-              </NavLink>
-            )}
-
-            {/* User Dropdown - Responsive sizing */}
-            <div className="relative" ref={dropdownRef}>
-              <button
-                onClick={toggleDropdown}
-                aria-expanded={isDropdownOpen}
-                aria-haspopup="menu"
-                className={`flex items-center space-x-1 sm:space-x-2 ${
-                  isMobile ? "p-1.5" : "p-2"
-                } rounded-xl text-muted-text dark:text-dMuted-text hover:bg-primary/10 dark:hover:bg-dPrimary/10 hover:text-primary dark:hover:text-dPrimary transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-accent/40 dark:focus:ring-daccent/40`}
-              >
-                <img
-                  src={
-                    user?.avatar ||
-                    "https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png"
-                  }
-                  alt="User avatar"
-                  className={`${
-                    isMobile ? "h-7 w-7" : isTablet ? "h-8 w-8" : "h-8 w-8"
-                  } rounded-full object-cover border-2 border-bordercolor dark:border-dbordercolor hover:border-accent dark:hover:border-daccent transition-all duration-200`}
-                />
-                {/* Hide chevron on very small screens */}
-                {windowWidth > 480 && (
-                  <ChevronDown
-                    className={`${
-                      isMobile ? "h-3 w-3" : "h-4 w-4"
-                    } transition-transform duration-200 ${
-                      isDropdownOpen ? "rotate-180" : ""
-                    }`}
-                  />
-                )}
-              </button>
-
-              {/* Dropdown Menu - Responsive sizing and positioning */}
-              {isDropdownOpen && (
-                <div
-                  className={`absolute right-0 mt-2 sm:mt-3 ${
-                    isMobile ? "w-48" : isTablet ? "w-52" : "w-56"
-                  } rounded-xl sm:rounded-2xl bg-card dark:bg-dcard border border-bordercolor dark:border-dbordercolor shadow-xl shadow-primary/5 dark:shadow-black/20 py-2 z-50 animate-in slide-in-from-top-2 duration-200`}
+            {/* Conditional Rendering: User Dropdown OR Login Button */}
+            {user ? (
+              // User Dropdown - When logged in
+              <div className="relative" ref={dropdownRef}>
+                <button
+                  onClick={toggleDropdown}
+                  aria-expanded={isDropdownOpen}
+                  aria-haspopup="menu"
+                  className={`flex items-center space-x-1 sm:space-x-2 ${
+                    isMobile ? "p-1.5" : "p-2"
+                  } rounded-xl text-muted-text dark:text-dMuted-text hover:bg-primary/10 dark:hover:bg-dPrimary/10 hover:text-primary dark:hover:text-dPrimary transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-accent/40 dark:focus:ring-daccent/40`}
                 >
-                  {/* User Info Header */}
-                  <div className="px-3 sm:px-4 py-2 sm:py-3 border-b border-bordercolor dark:border-dbordercolor">
-                    <div className="flex items-center space-x-2 sm:space-x-3">
-                      <img
-                        src={
-                          user?.avatar ||
-                          "https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png"
-                        }
-                        alt="User avatar"
-                        className={`${
-                          isMobile ? "h-8 w-8" : "h-10 w-10"
-                        } rounded-full object-cover border-2 border-bordercolor dark:border-dbordercolor`}
-                      />
-                      <div className="flex-1 min-w-0">
-                        <p
+                  <img
+                    src={
+                      user?.avatar ||
+                      "https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png"
+                    }
+                    alt="User avatar"
+                    className={`${
+                      isMobile ? "h-7 w-7" : isTablet ? "h-8 w-8" : "h-8 w-8"
+                    } rounded-full object-cover border-2 border-bordercolor dark:border-dbordercolor hover:border-accent dark:hover:border-daccent transition-all duration-200`}
+                  />
+                  {windowWidth > 480 && (
+                    <ChevronDown
+                      className={`${
+                        isMobile ? "h-3 w-3" : "h-4 w-4"
+                      } transition-transform duration-200 ${
+                        isDropdownOpen ? "rotate-180" : ""
+                      }`}
+                    />
+                  )}
+                </button>
+
+                {/* Dropdown Menu */}
+                {isDropdownOpen && (
+                  <div
+                    className={`absolute right-0 mt-2 sm:mt-3 ${
+                      isMobile ? "w-48" : isTablet ? "w-52" : "w-56"
+                    } rounded-xl sm:rounded-2xl bg-card dark:bg-dcard border border-bordercolor dark:border-dbordercolor shadow-xl shadow-primary/5 dark:shadow-black/20 py-2 z-50 animate-in slide-in-from-top-2 duration-200`}
+                  >
+                    {/* User Info Header */}
+                    <div className="px-3 sm:px-4 py-2 sm:py-3 border-b border-bordercolor dark:border-dbordercolor">
+                      <div className="flex items-center space-x-2 sm:space-x-3">
+                        <img
+                          src={
+                            user?.avatar ||
+                            "https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png"
+                          }
+                          alt="User avatar"
                           className={`${
-                            isMobile ? "text-xs" : "text-sm"
-                          } font-semibold text-text dark:text-dText truncate`}
-                        >
-                          {user?.username || "@johndoe"}
-                        </p>
-                        <p
-                          className={`${
-                            isMobile ? "text-xs" : "text-xs"
-                          } text-muted-text dark:text-dMuted-text truncate`}
-                        >
-                          {user?.name || "John Doe"}
-                        </p>
+                            isMobile ? "h-8 w-8" : "h-10 w-10"
+                          } rounded-full object-cover border-2 border-bordercolor dark:border-dbordercolor`}
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p
+                            className={`${
+                              isMobile ? "text-xs" : "text-sm"
+                            } font-semibold text-text dark:text-dText truncate`}
+                          >
+                            {user?.username || "@johndoe"}
+                          </p>
+                          <p
+                            className={`${
+                              isMobile ? "text-xs" : "text-xs"
+                            } text-muted-text dark:text-dMuted-text truncate`}
+                          >
+                            {user?.name || "John Doe"}
+                          </p>
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  {/* Menu Items */}
-                  <div className="py-1 sm:py-2">
-                    <NavLink
-                      to="/profile"
-                      className={`flex items-center space-x-2 sm:space-x-3 px-3 sm:px-4 py-2 sm:py-3 ${
+                    {/* Menu Items */}
+                    <div className="py-1 sm:py-2">
+                      <NavLink
+                        to="/profile"
+                        className={`flex items-center space-x-2 sm:space-x-3 px-3 sm:px-4 py-2 sm:py-3 ${
+                          isMobile ? "text-xs" : "text-sm"
+                        } text-text dark:text-dText hover:bg-primary/5 dark:hover:bg-dPrimary/5 transition-all duration-200 group`}
+                        onClick={() => setIsDropdownOpen(false)}
+                      >
+                        <User
+                          className={`${
+                            isMobile ? "w-3.5 h-3.5" : "w-4 h-4"
+                          } text-muted-text dark:text-dMuted-text group-hover:text-accent dark:group-hover:text-daccent transition-colors duration-200`}
+                        />
+                        <span className="group-hover:text-accent dark:group-hover:text-daccent transition-colors duration-200">
+                          Profile
+                        </span>
+                      </NavLink>
+
+                      <NavLink
+                        to="/settings"
+                        className={`flex items-center space-x-2 sm:space-x-3 px-3 sm:px-4 py-2 sm:py-3 ${
+                          isMobile ? "text-xs" : "text-sm"
+                        } text-text dark:text-dText hover:bg-primary/5 dark:hover:bg-dPrimary/5 transition-all duration-200 group`}
+                        onClick={() => setIsDropdownOpen(false)}
+                      >
+                        <Settings
+                          className={`${
+                            isMobile ? "w-3.5 h-3.5" : "w-4 h-4"
+                          } text-muted-text dark:text-dMuted-text group-hover:text-accent dark:group-hover:text-daccent transition-colors duration-200`}
+                        />
+                        <span className="group-hover:text-accent dark:group-hover:text-daccent transition-colors duration-200">
+                          Settings
+                        </span>
+                      </NavLink>
+                    </div>
+
+                    {/* Divider */}
+                    <div className="border-t border-bordercolor dark:border-dbordercolor my-1 sm:my-2"></div>
+
+                    {/* Sign Out */}
+                    <button
+                      className={`flex items-center space-x-2 sm:space-x-3 w-full px-3 sm:px-4 py-2 sm:py-3 ${
                         isMobile ? "text-xs" : "text-sm"
-                      } text-text dark:text-dText hover:bg-primary/5 dark:hover:bg-dPrimary/5 transition-all duration-200 group`}
-                      onClick={() => setIsDropdownOpen(false)}
+                      } text-danger hover:bg-danger/5 transition-all duration-200 group`}
+                      onClick={handleLogOut}
                     >
-                      <User
-                        className={`${
-                          isMobile ? "w-3.5 h-3.5" : "w-4 h-4"
-                        } text-muted-text dark:text-dMuted-text group-hover:text-accent dark:group-hover:text-daccent transition-colors duration-200`}
+                      <LogOut
+                        className={`${isMobile ? "w-3.5 h-3.5" : "w-4 h-4"}`}
                       />
-                      <span className="group-hover:text-accent dark:group-hover:text-daccent transition-colors duration-200">
-                        Profile
-                      </span>
-                    </NavLink>
-
-                    <NavLink
-                      to="/settings"
-                      className={`flex items-center space-x-2 sm:space-x-3 px-3 sm:px-4 py-2 sm:py-3 ${
-                        isMobile ? "text-xs" : "text-sm"
-                      } text-text dark:text-dText hover:bg-primary/5 dark:hover:bg-dPrimary/5 transition-all duration-200 group`}
-                      onClick={() => setIsDropdownOpen(false)}
-                    >
-                      <Settings
-                        className={`${
-                          isMobile ? "w-3.5 h-3.5" : "w-4 h-4"
-                        } text-muted-text dark:text-dMuted-text group-hover:text-accent dark:group-hover:text-daccent transition-colors duration-200`}
-                      />
-                      <span className="group-hover:text-accent dark:group-hover:text-daccent transition-colors duration-200">
-                        Settings
-                      </span>
-                    </NavLink>
+                      <span>Sign Out</span>
+                    </button>
                   </div>
+                )}
+              </div>
+            ) : (
+              <div className="px-2 py-2">
+                <button
+                  onClick={() => {
+                    handleLogin();
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="w-full flex items-center justify-center gap-2.5 px-4 py-2.5 rounded-xl border border-bordercolor/50 dark:border-dbordercolor/50 bg-white/30 dark:bg-white/[0.05] backdrop-blur-md hover:bg-white/40 dark:hover:bg-white/[0.08] hover:border-accent/60 dark:hover:border-daccent/60 shadow-sm hover:shadow-md transition-all duration-300 group relative overflow-hidden"
+                >
+                  {/* Subtle gradient overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-accent/5 dark:via-daccent/8 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl"></div>
 
-                  {/* Divider */}
-                  <div className="border-t border-bordercolor dark:border-dbordercolor my-1 sm:my-2"></div>
+                  {/* Icon */}
+                  <LogIn
+                    className="w-[18px] h-[18px] relative z-10 text-accent dark:text-daccent group-hover:scale-110 transition-transform duration-200"
+                    strokeWidth={2.5}
+                  />
 
-                  {/* Sign Out */}
-                  <button
-                    className={`flex items-center space-x-2 sm:space-x-3 w-full px-3 sm:px-4 py-2 sm:py-3 ${
-                      isMobile ? "text-xs" : "text-sm"
-                    } text-danger hover:bg-danger/5 transition-all duration-200 group`}
-                    onClick={handleLogOut}
-                  >
-                    <LogOut
-                      className={`${isMobile ? "w-3.5 h-3.5" : "w-4 h-4"}`}
-                    />
-                    <span>Sign Out</span>
-                  </button>
-                </div>
-              )}
-            </div>
+                  {/* Text */}
+                  <span className="relative z-10 text-[15px] font-semibold tracking-wide text-text dark:text-dText group-hover:text-accent dark:group-hover:text-daccent transition-colors duration-200">
+                    Sign In
+                  </span>
+                </button>
+              </div>
+            )}
 
             {/* Mobile Menu Button */}
             <button
@@ -366,58 +380,65 @@ function Navbar() {
               </form>
             </div>
 
-            {/* Mobile-only Notifications (if hidden in header) */}
-            {windowWidth <= 480 && (
+            {/* Mobile User Info or Login Button */}
+            {user ? (
               <div className="px-2">
-                <NavLink
-                  to="/notifications"
-                  className={`flex items-center justify-between w-full px-3 sm:px-4 py-3 ${
-                    isMobile ? "text-sm" : "text-base"
-                  } text-text dark:text-dText hover:bg-primary/5 dark:hover:bg-dPrimary/5 rounded-xl transition-all duration-200`}
-                  onClick={() => setIsMobileMenuOpen(false)}
+                <div
+                  className={`flex items-center space-x-3 px-3 sm:px-4 py-3 bg-primary/5 dark:bg-dPrimary/5 rounded-xl`}
                 >
-                  <div className="flex items-center space-x-3">
-                    <Bell className={`${isMobile ? "h-4 w-4" : "h-5 w-5"}`} />
-                    <span>Notifications</span>
+                  <img
+                    src={
+                      user?.avatar ||
+                      "https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png"
+                    }
+                    alt="User avatar"
+                    className={`${
+                      isMobile ? "h-8 w-8" : "h-10 w-10"
+                    } rounded-full object-cover border-2 border-bordercolor dark:border-dbordercolor`}
+                  />
+                  <div className="flex-1 min-w-0">
+                    <p
+                      className={`${
+                        isMobile ? "text-sm" : "text-base"
+                      } font-semibold text-text dark:text-dText truncate`}
+                    >
+                      {user?.username || "@johndoe"}
+                    </p>
+                    <p
+                      className={`${
+                        isMobile ? "text-xs" : "text-sm"
+                      } text-muted-text dark:text-dMuted-text truncate`}
+                    >
+                      {user?.name || "John Doe"}
+                    </p>
                   </div>
-                  <span className="h-2 w-2 bg-danger rounded-full"></span>
-                </NavLink>
-              </div>
-            )}
-
-            {/* Mobile User Info */}
-            <div className="px-2">
-              <div
-                className={`flex items-center space-x-3 px-3 sm:px-4 py-3 bg-primary/5 dark:bg-dPrimary/5 rounded-xl`}
-              >
-                <img
-                  src={
-                    user?.avatar ||
-                    "https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png"
-                  }
-                  alt="User avatar"
-                  className={`${
-                    isMobile ? "h-8 w-8" : "h-10 w-10"
-                  } rounded-full object-cover border-2 border-bordercolor dark:border-dbordercolor`}
-                />
-                <div className="flex-1 min-w-0">
-                  <p
-                    className={`${
-                      isMobile ? "text-sm" : "text-base"
-                    } font-semibold text-text dark:text-dText truncate`}
-                  >
-                    {user?.username || "@johndoe"}
-                  </p>
-                  <p
-                    className={`${
-                      isMobile ? "text-xs" : "text-sm"
-                    } text-muted-text dark:text-dMuted-text truncate`}
-                  >
-                    {user?.name || "John Doe"}
-                  </p>
                 </div>
               </div>
-            </div>
+            ) : (
+              <div className="px-2 py-2">
+                <button
+                  onClick={() => {
+                    handleLogin();
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="w-full flex items-center justify-center gap-2.5 px-4 py-2.5 rounded-xl border border-bordercolor/50 dark:border-dbordercolor/50 bg-white/30 dark:bg-white/[0.05] backdrop-blur-md hover:bg-white/40 dark:hover:bg-white/[0.08] hover:border-accent/60 dark:hover:border-daccent/60 shadow-sm hover:shadow-md transition-all duration-300 group relative overflow-hidden"
+                >
+                  {/* Subtle gradient overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-accent/5 dark:via-daccent/8 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl"></div>
+
+                  {/* Icon */}
+                  <LogIn
+                    className="w-[18px] h-[18px] relative z-10 text-accent dark:text-daccent group-hover:scale-110 transition-transform duration-200"
+                    strokeWidth={2.5}
+                  />
+
+                  {/* Text */}
+                  <span className="relative z-10 text-[15px] font-semibold tracking-wide text-text dark:text-dText group-hover:text-accent dark:group-hover:text-daccent transition-colors duration-200">
+                    Sign In
+                  </span>
+                </button>
+              </div>
+            )}
           </div>
         )}
       </nav>

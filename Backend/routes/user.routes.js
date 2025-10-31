@@ -14,7 +14,6 @@ import {
   verifyResetPassword,
 } from "../controllers/user.controllers.js";
 import { verifyJWT } from "../middlewares/auth.middlewares.js";
-import { upload } from "../middlewares/multer.middlewares.js";
 import { onBoardUser } from "../controllers/onboard.controllers.js";
 import { checkUsernameAvailability } from "../controllers/usernameCheck.middlewares.js";
 import {

@@ -1,6 +1,5 @@
 import { createContext, useEffect, useState } from "react";
 import axios from "axios";
-import toast from "react-hot-toast";
 
 export const AuthContext = createContext();
 
@@ -228,14 +227,16 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const updateUserProfile = async ({ bio, name, username, email, avatarUrl }) => {
+  const updateUserProfile = async ({ bio, name, username, email, avatarUrl, Newpassword, visibility }) => {
     try {
       const { data } = await Userapi.patch("/me/update", {
         bio,
         name,
         username,
+        visibility,
         email,
-        avatarUrl
+        avatarUrl,
+        Newpassword,
       });
       setUser(data.data);
       return data;

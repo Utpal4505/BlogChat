@@ -294,6 +294,7 @@ const getMe = asyncHandler(async (req, res) => {
           posts: true,
         },
       },
+      visibility: true,
       registration_status: true,
       createdAt: true,
     },
@@ -629,7 +630,7 @@ const getUserPosts = asyncHandler(async (req, res) => {
 
 const updateMe = asyncHandler(async (req, res) => {
   const userId = req.user.id;
-  const { username, name, bio, avatarUrl, Newpassword } = req.body;
+  const { username, name, bio, avatarUrl, Newpassword, visibility } = req.body;
 
   if (Newpassword) {
     if (Newpassword.length < 8) {
@@ -646,10 +647,11 @@ const updateMe = asyncHandler(async (req, res) => {
   if (avatarUrl !== undefined) updateData.avatar = avatarUrl;
   if (Newpassword !== undefined)
     updateData.password = await bcrypt.hash(Newpassword, 10);
+  if (visibility !== undefined) updateData.visibility = visibility;
 
   if (Object.keys(updateData).length === 0) {
     return res.status(400).json({
-      message: "At least one field (name, bio, password) is required to update",
+      message: "At least one field (name, username, avatarUrl, bio, password) is required to update",
     });
   }
 
