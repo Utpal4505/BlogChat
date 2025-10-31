@@ -5,7 +5,7 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Login from "../pages/Login.jsx";
 import SignUp from "../pages/SignUp.jsx";
 import Onboarding from "../pages/Onboarding.jsx";
-import Dashboard from "../pages/dashboard.jsx";
+import Dashboard from "../pages/Dashboard.jsx";
 import { AuthProvider } from "../context/AuthContext.jsx";
 import VerificationForm from "../pages/EmailVerification.jsx";
 import ForgetPassword from "../pages/ForgetPassword.jsx";

@@ -1,9 +1,13 @@
 // components/settings/modals/DeleteAccountModal.jsx
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import ModalWrapper from "../shared/ModalWrapper";
+import { AuthContext } from "../../../context/AuthContext";
+import toast from "react-hot-toast";
 
 const DeleteAccountModal = ({ show, onClose }) => {
   const [confirmText, setConfirmText] = useState("");
+
+  const { deleteUser } = useContext(AuthContext);
 
   useEffect(() => {
     if (show) setConfirmText("");
@@ -11,11 +15,17 @@ const DeleteAccountModal = ({ show, onClose }) => {
 
   const canDelete = confirmText === "DELETE";
 
-  const handleDelete = () => {
-    if (canDelete) {
-      alert("Account deleted successfully");
+  const handleDelete = async () => {
+    if (!canDelete) return;
+
+    try {
+      const data = await deleteUser();
+      console.log("Delete account data", data);
+      alert("Your account has been deleted.");
       onClose();
-      // Here you would typically call your API to delete the account
+    } catch (error) {
+      console.error("Error deleting account:", error);
+      toast.error("Failed to delete account.");
     }
   };
 
@@ -46,10 +56,11 @@ const DeleteAccountModal = ({ show, onClose }) => {
       <div className="space-y-4">
         <div className="bg-danger/10 border border-danger/20 rounded-lg p-4">
           <p className="text-sm text-text dark:text-dText">
-            This action <strong>cannot be undone</strong>. This will permanently delete your account and remove all your data from our servers.
+            This action <strong>cannot be undone</strong>. This will permanently
+            delete your account and remove all your data from our servers.
           </p>
         </div>
-        
+
         <div>
           <label className="block text-sm font-medium text-text dark:text-dText mb-3">
             Type <strong className="text-danger">DELETE</strong> to confirm

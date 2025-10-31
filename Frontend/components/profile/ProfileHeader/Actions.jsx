@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { motion as Motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 
 const ProfileActions = ({ isFollowing, onFollowToggle, isOwnProfile, username }) => {
@@ -8,18 +8,18 @@ const ProfileActions = ({ isFollowing, onFollowToggle, isOwnProfile, username })
     <div className="flex gap-2.5">
       {isOwnProfile ? (
         // Show "Edit Profile" button for own profile
-        <motion.button
-          onClick={() => navigate('/settings/profile')}
+        <Motion.button
+          onClick={() => navigate('/settings')}
           className="flex-1 py-3 px-4 rounded-xl font-bold text-[14px] bg-card dark:bg-dcard text-text dark:text-dText border-2 border-bordercolor dark:border-dbordercolor hover:bg-bg dark:hover:bg-dbg hover:border-accent dark:hover:border-daccent transition-all"
           whileHover={{ scale: 1.02, y: -1 }}
           whileTap={{ scale: 0.98 }}
         >
           Edit Profile
-        </motion.button>
+        </Motion.button>
       ) : (
         // Show "Follow" and "Message" buttons for other users
         <>
-          <motion.button
+          <Motion.button
             onClick={onFollowToggle}
             className={`flex-1 py-3 px-4 rounded-xl font-bold text-[14px] shadow-lg transition-all ${
               isFollowing
@@ -30,16 +30,16 @@ const ProfileActions = ({ isFollowing, onFollowToggle, isOwnProfile, username })
             whileTap={{ scale: 0.98 }}
           >
             {isFollowing ? "Following" : "Follow"}
-          </motion.button>
+          </Motion.button>
 
-          <motion.button
+          <Motion.button
             onClick={() => navigate(`/messages/${username}`)}
             className="flex-1 py-3 px-4 rounded-xl font-bold text-[14px] bg-card dark:bg-dcard text-text dark:text-dText border-2 border-bordercolor dark:border-dbordercolor hover:bg-bg dark:hover:bg-dbg hover:border-accent dark:hover:border-daccent transition-all"
             whileHover={{ scale: 1.02, y: -1 }}
             whileTap={{ scale: 0.98 }}
           >
             Message
-          </motion.button>
+          </Motion.button>
         </>
       )}
     </div>
