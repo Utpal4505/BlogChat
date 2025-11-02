@@ -213,10 +213,10 @@ export const updatePost = asyncHandler(async (req, res) => {
 
 export const getPostById = asyncHandler(async (req, res) => {
   try {
-    const { postId } = req.params;
+    const { slug } = req.params;
 
     const post = await prisma.post.findUnique({
-      where: { id: Number(postId) },
+      where: { slug: slug },
       select: {
         id: true,
         title: true,
@@ -257,7 +257,6 @@ export const getPostById = asyncHandler(async (req, res) => {
 
 export const getFeedPost = asyncHandler(async (req, res) => {
   try {
-
     let { limit = 10, cursor } = req.query;
     limit = parseInt(limit, 10);
 
@@ -457,9 +456,16 @@ export const getPostsByTag = asyncHandler(async (req, res) => {
 
 export const searchBasedDetail = asyncHandler(async (req, res) => {
   try {
-    const { query, type, cursor } = req.query;
+    const { query, cursor } = req.query;
     const userId = req.user?.id || null;
     const limit = 10;
+
+    if (!query || query.trim() === "") {
+      return res.status(400).json({
+        success: false,
+        message: "Query parameter is required",
+      });
+    }
 
     // followers fetch
     let allowedAuthorIds = [];
@@ -472,35 +478,110 @@ export const searchBasedDetail = asyncHandler(async (req, res) => {
       allowedAuthorIds.push(userId);
     }
 
-    const whereCondtn = {
-      title: { contains: query, mode: "insensitive" },
-      OR: [
-        { visibility: "PUBLIC" },
-        ...(userId
-          ? [{ visibility: "PRIVATE", authorId: { in: allowedAuthorIds } }]
-          : []),
-      ],
-    };
-
-    const results = await prisma.post.findMany({
-      where: whereCondtn,
+    // 📝 Search Posts by title/content
+    const posts = await prisma.post.findMany({
+      where: {
+        OR: [
+          { title: { contains: query, mode: "insensitive" } },
+          { content: { contains: query, mode: "insensitive" } },
+        ],
+        AND: [
+          {
+            OR: [
+              { visibility: "PUBLIC" },
+              ...(userId
+                ? [
+                    {
+                      visibility: "PRIVATE",
+                      authorId: { in: allowedAuthorIds },
+                    },
+                  ]
+                : []),
+            ],
+          },
+        ],
+      },
       take: limit,
       orderBy: { createdAt: "desc" },
       ...(cursor && { cursor: { id: Number(cursor) }, skip: 1 }),
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        content: true,
+        author: {
+          select: {
+            username: true,
+            avatar: true,
+            id: true,
+          },
+        },
+        _count: {
+          select: {
+            postLikes: true,
+            comments: true,
+          },
+        },
+        createdAt: true,
+      },
+    });
+
+    // 👥 Search Authors by username/name
+    const authors = await prisma.user.findMany({
+      where: {
+        OR: [
+          { username: { contains: query, mode: "insensitive" } },
+          { name: { contains: query, mode: "insensitive" } },
+        ],
+      },
+      take: limit,
+      select: {
+        id: true,
+        username: true,
+        name: true,
+        avatar: true,
+        _count: {
+          select: {
+            followers: true,
+            posts: true,
+          },
+        },
+      },
+    });
+
+    // 🏷️ Search Tags
+    const tags = await prisma.tag.findMany({
+      where: {
+        name: { contains: query, mode: "insensitive" },
+      },
+      take: limit,
+      select: {
+        id: true,
+        name: true,
+        _count: {
+          select: {
+            postTags: true,
+          },
+        },
+      },
     });
 
     const nextCursor =
-      results.length === limit ? results[results.length - 1].id : null;
+      posts.length === limit ? posts[posts.length - 1].id : null;
 
-    return res
-      .status(200)
-      .json(
-        new ApiResponse(
-          200,
-          { results, nextCursor },
-          "✅ Search query fetched successfully"
-        )
-      );
+    return res.status(200).json(
+      new ApiResponse(
+        200,
+        {
+          posts, // ✅ Changed from 'results'
+          authors, // ✅ Added
+          tags, // ✅ Added
+          nextCursor,
+          query,
+        },
+        "✅ Search query fetched successfully"
+      )
+    );
   } catch (error) {
     console.error("Error while fetching search query:", error);
     throw new ApiError(500, "Something went wrong");

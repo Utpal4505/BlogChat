@@ -9,6 +9,9 @@ import {
   LogIn,
   Lightbulb,
   LightbulbOff,
+  Flame,
+  Users,
+  Tag,
 } from "lucide-react";
 import { useEffect, useState, useRef, useContext } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
@@ -25,14 +28,88 @@ function Navbar() {
   const [windowWidth, setWindowWidth] = useState(() =>
     typeof window !== "undefined" ? window.innerWidth : 1024
   );
+
+  // ✅ NEW: Search recommendations
+  const [showRecommendations, setShowRecommendations] = useState(false);
+  const [recommendations, setRecommendations] = useState(null);
+  const [loadingRecs, setLoadingRecs] = useState(false);
+  const debounceTimer = useRef(null);
+
   const dropdownRef = useRef(null);
+  const searchRef = useRef(null); // ✅ NEW: Search container ref
   const navigate = useNavigate();
+  const { user, logout, Postapi, searchDetail } = useContext(AuthContext); // ✅ Add Postapi
+
+  // ✅ NEW: Fetch search recommendations
+  const fetchSearchResults = async (searchTerm) => {
+    try {
+      setLoadingRecs(true);
+      const response = await searchDetail(searchTerm);
+
+      setRecommendations(response.data);
+    } catch (err) {
+      console.error("Error fetching search results:", err);
+    } finally {
+      setLoadingRecs(false);
+    }
+  };
+
+  // ✅ NEW: Handle search input change with debounce
+  const handleSearchChange = (e) => {
+    const value = e.target.value;
+    setSearchQuery(value);
+    setShowRecommendations(true);
+
+    // Clear existing timer
+    if (debounceTimer.current) {
+      clearTimeout(debounceTimer.current);
+    }
+
+    // Set new timer for debounced search
+    if (value.trim()) {
+      debounceTimer.current = setTimeout(() => {
+        fetchSearchResults(value);
+      }, 300); // 300ms debounce
+    } else {
+      setRecommendations(null);
+    }
+  };
+
+  // ✅ NEW: Handle clicking on a post recommendation
+  const handlePostClick = (slug) => {
+    navigate(`/post/${slug}`);
+    setShowRecommendations(false);
+    setSearchQuery("");
+  };
+
+  // ✅ NEW: Handle clicking on an author recommendation
+  const handleAuthorClick = (username) => {
+    navigate(`/profile/${username}`);
+    setShowRecommendations(false);
+    setSearchQuery("");
+  };
+
+  // ✅ NEW: Handle clicking on a tag recommendation
+  const handleTagClick = (tagName) => {
+    navigate(`/tags/${tagName}`);
+    setShowRecommendations(false);
+    setSearchQuery("");
+  };
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
+      setSearchQuery("");
+      setShowRecommendations(false);
+      setIsMobileMenuOpen(false);
+    }
+  };
 
   // Window resize handler for responsive design
   useEffect(() => {
     const handleResize = () => {
       setWindowWidth(window.innerWidth);
-      // Close mobile menu when switching to desktop
       if (window.innerWidth >= 768) {
         setIsMobileMenuOpen(false);
       }
@@ -50,9 +127,12 @@ function Navbar() {
     }
   }, [isDark]);
 
-  // Close dropdown when clicking outside
+  // ✅ UPDATED: Close dropdown and recommendations when clicking outside
   useEffect(() => {
     function handleClickOutside(event) {
+      if (searchRef.current && !searchRef.current.contains(event.target)) {
+        setShowRecommendations(false);
+      }
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setIsDropdownOpen(false);
       }
@@ -62,18 +142,17 @@ function Navbar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // ✅ NEW: Cleanup debounce timer on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceTimer.current) {
+        clearTimeout(debounceTimer.current);
+      }
+    };
+  }, []);
+
   const toggleDropdown = () => setIsDropdownOpen(!isDropdownOpen);
   const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
-
-  const { user, logout } = useContext(AuthContext);
-
-  const handleSearch = (e) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      console.log("Searching for:", searchQuery);
-      // Add your search logic here
-    }
-  };
 
   const handleLogOut = () => {
     logout();
@@ -82,10 +161,9 @@ function Navbar() {
   };
 
   const handleLogin = () => {
-    navigate("/login"); // Update with your login route
+    navigate("/login");
   };
 
-  // Responsive breakpoints
   const isMobile = windowWidth < 640;
   const isTablet = windowWidth >= 640 && windowWidth < 1024;
 
@@ -102,11 +180,12 @@ function Navbar() {
             </NavLink>
           </div>
 
-          {/* Search Bar - Responsive visibility and sizing */}
+          {/* Search Bar - With Recommendations Dropdown */}
           <div
+            ref={searchRef} // ✅ Attach ref here
             className={`${
               isMobile ? "hidden" : "flex"
-            } flex-1 max-w-xs sm:max-w-md lg:max-w-2xl mx-3 sm:mx-4 lg:mx-8`}
+            } flex-1 max-w-xs sm:max-w-md lg:max-w-2xl mx-3 sm:mx-4 lg:mx-8 relative`}
           >
             <form onSubmit={handleSearch} className="relative w-full group">
               <Search
@@ -117,7 +196,8 @@ function Navbar() {
               <input
                 type="text"
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={handleSearchChange} // ✅ Use new handler
+                onFocus={() => setShowRecommendations(true)} // ✅ Show on focus
                 className={`w-full ${
                   isTablet
                     ? "h-10 text-sm"
@@ -128,11 +208,187 @@ function Navbar() {
                 }
               />
             </form>
+
+            {/* ✅ IMPROVED Recommendations Dropdown */}
+            {showRecommendations && (
+              <div className="absolute top-full left-0 right-0 mt-2 bg-card dark:bg-dcard border border-bordercolor dark:border-dbordercolor rounded-2xl shadow-2xl shadow-black/10 dark:shadow-black/30 z-50 max-h-[500px] overflow-y-auto backdrop-blur-sm animate-in fade-in slide-in-from-top-2 duration-200">
+                {loadingRecs ? (
+                  <div className="p-8 text-center">
+                    <div className="flex justify-center mb-3">
+                      <div className="w-8 h-8 border-3 border-primary/20 dark:border-dprimary/20 border-t-primary dark:border-t-dprimary rounded-full animate-spin"></div>
+                    </div>
+                    <p className="text-sm text-muted-text dark:text-dMuted-text font-medium">
+                      Searching...
+                    </p>
+                  </div>
+                ) : recommendations ? (
+                  <div className="py-3">
+                    {/* Posts Section */}
+                    {recommendations.posts?.length > 0 && (
+                      <>
+                        <div className="px-4 py-3 flex items-center justify-between group">
+                          <div className="flex items-center gap-2.5">
+                            <div className="p-1.5 bg-primary/10 dark:bg-dprimary/10 rounded-lg group-hover:bg-primary/20 dark:group-hover:bg-dprimary/20 transition-colors">
+                              <Flame className="w-4 h-4 text-primary dark:text-dprimary" />
+                            </div>
+                            <span className="text-xs font-bold text-muted-text dark:text-dMuted-text uppercase tracking-wider">
+                              Trending Posts
+                            </span>
+                          </div>
+                          <span className="text-xs bg-primary/10 dark:bg-dprimary/10 text-primary dark:text-dprimary px-2 py-1 rounded-full font-semibold">
+                            {recommendations.posts.length}
+                          </span>
+                        </div>
+                        <div className="space-y-1 px-2">
+                          {recommendations.posts.map((post,) => (
+                            <button
+                              key={post.id}
+                              onClick={() => handlePostClick(post.slug)}
+                              className="w-full px-3 py-3 text-left hover:bg-primary/8 dark:hover:bg-dprimary/8 rounded-lg transition-all duration-150 group/post hover:scale-[1.02] active:scale-95"
+                            >
+                              <div className="flex items-start gap-3">
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm font-semibold text-text dark:text-dText truncate group-hover/post:text-primary dark:group-hover/post:text-dprimary transition-colors line-clamp-2">
+                                    {post.title}
+                                  </p>
+                                  <div className="flex items-center gap-2 mt-1">
+                                    <img
+                                      src={post.author.avatar}
+                                      alt={post.author.username}
+                                      className="w-5 h-5 rounded-full object-cover"
+                                    />
+                                    <p className="text-xs text-muted-text dark:text-dMuted-text truncate">
+                                      {post.author.username}
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      </>
+                    )}
+
+                    {recommendations.posts?.length > 0 &&
+                      recommendations.authors?.length > 0 && (
+                        <div className="border-t border-bordercolor/50 dark:border-dbordercolor/50 my-2 mx-4"></div>
+                      )}
+
+                    {/* Authors Section */}
+                    {recommendations.authors?.length > 0 && (
+                      <>
+                        <div className="px-4 py-3 flex items-center justify-between group">
+                          <div className="flex items-center gap-2.5">
+                            <div className="p-1.5 bg-accent/10 dark:bg-daccent/10 rounded-lg group-hover:bg-accent/20 dark:group-hover:bg-daccent/20 transition-colors">
+                              <Users className="w-4 h-4 text-accent dark:text-daccent" />
+                            </div>
+                            <span className="text-xs font-bold text-muted-text dark:text-dMuted-text uppercase tracking-wider">
+                              Authors
+                            </span>
+                          </div>
+                          <span className="text-xs bg-accent/10 dark:bg-daccent/10 text-accent dark:text-daccent px-2 py-1 rounded-full font-semibold">
+                            {recommendations.authors.length}
+                          </span>
+                        </div>
+                        <div className="space-y-1 px-2">
+                          {recommendations.authors.map((author) => (
+                            <button
+                              key={author.id}
+                              onClick={() => handleAuthorClick(author.username)}
+                              className="w-full px-3 py-3 text-left hover:bg-accent/8 dark:hover:bg-daccent/8 rounded-lg transition-all duration-150 group/author hover:scale-[1.02] active:scale-95"
+                            >
+                              <div className="flex items-center gap-3">
+                                <img
+                                  src={author.avatar}
+                                  alt={author.username}
+                                  className="w-9 h-9 rounded-full object-cover ring-2 ring-bordercolor dark:ring-dbordercolor group-hover/author:ring-accent dark:group-hover/author:ring-daccent transition-all"
+                                />
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm font-semibold text-text dark:text-dText truncate group-hover/author:text-accent dark:group-hover/author:text-daccent transition-colors">
+                                    {author.username}
+                                  </p>
+                                  <p className="text-xs text-muted-text dark:text-dMuted-text">
+                                    {author._count.followers} followers •{" "}
+                                    {author._count.posts} posts
+                                  </p>
+                                </div>
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      </>
+                    )}
+
+                    {recommendations.authors?.length > 0 &&
+                      recommendations.tags?.length > 0 && (
+                        <div className="border-t border-bordercolor/50 dark:border-dbordercolor/50 my-2 mx-4"></div>
+                      )}
+
+                    {/* Tags Section */}
+                    {recommendations.tags?.length > 0 && (
+                      <>
+                        <div className="px-4 py-3 flex items-center justify-between group">
+                          <div className="flex items-center gap-2.5">
+                            <div className="p-1.5 bg-secondary/10 dark:bg-dsecondary/10 rounded-lg group-hover:bg-secondary/20 dark:group-hover:bg-dsecondary/20 transition-colors">
+                              <Tag className="w-4 h-4 text-secondary dark:text-dsecondary" />
+                            </div>
+                            <span className="text-xs font-bold text-muted-text dark:text-dMuted-text uppercase tracking-wider">
+                              Trending Tags
+                            </span>
+                          </div>
+                          <span className="text-xs bg-secondary/10 dark:bg-dsecondary/10 text-secondary dark:text-dsecondary px-2 py-1 rounded-full font-semibold">
+                            {recommendations.tags.length}
+                          </span>
+                        </div>
+                        <div className="px-4 py-2 flex flex-wrap gap-2">
+                          {recommendations.tags.map((tag) => (
+                            <button
+                              key={tag.id}
+                              onClick={() => handleTagClick(tag.name)}
+                              className="group/tag px-4 py-1.5 text-xs font-semibold bg-secondary/10 dark:bg-dsecondary/10 text-secondary dark:text-dsecondary rounded-full hover:bg-secondary/20 dark:hover:bg-dsecondary/20 hover:scale-105 transition-all active:scale-95 ring-1 ring-secondary/20 dark:ring-dsecondary/20 hover:ring-secondary/40 dark:hover:ring-dsecondary/40"
+                            >
+                              #{tag.name}
+                              <span className="ml-1.5 text-xs opacity-60 group-hover/tag:opacity-100">
+                                {tag._count.postTags}
+                              </span>
+                            </button>
+                          ))}
+                        </div>
+                      </>
+                    )}
+
+                    {!recommendations.posts?.length &&
+                      !recommendations.authors?.length &&
+                      !recommendations.tags?.length && (
+                        <div className="px-6 py-12 text-center">
+                          <div className="mb-3 text-4xl">🔍</div>
+                          <p className="text-sm font-medium text-muted-text dark:text-dMuted-text">
+                            No results found
+                          </p>
+                          <p className="text-xs text-muted-text/60 dark:text-dMuted-text/60 mt-1">
+                            Try searching with different keywords
+                          </p>
+                        </div>
+                      )}
+                  </div>
+                ) : searchQuery.trim() === "" ? (
+                  <div className="px-6 py-12 text-center">
+                    <div className="mb-3 text-4xl">✨</div>
+                    <p className="text-sm font-medium text-muted-text dark:text-dMuted-text">
+                      Start typing to search
+                    </p>
+                    <p className="text-xs text-muted-text/60 dark:text-dMuted-text/60 mt-1">
+                      Posts, authors, tags and more...
+                    </p>
+                  </div>
+                ) : null}
+              </div>
+            )}
           </div>
 
           {/* Right Side Icons */}
           <div className="flex items-center gap-2 space-x-1 sm:space-x-2 lg:space-x-3">
-            {/* Enhanced Theme Toggle - Responsive sizing */}
+            {/* Theme Toggle */}
             <div className="relative">
               <button
                 onClick={() => setIsDark(!isDark)}
@@ -143,10 +399,8 @@ function Navbar() {
                   isDark ? "Switch to light mode" : "Switch to dark mode"
                 }
               >
-                {/* Toggle Track */}
                 <div className="absolute inset-0 rounded-full bg-gradient-to-r from-primary to-accent dark:from-dPrimary dark:to-daccent opacity-0 dark:opacity-100 transition-opacity duration-300"></div>
 
-                {/* Toggle Knob - Responsive sizing */}
                 <div
                   className={`relative z-10 flex items-center justify-center ${
                     isMobile ? "w-5 h-5" : isTablet ? "w-5 h-5" : "w-6 h-6"
@@ -164,7 +418,6 @@ function Navbar() {
                       : "-translate-x-3.5"
                   }`}
                 >
-                  {/* Icons - Responsive sizing */}
                   <LightbulbOff
                     className={`absolute ${
                       isMobile ? "h-3 w-3" : "h-3.5 w-3.5"
@@ -187,9 +440,8 @@ function Navbar() {
               </button>
             </div>
 
-            {/* Conditional Rendering: User Dropdown OR Login Button */}
+            {/* User Dropdown OR Login Button */}
             {user ? (
-              // User Dropdown - When logged in
               <div className="relative" ref={dropdownRef}>
                 <button
                   onClick={toggleDropdown}
@@ -220,14 +472,12 @@ function Navbar() {
                   )}
                 </button>
 
-                {/* Dropdown Menu */}
                 {isDropdownOpen && (
                   <div
                     className={`absolute right-0 mt-2 sm:mt-3 ${
                       isMobile ? "w-48" : isTablet ? "w-52" : "w-56"
                     } rounded-xl sm:rounded-2xl bg-card dark:bg-dcard border border-bordercolor dark:border-dbordercolor shadow-xl shadow-primary/5 dark:shadow-black/20 py-2 z-50 animate-in slide-in-from-top-2 duration-200`}
                   >
-                    {/* User Info Header */}
                     <div className="px-3 sm:px-4 py-2 sm:py-3 border-b border-bordercolor dark:border-dbordercolor">
                       <div className="flex items-center space-x-2 sm:space-x-3">
                         <img
@@ -259,7 +509,6 @@ function Navbar() {
                       </div>
                     </div>
 
-                    {/* Menu Items */}
                     <div className="py-1 sm:py-2">
                       <NavLink
                         to="/profile"
@@ -296,10 +545,8 @@ function Navbar() {
                       </NavLink>
                     </div>
 
-                    {/* Divider */}
                     <div className="border-t border-bordercolor dark:border-dbordercolor my-1 sm:my-2"></div>
 
-                    {/* Sign Out */}
                     <button
                       className={`flex items-center space-x-2 sm:space-x-3 w-full px-3 sm:px-4 py-2 sm:py-3 ${
                         isMobile ? "text-xs" : "text-sm"
@@ -323,16 +570,13 @@ function Navbar() {
                   }}
                   className="w-full flex items-center justify-center gap-2.5 px-4 py-2.5 rounded-xl border border-bordercolor/50 dark:border-dbordercolor/50 bg-white/30 dark:bg-white/[0.05] backdrop-blur-md hover:bg-white/40 dark:hover:bg-white/[0.08] hover:border-accent/60 dark:hover:border-daccent/60 shadow-sm hover:shadow-md transition-all duration-300 group relative overflow-hidden"
                 >
-                  {/* Subtle gradient overlay */}
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-accent/5 dark:via-daccent/8 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl"></div>
 
-                  {/* Icon */}
                   <LogIn
                     className="w-[18px] h-[18px] relative z-10 text-accent dark:text-daccent group-hover:scale-110 transition-transform duration-200"
                     strokeWidth={2.5}
                   />
 
-                  {/* Text */}
                   <span className="relative z-10 text-[15px] font-semibold tracking-wide text-text dark:text-dText group-hover:text-accent dark:group-hover:text-daccent transition-colors duration-200">
                     Sign In
                   </span>
@@ -340,7 +584,6 @@ function Navbar() {
               </div>
             )}
 
-            {/* Mobile Menu Button */}
             <button
               onClick={toggleMobileMenu}
               className={`md:hidden ${
@@ -357,10 +600,9 @@ function Navbar() {
           </div>
         </div>
 
-        {/* Mobile Menu - Enhanced responsiveness */}
+        {/* Mobile Menu */}
         {isMobileMenuOpen && (
           <div className="md:hidden border-t border-bordercolor dark:border-dbordercolor pt-3 sm:pt-4 pb-3 sm:pb-4 space-y-3 sm:space-y-4">
-            {/* Mobile Search */}
             <div className="mb-3 sm:mb-4">
               <form onSubmit={handleSearch} className="relative">
                 <Search
@@ -371,7 +613,7 @@ function Navbar() {
                 <input
                   type="text"
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={handleSearchChange}
                   className={`w-full ${
                     isMobile ? "h-10 text-sm" : "h-12 text-base"
                   } rounded-xl sm:rounded-2xl border border-bordercolor dark:border-dbordercolor bg-card dark:bg-dcard px-9 sm:px-12 text-text dark:text-dText placeholder:text-muted-text dark:placeholder:text-dMuted-text focus:outline-none focus:ring-2 focus:ring-accent/40 dark:focus:ring-daccent/40`}
@@ -380,12 +622,9 @@ function Navbar() {
               </form>
             </div>
 
-            {/* Mobile User Info or Login Button */}
             {user ? (
               <div className="px-2">
-                <div
-                  className={`flex items-center space-x-3 px-3 sm:px-4 py-3 bg-primary/5 dark:bg-dPrimary/5 rounded-xl`}
-                >
+                <div className="flex items-center space-x-3 px-3 sm:px-4 py-3 bg-primary/5 dark:bg-dPrimary/5 rounded-xl">
                   <img
                     src={
                       user?.avatar ||
@@ -423,16 +662,13 @@ function Navbar() {
                   }}
                   className="w-full flex items-center justify-center gap-2.5 px-4 py-2.5 rounded-xl border border-bordercolor/50 dark:border-dbordercolor/50 bg-white/30 dark:bg-white/[0.05] backdrop-blur-md hover:bg-white/40 dark:hover:bg-white/[0.08] hover:border-accent/60 dark:hover:border-daccent/60 shadow-sm hover:shadow-md transition-all duration-300 group relative overflow-hidden"
                 >
-                  {/* Subtle gradient overlay */}
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-accent/5 dark:via-daccent/8 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl"></div>
 
-                  {/* Icon */}
                   <LogIn
                     className="w-[18px] h-[18px] relative z-10 text-accent dark:text-daccent group-hover:scale-110 transition-transform duration-200"
                     strokeWidth={2.5}
                   />
 
-                  {/* Text */}
                   <span className="relative z-10 text-[15px] font-semibold tracking-wide text-text dark:text-dText group-hover:text-accent dark:group-hover:text-daccent transition-colors duration-200">
                     Sign In
                   </span>

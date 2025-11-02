@@ -444,6 +444,17 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const searchDetail = async (query) => {
+    try {
+      const { data } = await Postapi.get("/search", { 
+        params: { query: query },
+      });
+      return data;
+    } catch (error) {
+      throw normalizeError(error);
+    }
+  };
+
   // ---------- Bug & Feedback ----------
 
   const create_Bug = async ({ bugPayload, recaptchaToken }) => {
@@ -505,6 +516,7 @@ export const AuthProvider = ({ children }) => {
         getBookmarkPosts,
         deleteComment,
         getUserReplies,
+        searchDetail,
       }}
     >
       {children}

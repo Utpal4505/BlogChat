@@ -25,6 +25,7 @@ import Feedback from "../pages/Feedback.jsx";
 import ProfilePage from "../pages/Profile.jsx";
 import SettingsPage from "../pages/Setings.jsx";
 import UnderDevelopment from "../components/UnderDevelopment.jsx";
+import SearchResultsPage from "../pages/SearchResultPage.jsx";
 
 const MAX_CONSOLE_ERRORS = 5;
 export const consoleErrors = [];
@@ -90,6 +91,10 @@ const router = createBrowserRouter([
       {
         path: "feedback",
         element: withReCaptcha(Feedback),
+      },
+      {
+        path: "search",
+        element: <SearchResultsPage />,
       },
       // ✅ Profile routes (order matters!)
       {
