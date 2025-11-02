@@ -10,7 +10,6 @@ const PostActions = ({
   onCommentClick,
   showingComments = false,
 }) => {
-  console.log("Comment count", comments)
 
   return (
     <div className="flex items-center justify-between pt-4 border-t border-bordercolor/50 dark:border-dbordercolor/50">

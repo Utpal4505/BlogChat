@@ -135,7 +135,6 @@ const ProfilePage = () => {
     const fetchReplies = async () => {
       try {
         const data = await getUserReplies("its_utpall");
-        console.log("User replies:", data);
         if (isMounted) setReplies(data.replies);
       } catch (err) {
         console.error("Failed to fetch replies:", err);
@@ -260,7 +259,6 @@ const ProfilePage = () => {
     // Call toggleBookmark API
     try {
       const result = await toggleBookmark(postId);
-      console.log("Bookmark toggled:", result);
 
       setBookmarkedPosts((prev) => ({
         ...prev,
@@ -335,10 +333,6 @@ const ProfilePage = () => {
   const lastCommentRef = useInfiniteScroll(loadMoreComments);
 
   const toggleComments = (postId) => {
-    console.log(
-      "Toggle comment work start in profile page for this postId....",
-      postId
-    );
     if (showingPostIdForScroll === postId) {
       setShowingPostIdForScroll(null);
     } else {
@@ -367,12 +361,10 @@ const ProfilePage = () => {
   };
 
   const handleDeleteComment = async (postId, commentId) => {
-    console.log("PostId", postId, "CommentId", commentId);
     try {
       await deleteComment(postId, commentId);
 
       setPostComments((prev) => {
-        console.log("Before delete, postComments[postId]:", prev[postId]);
         return {
           ...prev,
           [postId]: (prev[postId] || []).filter((c) => c.id !== commentId),

@@ -222,7 +222,7 @@ const CoverImage = ({
     <div className="mb-8">
       <button
         onClick={() => setShowImagePicker(true)}
-        className="group flex items-center px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 border-2 border-dashed focus:outline-none focus:ring-2 focus:ring-offset-2 border-gray-300 dark:border-dMuted-text hover:border-accent dark:hover:border-daccent hover:bg-gray-50 dark:hover:bg-dcard/30 text-muted-text dark:text-dMuted-text hover:text-text dark:hover:text-dText focus:ring-accent dark:focus:ring-daccent"
+        className="group flex items-center px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 border-2 border-dashed focus:outline-none focus:ring-2 focus:ring-offset-2 border-gray-300 dark:border-dMuted-text hover:border-accent dark:hover:border-daccent hover:bg-card/30 dark:hover:bg-dcard/30 text-muted-text dark:text-dMuted-text hover:text-text dark:hover:text-dText focus:ring-accent dark:focus:ring-daccent"
         aria-label="Add cover image to blog post"
       >
         <ImageIcon className="w-5 h-5 mr-3 group-hover:scale-105 transition-transform" />

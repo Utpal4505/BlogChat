@@ -227,7 +227,15 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const updateUserProfile = async ({ bio, name, username, email, avatarUrl, Newpassword, visibility }) => {
+  const updateUserProfile = async ({
+    bio,
+    name,
+    username,
+    email,
+    avatarUrl,
+    Newpassword,
+    visibility,
+  }) => {
     try {
       const { data } = await Userapi.patch("/me/update", {
         bio,
@@ -300,9 +308,16 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const getFeedPosts = async () => {
+  const getFeedPosts = async (limit = 10, cursor = null) => {
     try {
-      const { data } = await Postapi.get("/feed");
+      const params = { limit };
+
+      // Only add cursor if it exists
+      if (cursor) {
+        params.cursor = cursor;
+      }
+
+      const { data } = await Postapi.get("/feed", { params });
       return data;
     } catch (error) {
       throw normalizeError(error);
@@ -358,7 +373,7 @@ export const AuthProvider = ({ children }) => {
         params,
       });
 
-      console.log("authcontext data", data)
+      console.log("authcontext data", data);
 
       return data;
     } catch (error) {
@@ -390,9 +405,12 @@ export const AuthProvider = ({ children }) => {
 
   const updateComment = async (postId, commentId, content) => {
     try {
-      const { data } = await Postapi.patch(`/post/${postId}/comment/${commentId}`, {
-        content,
-      });
+      const { data } = await Postapi.patch(
+        `/post/${postId}/comment/${commentId}`,
+        {
+          content,
+        }
+      );
       return data;
     } catch (error) {
       throw normalizeError(error);
@@ -424,7 +442,7 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       throw normalizeError(error);
     }
-  }
+  };
 
   // ---------- Bug & Feedback ----------
 

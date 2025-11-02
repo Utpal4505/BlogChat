@@ -23,6 +23,7 @@ import ImagePickerModal from "../src/BlogEditor/UI/components/ImagePickerModal";
 import { useEditor } from "../src/BlogEditor/hooks/UseEditor";
 import ToastContainer from "../src/BlogEditor/UI/components/Toast";
 import { AuthContext } from "../context/AuthContext";
+import LoadingScreen from "../components/LoadingScreen";
 
 const BlogEditor = () => {
   // State management
@@ -33,7 +34,7 @@ const BlogEditor = () => {
   const [coverImage, setCoverImage] = useState(null);
   const [showImagePicker, setShowImagePicker] = useState(false);
   const [isFocusMode, setIsFocusMode] = useState(false);
-  const { createPost } = useContext(AuthContext);
+  const { createPost, user } = useContext(AuthContext);
 
   const [toasts, setToasts] = useState([]);
 
@@ -94,7 +95,7 @@ const BlogEditor = () => {
 
     const content = editor.getHTML();
 
-    console.log(content)
+    console.log(content);
     try {
       const data = await createPost({ title, content, tags, coverImage });
       addToast("Blog published successfully!", "success");
@@ -168,6 +169,10 @@ const BlogEditor = () => {
         <Loader2 className="w-8 h-8 animate-spin text-accent dark:text-daccent" />
       </div>
     );
+  }
+
+  if (!user) {
+    return <LoadingScreen text="Loading Editor..." />;
   }
 
   return (
@@ -250,6 +255,7 @@ const BlogEditor = () => {
             wordCount={wordCount}
             coverImage={coverImage}
             editorContent={editor.getHTML()}
+            author={user}
           />
         ) : (
           <>

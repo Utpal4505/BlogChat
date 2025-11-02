@@ -1,7 +1,11 @@
 /* eslint-disable no-unused-vars */
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import {
+  createBrowserRouter,
+  Navigate,
+  RouterProvider,
+} from "react-router-dom";
 import Login from "../pages/Login.jsx";
 import SignUp from "../pages/SignUp.jsx";
 import Onboarding from "../pages/Onboarding.jsx";
@@ -20,6 +24,7 @@ import { GoogleReCaptchaProvider } from "react-google-recaptcha-v3";
 import Feedback from "../pages/Feedback.jsx";
 import ProfilePage from "../pages/Profile.jsx";
 import SettingsPage from "../pages/Setings.jsx";
+import UnderDevelopment from "../components/UnderDevelopment.jsx";
 
 const MAX_CONSOLE_ERRORS = 5;
 export const consoleErrors = [];
@@ -62,19 +67,21 @@ const router = createBrowserRouter([
     path: "/",
     element: <App />,
     children: [
-      //Protected Routes
       {
-        element: <ProtectedRoute />,
-        children: [
-          {
-            path: "dashboard",
-            element: <Dashboard />,
-          },
-          {
-            path: "Write-Blog",
-            element: <BlogEditor />,
-          },
-        ],
+        index: true,
+        element: <Navigate to="home" replace />,
+      },
+      {
+        path: "home",
+        element: <Dashboard />,
+      },
+      {
+        path: "explore",
+        element: <UnderDevelopment />,
+      },
+      {
+        path: "chat",
+        element: <UnderDevelopment />,
       },
       {
         path: "report-bug",
@@ -96,7 +103,7 @@ const router = createBrowserRouter([
       {
         path: "settings",
         element: <SettingsPage />,
-      }
+      },
     ],
   },
 
@@ -134,6 +141,10 @@ const router = createBrowserRouter([
           {
             path: "onboarding",
             element: <Onboarding />,
+          },
+          {
+            path: "Write-Blog",
+            element: <BlogEditor />,
           },
         ],
       },

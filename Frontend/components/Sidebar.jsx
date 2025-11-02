@@ -53,7 +53,7 @@ const NavigationSidebar = () => {
     {
       title: "Navigation",
       items: [
-        { icon: Home, label: "Home", href: "/" },
+        { icon: Home, label: "Home", href: "/home" },
         { icon: Compass, label: "Explore", href: "/explore" },
         { icon: MessageSquare, label: "Chat", href: "/chat" },
         { icon: NotebookPen, label: "Write a blog", href: "/Write-Blog" },

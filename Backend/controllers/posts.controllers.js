@@ -223,10 +223,12 @@ export const getPostById = asyncHandler(async (req, res) => {
         content: true,
         slug: true,
         authorId: true,
-        author: { select: {
-          username: true,
-          avatar: true,
-        } },
+        author: {
+          select: {
+            username: true,
+            avatar: true,
+          },
+        },
         coverImage: true,
         commentCount: true,
         comments: true,
@@ -255,10 +257,11 @@ export const getPostById = asyncHandler(async (req, res) => {
 
 export const getFeedPost = asyncHandler(async (req, res) => {
   try {
+
     let { limit = 10, cursor } = req.query;
     limit = parseInt(limit, 10);
 
-    if (isNaN(limit) || limit < 1 || limit > 10) {
+    if (isNaN(limit) || limit < 1 || limit > 100) {
       limit = 10;
     }
 
@@ -268,60 +271,118 @@ export const getFeedPost = asyncHandler(async (req, res) => {
     if (userId) {
       const followers = await prisma.follow.findMany({
         where: { followerId: userId },
-        select: { followingId: true },
+        select: { followeeId: true },
       });
-      allowedAuthorIds = followers.map((f) => f.followingId);
-      allowedAuthorIds.push(userId); // owner bhi allowed
+
+      allowedAuthorIds = followers.map((f) => f.followeeId);
+      allowedAuthorIds.push(userId);
     }
 
-    const queryOptions = {
-      take: limit,
-      orderBy: { createdAt: "desc" },
-      select: {
-        id: true,
-        title: true,
-        content: true,
-        slug: true,
-        authorId: true,
-        author: {
-          select: {
-            username: true,
-            avatar: true,
-          }
+    // Fetch posts with cursor
+    let posts = [];
+    try {
+      posts = await prisma.post.findMany({
+        take: limit + 1, // Fetch one extra to check if there are more posts
+        ...(cursor && { skip: 1, cursor: { id: Number(cursor) } }),
+        orderBy: { createdAt: "desc" },
+        select: {
+          id: true,
+          title: true,
+          content: true,
+          slug: true,
+          author: {
+            select: {
+              username: true,
+              avatar: true,
+              id: true,
+            },
+          },
+          coverImage: true,
+          postTags: {
+            select: {
+              tag: {
+                select: {
+                  name: true,
+                },
+              },
+            },
+          },
+          postLikes: userId
+            ? {
+                where: { userId: userId },
+                select: { id: true, postId: true },
+              }
+            : false,
+          bookmarks: userId
+            ? {
+                where: { userId: userId },
+                select: { id: true, postId: true },
+              }
+            : false,
+          _count: {
+            select: {
+              postLikes: true,
+              comments: true,
+            },
+          },
+          createdAt: true,
+          publishedAt: true,
+          updatedAt: true,
         },
-        coverImage: true,
-        commentCount: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-      where: userId
-        ? {
-            OR: [
-              { visibility: "PUBLIC" },
-              { visibility: "PRIVATE", authorId: { in: allowedAuthorIds } },
-            ],
-          }
-        : { visibility: "PUBLIC" },
-    };
-
-    if (cursor) {
-      queryOptions.skip = 1;
-      queryOptions.cursor = { id: Number(cursor) };
+        where: userId
+          ? {
+              OR: [
+                { visibility: "PUBLIC" },
+                { visibility: "PRIVATE", authorId: { in: allowedAuthorIds } },
+              ],
+            }
+          : { visibility: "PUBLIC" },
+      });
+    } catch (error) {
+      if (error.code === "P2025") {
+        // Cursor was invalid (post deleted), fetch from beginning
+        posts = await prisma.post.findMany({
+          take: limit,
+          orderBy: { createdAt: "desc" },
+          // ... rest of query without cursor
+        });
+      } else {
+        throw error;
+      }
     }
 
-    const posts = await prisma.post.findMany(queryOptions);
+    // Check if there are more posts
+    let hasMore = false;
+    if (posts.length > limit) {
+      hasMore = true;
+      posts = posts.slice(0, limit); // Remove the extra post
+    }
 
-    const nextCursor = posts.length > 0 ? posts[posts.length - 1].id : null;
+    // Calculate next cursor
+    const nextCursor =
+      hasMore && posts.length > 0 ? posts[posts.length - 1].id : null;
 
-    return res
-      .status(200)
-      .json(
-        new ApiResponse(
-          200,
-          { posts, nextCursor },
-          "✅ Feed posts fetched successfully"
-        )
-      );
+    // Transform response
+    const postsWithStatus = posts.map((post) => {
+      const { postLikes, bookmarks, ...rest } = post;
+      return {
+        ...rest,
+        isLiked: postLikes?.length > 0,
+        isBookmarked: bookmarks?.length > 0,
+      };
+    });
+
+    return res.status(200).json(
+      new ApiResponse(
+        200,
+        {
+          postsWithStatus,
+          nextCursor,
+          hasMore,
+        },
+        "✅ Feed posts fetched successfully"
+      )
+    );
   } catch (error) {
     console.error("Error while fetching feed posts:", error);
     throw new ApiError(500, "Something went wrong");
@@ -742,8 +803,6 @@ export const updatePostComment = asyncHandler(async (req, res) => {
 });
 
 export const getComments = asyncHandler(async (req, res) => {
-
-  console.log("➰ Fetching comments for post:");
   try {
     let { postId } = req.params;
     const { limit = 10, cursor } = req.query;
@@ -752,10 +811,10 @@ export const getComments = asyncHandler(async (req, res) => {
 
     const post = await prisma.post.findUnique({ where: { id: postIdNum } });
     if (!post) {
-      return res.status(404).json({ success: false, message: "Post not found." });
+      return res
+        .status(404)
+        .json({ success: false, message: "Post not found." });
     }
-
-    console.log("➰ Fetching comments for post:", postIdNum);
 
     const comments = await prisma.comment.findMany({
       where: { postId: postIdNum },
@@ -774,15 +833,11 @@ export const getComments = asyncHandler(async (req, res) => {
       },
     });
 
-    console.log("➰ Fetched comments for post:", postIdNum, comments);
-
     let nextCursor = null;
     if (comments.length > take) {
       const nextItem = comments.pop();
       nextCursor = nextItem.id;
     }
-
-    console.log("➰ Returning comments for post:", postIdNum, comments);
 
     return res.status(200).json({
       success: true,
@@ -800,4 +855,3 @@ export const getComments = asyncHandler(async (req, res) => {
     });
   }
 });
-

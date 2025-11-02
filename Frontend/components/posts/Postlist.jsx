@@ -1,3 +1,4 @@
+import EmptyState from "../profile/EmptyState";
 import PostCard from "./Postcard/PostCard";
 
 const PostList = ({
@@ -6,7 +7,6 @@ const PostList = ({
   bookmarkedPosts,
   onLike,
   onBookmark,
-  // ✅ New props for comments
   postComments = {},
   currentUser,
   onAddComment,
@@ -14,13 +14,10 @@ const PostList = ({
   onEditComment,
   commentsLoading = {},
   lastCommentRef,
+  lastPostRef, // ✅ ADD THIS PROP
   showingPostIdForScroll,
   toggleComments,
 }) => {
-
-  console.log("Post List comments reached", posts)
-
-  // ✅ Add guard
   if (!posts) {
     console.error("Posts is undefined!");
     return null;
@@ -32,26 +29,30 @@ const PostList = ({
 
   return (
     <div className="space-y-4">
-      {posts.map((post) => (
-        <PostCard
-          key={post.id}
-          post={post}
-          liked={likedPosts?.[post.id]}
-          bookmarked={bookmarkedPosts?.[post.id]}
-          onLike={() => onLike(post.id)}
-          onBookmark={() => onBookmark(post.id)}
-          // ✅ Pass comments and handlers
-          comments={postComments[post.id] || []}
-          currentUser={currentUser}
-          onAddComment={onAddComment}
-          onDeleteComment={onDeleteComment}
-          onEditComment={onEditComment}
-          commentsLoading={commentsLoading[post.id]}
-          lastCommentRef={lastCommentRef}
-          showingPostIdForScroll={showingPostIdForScroll}
-          toggleComments={toggleComments}
-        />
-      ))}
+      {posts.map((post, index) => {
+        const isLastPost = index === posts.length - 1; // ✅ Check if last post
+
+        return (
+          <div key={post.id} ref={isLastPost ? lastPostRef : null}> {/* ✅ Attach ref here */}
+            <PostCard
+              post={post}
+              liked={likedPosts?.[post.id]}
+              bookmarked={bookmarkedPosts?.[post.id]}
+              onLike={() => onLike(post.id)}
+              onBookmark={() => onBookmark(post.id)}
+              comments={postComments[post.id] || []}
+              currentUser={currentUser}
+              onAddComment={onAddComment}
+              onDeleteComment={onDeleteComment}
+              onEditComment={onEditComment}
+              commentsLoading={commentsLoading[post.id]}
+              lastCommentRef={lastCommentRef}
+              showingPostIdForScroll={showingPostIdForScroll}
+              toggleComments={toggleComments}
+            />
+          </div>
+        );
+      })}
     </div>
   );
 };

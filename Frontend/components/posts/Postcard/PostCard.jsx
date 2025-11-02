@@ -43,17 +43,12 @@ const PostCard = ({
   // Toggle comments and optionally set post id to trigger scrolling fetch
   const toggleCommentsHandler = () => {
     setShowComments((prev) => !prev);
-    console.log("Comment box open or not", showComments);
-    console.log("toggleComments start...");
-
     toggleComments(post.id);
   };
 
   const commentsData = Array.isArray(comments)
     ? comments
     : comments.comments || [];
-
-  console.log("Postcard data", comments);
 
   return (
     <Motion.article

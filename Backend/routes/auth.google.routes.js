@@ -67,7 +67,7 @@ router.get(
         });
         return res.redirect(`${process.env.CLIENT_URL}/onboarding`);
       } else {
-        return res.redirect(`${process.env.CLIENT_URL}/dashboard`);
+        return res.redirect(`${process.env.CLIENT_URL}/home`);
       }
     } catch (error) {
       console.error("❌ Google Auth Error:", error);
