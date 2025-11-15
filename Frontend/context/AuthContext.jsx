@@ -5,22 +5,22 @@ export const AuthContext = createContext();
 
 // ✅ axios instances
 const Userapi = axios.create({
-  baseURL: "http://localhost:8000/api/v1/users",
+  baseURL: "https://blogchat-1w4v.onrender.com/api/v1/users",
   withCredentials: true,
 });
 
 const Postapi = axios.create({
-  baseURL: "http://localhost:8000/api/v1/posts",
+  baseURL: "https://blogchat-1w4v.onrender.com/api/v1/posts",
   withCredentials: true,
 });
 
 const Bugapi = axios.create({
-  baseURL: "http://localhost:8000/api/v1/report-bug",
+  baseURL: "https://blogchat-1w4v.onrender.com/api/v1/report-bug",
   withCredentials: true,
 });
 
 const Feedbackapi = axios.create({
-  baseURL: "http://localhost:8000/api/v1/feedback",
+  baseURL: "https://blogchat-1w4v.onrender.com/api/v1/feedback",
   withCredentials: true,
 });
 
