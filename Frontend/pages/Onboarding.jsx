@@ -164,7 +164,7 @@ function Onboarding() {
         email,
       });
 
-      navigate("/dashboard");
+      navigate("/home");
     } catch (err) {
       console.error("Onboarding error:", err);
 
