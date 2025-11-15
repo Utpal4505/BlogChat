@@ -1,6 +1,5 @@
 import cookieParser from "cookie-parser";
 import express from "express";
-import { healthcheck } from "./controllers/healthCheck.controllers.js";
 import userRouter from "./routes/user.routes.js";
 import authRouter from "./routes/auth.google.routes.js";
 import postRouter from "./routes/post.routes.js";
@@ -32,7 +31,6 @@ app.use(cookieParser());
 app.use(globalLimiter)
 
 //Importing and Using Routes
-app.use("/api/v1/healthcheck", healthcheck);
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/posts", postRouter);
