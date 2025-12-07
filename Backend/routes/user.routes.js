@@ -30,7 +30,7 @@ import { verifyJWTSoft } from "../middlewares/verifyJWTSoft.middlewares.js";
 const router = Router();
 
 router.route("/register").post(registerLimiter, otpLimiter, createUser);
-router.route("/login").post(loginLimiter, LoginUser);
+router.route("/login").post(LoginUser);
 router
   .route("/username-check")
   .get(checkUsernameLimiter, checkUsernameAvailability);

@@ -33,7 +33,7 @@ const LoginPage = () => {
 
     try {
       await login({ username: username.trim().toLowerCase(), password }); // call backend login
-      navigate("/dashboard");
+      navigate("/home");
     } catch (err) {
       console.error("Login error raw:", err);
 

@@ -5,22 +5,22 @@ export const AuthContext = createContext();
 
 // ✅ axios instances
 const Userapi = axios.create({
-  baseURL: "https://blogchat-1w4v.onrender.com/api/v1/users",
+  baseURL: "http://localhost:3000/api/v1/users",
   withCredentials: true,
 });
 
 const Postapi = axios.create({
-  baseURL: "https://blogchat-1w4v.onrender.com/api/v1/posts",
+  baseURL: "http://localhost:3000/api/v1/posts",
   withCredentials: true,
 });
 
 const Bugapi = axios.create({
-  baseURL: "https://blogchat-1w4v.onrender.com/api/v1/report-bug",
+  baseURL: "http://localhost:3000/api/v1/report-bug",
   withCredentials: true,
 });
 
 const Feedbackapi = axios.create({
-  baseURL: "https://blogchat-1w4v.onrender.com/api/v1/feedback",
+  baseURL: "http://localhost:3000/api/v1/feedback",
   withCredentials: true,
 });
 
@@ -45,6 +45,14 @@ const processQueue = (error, token = null) => {
       const originalRequest = error.config;
 
       if (error.response?.status === 401 && !originalRequest._retry) {
+        // skip login/register endpoints
+        if (
+          originalRequest.url.includes("/login") ||
+          originalRequest.url.includes("/register")
+        ) {
+          return Promise.reject(error); // show actual error to user
+        }
+
         // Skip only refresh-token endpoint
         if (originalRequest.url?.includes("/refresh-token")) {
           isRefreshing = false;
@@ -180,7 +188,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const loginWithGoogle = () => {
-    window.location.href = "http://localhost:8000/api/v1/auth/google";
+    window.location.href = "http://localhost:3000/api/v1/auth/google";
   };
 
   const logout = async () => {
@@ -446,7 +454,7 @@ export const AuthProvider = ({ children }) => {
 
   const searchDetail = async (query) => {
     try {
-      const { data } = await Postapi.get("/search", { 
+      const { data } = await Postapi.get("/search", {
         params: { query: query },
       });
       return data;

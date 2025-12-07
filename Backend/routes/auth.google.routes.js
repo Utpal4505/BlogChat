@@ -8,10 +8,13 @@ import { generateAccessandRefreshTokens } from "../controllers/user.controllers.
 import { ApiResponse } from "../utils/ApiResponse.js";
 
 const router = Router();
+
+const isProd = process.env.NODE_ENV === "production";
+
 const options = {
   httpOnly: true,
-  sameSite: "strict",
-  secure: process.env.NODE_ENV === "production",
+  secure: isProd,
+  sameSite: isProd ? "none" : "lax"
 };
 
 // Step 1: Redirect user to Google login

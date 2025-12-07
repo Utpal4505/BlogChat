@@ -407,6 +407,8 @@ const resetPasswordOTP = asyncHandler(async (req, res) => {
     },
   });
 
+      console.log(`New email sent to ${email} and otp is ${otp}`)
+
   await sendVerificationMail(email, otp);
 
   return res.status(200).json({
