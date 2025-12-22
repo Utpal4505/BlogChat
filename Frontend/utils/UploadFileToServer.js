@@ -7,7 +7,7 @@ export async function uploadFilesToServer(files) {
   files.forEach((file) => formData.append("files", file));
 
   try {
-    const res = await fetch("http://localhost:8000/api/v1/upload-file/", {
+    const res = await fetch("http://localhost:3000/api/v1/upload-file/", {
       method: "POST",
       body: formData,
     });
