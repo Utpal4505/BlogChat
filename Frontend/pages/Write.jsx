@@ -95,13 +95,11 @@ const BlogEditor = () => {
 
     const content = editor.getHTML();
 
-    console.log(content);
     try {
-      const data = await createPost({ title, content, tags, coverImage });
+      await createPost({ title, content, tags, coverImage });
       addToast("Blog published successfully!", "success");
 
-      console.log("Post data:", data);
-
+      // Reset form
       setTitle("");
       editor.commands.clearContent();
       setTags([]);

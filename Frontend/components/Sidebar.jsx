@@ -13,7 +13,7 @@ import {
   ChevronLeft,
   MoreHorizontal,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import { toast } from "react-hot-toast";
 
@@ -26,6 +26,8 @@ const NavigationSidebar = () => {
   );
 
   const { logout, user } = useContext(AuthContext);
+
+  const navigate = useNavigate();
 
   // Window resize handler for responsive design
   useEffect(() => {
@@ -46,6 +48,7 @@ const NavigationSidebar = () => {
 
   const handleLogOut = () => {
     logout();
+    navigate("/login", { replace: true });
     toast.success("Logged out successfully");
   };
 

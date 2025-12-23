@@ -30,7 +30,6 @@ const SearchResultsPage = () => {
     try {
       setLoading(true);
       const response = await searchDetail(query);
-      console.log("🔍 Search results:", response.data);
 
       const { posts = [], authors = [], tags = [] } = response.data;
 
@@ -505,7 +504,6 @@ const SearchResultsPage = () => {
                       <button 
                         onClick={(e) => {
                           e.stopPropagation();
-                          console.log("Follow:", author.username);
                         }}
                         className="px-5 py-3 bg-gradient-to-r from-primary to-accent dark:from-dprimary dark:to-daccent text-white rounded-xl font-bold hover:opacity-90 transition-all shadow-lg hover:shadow-xl whitespace-nowrap transform hover:scale-105 active:scale-95"
                       >

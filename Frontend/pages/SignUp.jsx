@@ -96,7 +96,6 @@ function SignUp() {
         name: fullname.trim(),
         email: email.trim(),
       });
-      console.log(data);
       if (data.data.status == "PENDING") {
         navigate("/onboarding", { state: { email } });
         return;
@@ -105,7 +104,7 @@ function SignUp() {
         state: { verificationId: data.data.verificationId, email },
       });
     } catch (err) {
-      console.log("Registration error", err);
+      console.error("Registration error", err);
 
       // Normalize Error (be defensive)
       let Error = null;

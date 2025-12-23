@@ -19,8 +19,7 @@ const DeleteAccountModal = ({ show, onClose }) => {
     if (!canDelete) return;
 
     try {
-      const data = await deleteUser();
-      console.log("Delete account data", data);
+      await deleteUser();
       alert("Your account has been deleted.");
       onClose();
     } catch (error) {

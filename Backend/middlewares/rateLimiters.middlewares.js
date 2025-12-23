@@ -9,7 +9,7 @@ const createLimiter = ({ windowMs, max, message, keyGenerator }) => {
     legacyHeaders: false,
     handler: (req, res) =>
       res.status(429).json({ success: false, error: message }),
-    keyGenerator: keyGenerator || ((req) => ipKeyGenerator(req) || req.ip),
+    keyGenerator: keyGenerator || ((req) => ipKeyGenerator(req)),
   });
 };
 
@@ -25,7 +25,11 @@ export const loginLimiter = createLimiter({
   windowMs: 5 * 60 * 1000,
   max: 5,
   message: "⚠️ Too many login attempts, please try again after 5 minutes.",
-  keyGenerator: (req) => `${req.body.username || ""}_${req.ip}`, // username+IP
+  keyGenerator: (req) => {
+    const username = req.body.username || "unknown";
+    const ipKey = ipKeyGenerator(req);
+    return `${username}:${ipKey}`;
+  },
 });
 
 // 📝 Register limiter

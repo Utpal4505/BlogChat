@@ -331,8 +331,6 @@ export default function FeedbackForm() {
           ? await uploadFilesToServer(bugScreenshots)
           : [];
 
-      console.log(uploadedUrls.length > 0 ? uploadedUrls : null);
-
       const feedbackPayload = {
         experience_mood: experienceMood,
         liked: liked || null,

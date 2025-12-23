@@ -47,7 +47,7 @@ function NewPassword() {
       window.alert("Password reset successful! Please login.");
       navigate("/login");
     } catch (err) {
-      console.log("Reset Password error", err);
+      console.error("Reset Password error", err);
 
       // Normalize Error (be defensive)
       let Error = null;

@@ -374,14 +374,10 @@ export const AuthProvider = ({ children }) => {
       const params = { limit };
       if (cursor) params.cursor = cursor;
 
-      console.log("Authcontext sending url", postId, limit, cursor);
-
       // Axios GET call with params
       const { data } = await Postapi.get(`/post/${postId}/comments`, {
         params,
       });
-
-      console.log("authcontext data", data);
 
       return data;
     } catch (error) {

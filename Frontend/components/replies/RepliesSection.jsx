@@ -46,7 +46,6 @@ const RepliesView = ({
               key={replies.id}
               className="bg-card dark:bg-dcard rounded-2xl border border-bordercolor dark:border-dbordercolor overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200"
             >
-              {console.log("The reply post is", replies)}
               {/* Original Post */}
               <div className="p-5 border-b border-bordercolor dark:border-dbordercolor">
                 <PostCard

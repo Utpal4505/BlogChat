@@ -690,7 +690,6 @@ const Toolbar = ({ editor, setLink }) => {
 
 
     const handleFocus = () => {
-      console.log("Editor focused");
       setIsEditorFocused(true);
     };
 
@@ -703,7 +702,6 @@ const Toolbar = ({ editor, setLink }) => {
           activeElement?.closest(".color-picker-container") ||
           activeElement?.closest("button");
         if (!isToolbarElement && !editor.view.hasFocus()) {
-          console.log("Editor blurred");
           setIsEditorFocused(false);
         }
       }, 150);

@@ -156,6 +156,7 @@ function Navbar() {
 
   const handleLogOut = () => {
     logout();
+    navigate("/login", { replace: true });
     toast.success("Logged out successfully");
     setIsDropdownOpen(false);
   };
@@ -240,7 +241,7 @@ function Navbar() {
                           </span>
                         </div>
                         <div className="space-y-1 px-2">
-                          {recommendations.posts.map((post,) => (
+                          {recommendations.posts.map((post) => (
                             <button
                               key={post.id}
                               onClick={() => handlePostClick(post.slug)}

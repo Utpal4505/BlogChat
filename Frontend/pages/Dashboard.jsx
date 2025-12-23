@@ -267,7 +267,7 @@ const FeedPage = () => {
                 {/* User Avatar */}
                 <div className="flex-shrink-0 relative">
                   <img
-                    src={user?.avatar || "/default-avatar.png"}
+                    src={user?.avatar || "https://www.gravatar.com/avatar/?d=mp"}
                     alt={user?.username}
                     className="w-14 h-14 rounded-full object-cover ring-2 ring-primary/20 dark:ring-dPrimary/30 shadow-sm"
                   />

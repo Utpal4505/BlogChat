@@ -148,6 +148,7 @@ const LoginUser = asyncHandler(async (req, res) => {
       username: true,
       email: true,
       name: true,
+      avatar:true,
       createdAt: true,
     },
   });

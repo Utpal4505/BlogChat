@@ -64,7 +64,7 @@ function ForgetPassword() {
         state: { verificationId: data.verificationId, email },
       });
     } catch (err) {
-      console.log("Registration error", err);
+      console.error("Registration error", err);
 
       // Normalize Error (be defensive)
       let Error = null;
