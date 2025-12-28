@@ -303,6 +303,7 @@ export default function ReportBug() {
       const isImage = f.type.startsWith("image/");
       const validType = isVideo || isImage;
       const validSize = f.size <= 10 * 1024 * 1024;
+
       return {
         file: f,
         name: f.name,

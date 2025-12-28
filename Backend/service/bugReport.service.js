@@ -3,6 +3,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import axios from "axios";
 import { sanitizeInput } from "../utils/HtmlSanitize.js";
 import { createGitHubIssue } from "./githubIssueService.service.js";
+import { googleSheetIssueService } from "./gsheetIssueService.service.js";
 
 export const createBugReport = asyncHandler(async (req, res) => {
   try {
@@ -75,6 +76,8 @@ export const createBugReport = asyncHandler(async (req, res) => {
     });
 
     const githubIssue = await createGitHubIssue(createBug);
+
+    await googleSheetIssueService({ bugReport: createBug, githubIssueNumber: githubIssue.number });
 
     return res.status(201).json({
       success: true,

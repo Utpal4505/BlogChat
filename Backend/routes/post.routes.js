@@ -22,6 +22,7 @@ import {
   getBookmarkPosts,
 } from "../controllers/bookmark.controllers.js";
 import { getUserReplies } from "../controllers/comments.controllers.js";
+import { verifyJWTSoft } from "../middlewares/verifyJWTSoft.middlewares.js";
 
 const router = Router();
 
@@ -33,7 +34,7 @@ router
   .patch(verifyJWT, upload.single("coverImage"), updatePost);
 router.route("/delete/:postId").delete(verifyJWT, deletePost);
 router.route("/post/:slug").get(checkPostAccess, getPostById);
-router.route("/feed").get(verifyJWT, getFeedPost);
+router.route("/feed").get(verifyJWTSoft, getFeedPost);
 router.route("/tags/:tagName/posts").get(getPostsByTag);
 router.route("/search").get(searchBasedDetail);
 router.route("/search/filter").get(postFiltering);

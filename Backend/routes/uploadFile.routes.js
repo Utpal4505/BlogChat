@@ -5,14 +5,13 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 
 const router = Router();
 
-/**
- * POST /api/upload-file
- * Accepts multiple files, uploads to Cloudinary, and returns array of secure URLs
- */
 router.post(
   "/",
   upload.array("files"), // multer middleware
   asyncHandler(async (req, res) => {
+
+    console.log("Started");
+    console.log("Files received:", req.files);
     try {
       if (!req.files || req.files.length === 0) {
         return res

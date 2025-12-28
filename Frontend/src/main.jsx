@@ -26,6 +26,8 @@ import ProfilePage from "../pages/Profile.jsx";
 import SettingsPage from "../pages/Setings.jsx";
 import UnderDevelopment from "../components/UnderDevelopment.jsx";
 import SearchResultsPage from "../pages/SearchResultPage.jsx";
+import React from "react";
+import Post from "../pages/Post.jsx";
 
 const MAX_CONSOLE_ERRORS = 5;
 export const consoleErrors = [];
@@ -96,6 +98,15 @@ const router = createBrowserRouter([
         path: "search",
         element: <SearchResultsPage />,
       },
+      {
+        path: "post/:slug",
+        element: (
+          <React.Suspense fallback={<div />}>
+            {" "}
+            <Post />{" "}
+          </React.Suspense>
+        ),
+      },
       // ✅ Profile routes (order matters!)
       {
         path: "profile/:username", // Dynamic username route
@@ -150,6 +161,10 @@ const router = createBrowserRouter([
           {
             path: "Write-Blog",
             element: <BlogEditor />,
+          },
+          {
+            path: "posts/:slug",
+            element: <Post />,
           },
         ],
       },

@@ -229,16 +229,17 @@ export const getPostById = asyncHandler(async (req, res) => {
             avatar: true,
           },
         },
+        _count: {
+          select: {
+            postLikes: true,
+            comments: true,
+          },
+        },
         coverImage: true,
         commentCount: true,
         comments: true,
         createdAt: true,
         updatedAt: true,
-      },
-      include: {
-        _count: {
-          select: { postLikes: true, comments: true },
-        },
       },
     });
 

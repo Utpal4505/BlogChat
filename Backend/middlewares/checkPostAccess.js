@@ -2,12 +2,12 @@ import prisma from '../config/db.config.js'
 
 export const checkPostAccess = async (req, res, next) => {
   try {
-    const { postId } = req.params;
+    const { slug } = req.params;
     const userId = req.user?.id || null;
 
     const post = await prisma.post.findUnique({
-      where: { id: Number(postId) },
-      include: { author: true },
+      where: { slug: slug },
+      select: { author: true, visibility: true, authorId: true },
     });
 
     if (!post) return res.status(404).json({ message: "❌ Post not found" });

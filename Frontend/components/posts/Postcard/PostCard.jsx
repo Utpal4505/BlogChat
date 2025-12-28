@@ -6,6 +6,7 @@ import PostExcerpt from "./PostExcerpt";
 import PostTags from "./PostTags";
 import PostActions from "./PostActions";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import CommentSection from "./Comments";
 
 const PostCard = ({
@@ -25,6 +26,10 @@ const PostCard = ({
   toggleComments,
 }) => {
   const [showComments, setShowComments] = useState(false);
+
+  const navigate = useNavigate();
+  const slugRoute = post?.slug ? `/post/${post.slug}` : `/post/${post.id}`;
+  const handleNavigate = () => navigate(slugRoute);
 
   if (!comments) {
     console.error("Comments is undefined!");
@@ -55,6 +60,12 @@ const PostCard = ({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: "easeOut" }}
+      onClick={handleNavigate}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") handleNavigate();
+      }}
       className="group relative bg-card dark:bg-dcard rounded-[22px] overflow-hidden border border-bordercolor/60 dark:border-dbordercolor/60 hover:border-accent/40 dark:hover:border-daccent/40 hover:shadow-2xl hover:shadow-accent/5 dark:hover:shadow-daccent/5 transition-all duration-300 mb-2 cursor-pointer"
     >
       <PostCoverImage coverImage={post.coverImage} title={post.title} />
