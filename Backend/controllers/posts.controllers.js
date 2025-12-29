@@ -5,10 +5,11 @@ import { sanitizeInput, sanitizePosts } from "../utils/HtmlSanitize.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { slugify } from "../utils/slugify.js";
 import { uploadToCloudinary } from "../utils/cloudinary.js";
+import { generateAutoTags } from "../service/autoTagGenerator.service.js";
 
 export const createPost = asyncHandler(async (req, res) => {
   try {
-    const { title, content, tags } = req.body;
+    const { title, content } = req.body;
     const userID = req.user.id;
 
     if (!title || !content) {
@@ -66,22 +67,32 @@ export const createPost = asyncHandler(async (req, res) => {
       },
     });
 
-    if (tags && tags.length) {
-      for (const tagName of tags) {
-        const sanitizeTags = sanitizeInput(tagName);
-        const createdTags = await prisma.tag.upsert({
-          where: { name: sanitizeTags },
-          update: {},
-          create: { name: sanitizeTags },
-        });
+    let autoTag = [];
+    try {
+      const autoGenTag = await generateAutoTags({
+        description: sanitizeContent,
+      });
 
-        await prisma.postTag.create({
-          data: {
-            postId: post.id,
-            tagId: createdTags.id,
-          },
-        });
-      }
+      autoTag = autoGenTag;
+    } catch (error) {
+      console.error("Auto-tag generation failed:", error);
+      autoTag = [];
+    }
+
+    for (const tagName of autoTag) {
+      const sanitizeTags = sanitizeInput(tagName);
+      const createdTags = await prisma.tag.upsert({
+        where: { name: sanitizeTags },
+        update: {},
+        create: { name: sanitizeTags },
+      });
+
+      await prisma.postTag.create({
+        data: {
+          postId: post.id,
+          tagId: createdTags.id,
+        },
+      });
     }
 
     return res

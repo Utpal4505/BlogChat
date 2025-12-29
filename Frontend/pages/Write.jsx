@@ -42,7 +42,6 @@ const BlogEditor = () => {
   const titleRef = useRef(null);
   const editorRef = useRef(null);
 
-  // Custom hook for editor logic
   const { editor, wordCount, charCount, lastSaved, isSaving, setLink } =
     useEditor();
 
@@ -55,9 +54,7 @@ const BlogEditor = () => {
     setToasts((prev) => prev.filter((toast) => toast.id !== id));
   };
 
-  // Validation function
   const validateForm = () => {
-    // Title validation (3-150 characters)
     const trimmedTitle = title.trim();
     if (!trimmedTitle) {
       addToast("Title is required", "error");
@@ -72,7 +69,6 @@ const BlogEditor = () => {
       return false;
     }
 
-    // Content validation (minimum 20 characters)
     const contentText = editor?.getText().trim() || "";
     if (!contentText) {
       addToast("Content is required", "error");
@@ -89,7 +85,6 @@ const BlogEditor = () => {
     return true;
   };
 
-  // Handle publish with validation
   const handlePublish = async () => {
     if (!validateForm()) return;
 
@@ -134,7 +129,6 @@ const BlogEditor = () => {
     }
   };
 
-  // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e) => {
       // F11 or Cmd/Ctrl + Shift + F to toggle focus mode
@@ -160,7 +154,6 @@ const BlogEditor = () => {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isFocusMode, isPreview]);
 
-  // Loading state
   if (!editor) {
     return (
       <div className="flex items-center justify-center h-screen bg-bg dark:bg-dbg">
@@ -177,7 +170,6 @@ const BlogEditor = () => {
     <div className="min-h-screen transition-colors duration-300 bg-bg dark:bg-dbg text-text dark:text-dText">
       <ToastContainer toasts={toasts} removeToast={removeToast} />
 
-      {/* Navigation - Hide in Focus Mode & Preview */}
       {!isFocusMode && (
         <Navbar
           isPreview={isPreview}
@@ -189,10 +181,8 @@ const BlogEditor = () => {
         />
       )}
 
-      {/* Focus Mode Controls - Top Right */}
       {!isPreview && (
         <div className="fixed top-6 right-6 z-[998] flex items-center gap-3">
-          {/* Preview Button - Only in Focus Mode */}
           {isFocusMode && (
             <button
               onClick={() => setIsPreview(true)}
@@ -206,7 +196,6 @@ const BlogEditor = () => {
             </button>
           )}
 
-          {/* Focus Mode Toggle Button */}
           <button
             onClick={() => setIsFocusMode(!isFocusMode)}
             className="p-3 rounded-full transition-all duration-300 group bg-white/80 dark:bg-dcard/80 hover:bg-white dark:hover:bg-dcard border-bordercolor dark:border-dbordercolor text-text dark:text-dText border backdrop-blur-xl shadow-lg hover:shadow-xl hover:scale-105"
@@ -226,7 +215,6 @@ const BlogEditor = () => {
         </div>
       )}
 
-      {/* Main Content */}
       <main
         className={`transition-all duration-500 ${
           isFocusMode ? "w-full px-32 py-16" : "max-w-6xl mx-auto px-6 py-8"
@@ -280,12 +268,12 @@ const BlogEditor = () => {
                   {/* Title Error */}
                 </div>
 
-                <TagsSection
+                {/* <TagsSection
                   tags={tags}
                   setTags={setTags}
                   tagInput={tagInput}
                   setTagInput={setTagInput}
-                />
+                /> */}
               </>
             )}
 
