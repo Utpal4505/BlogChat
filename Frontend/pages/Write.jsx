@@ -8,6 +8,7 @@ import {
   AlertCircle,
   EyeOff,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 // Components
 import Navbar from "../src/BlogEditor/UI/components/Navbar";
@@ -19,14 +20,12 @@ import EditorContent from "../src/BlogEditor/UI/components/EditorContent";
 import PreviewMode from "../src/BlogEditor/UI/components/PreviewMode";
 import ImagePickerModal from "../src/BlogEditor/UI/components/ImagePickerModal";
 
-// Custom Hook
 import { useEditor } from "../src/BlogEditor/hooks/UseEditor";
 import ToastContainer from "../src/BlogEditor/UI/components/Toast";
 import { AuthContext } from "../context/AuthContext";
 import LoadingScreen from "../components/LoadingScreen";
 
 const BlogEditor = () => {
-  // State management
   const [title, setTitle] = useState("");
   const [tags, setTags] = useState([]);
   const [tagInput, setTagInput] = useState("");
@@ -38,12 +37,13 @@ const BlogEditor = () => {
 
   const [toasts, setToasts] = useState([]);
 
-  // ref using for autofocus
   const titleRef = useRef(null);
   const editorRef = useRef(null);
 
   const { editor, wordCount, charCount, lastSaved, isSaving, setLink } =
     useEditor();
+
+  const navigate = useNavigate();
 
   const addToast = (message, type = "error") => {
     const id = Date.now();
@@ -92,23 +92,16 @@ const BlogEditor = () => {
 
     try {
       await createPost({ title, content, tags, coverImage });
+      navigate("/home");
       addToast("Blog published successfully!", "success");
-
-      // Reset form
-      setTitle("");
-      editor.commands.clearContent();
-      setTags([]);
-      setCoverImage(null);
+      
     } catch (err) {
-      // Add general toast
       addToast(err.message || "Something went wrong", "error");
 
-      // Handle field-specific errors
       if (err.errors && err.errors.length) {
         err.errors.forEach((e) => {
           addToast(e.error, "error");
 
-          // Focus/select field based on error.field
           switch (e.field) {
             case "title":
               titleRef.current?.focus();
@@ -118,7 +111,6 @@ const BlogEditor = () => {
               editor.commands.focus();
               break;
             case "coverImage":
-              // Open image picker modal if error is about cover image
               setShowImagePicker(true);
               break;
             default:

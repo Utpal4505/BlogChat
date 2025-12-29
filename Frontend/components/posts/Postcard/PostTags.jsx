@@ -1,5 +1,17 @@
-const PostTags = ({ tags }) => {
-  if (!tags || tags.length === 0) return null;
+const PostTags = ({ tags = [], tagStatus }) => {
+
+  console.log(tags, tagStatus)
+  if (tagStatus === "PENDING") {
+    return (
+      <div className="mb-5">
+        <span className="text-[11px] tracking-wide text-muted-text/70 dark:text-dMuted-text/70">
+          Tags generating…
+        </span>
+      </div>
+    );
+  }
+
+  if (tagStatus === "READY" && tags.length === 0) return null;
 
   return (
     <div className="flex flex-wrap gap-2 mb-5">

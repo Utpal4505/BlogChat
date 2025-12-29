@@ -77,7 +77,7 @@ const PostCard = ({
         />
         <PostTitle title={post.title} />
         <PostExcerpt excerpt={post.excerpt} />
-        <PostTags tags={tags} />
+        <PostTags tags={tags} tagStatus={post?.postTagStatus}/>
         <PostActions
           likes={post._count?.postLikes || 0}
           comments={commentsData?.length || post._count?.comments || 0}

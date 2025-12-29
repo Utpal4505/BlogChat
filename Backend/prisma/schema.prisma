@@ -52,6 +52,12 @@ enum BugStatus {
   IGNORED
 }
 
+enum PostTagStatus {
+  PENDING
+  READY
+  FAILED
+}
+
 model User {
   id                    Int                @id @default(autoincrement())
   name                  String
@@ -111,6 +117,7 @@ model Post {
   comments     Comment[]
   postLikes    PostLike[]
   postTags     PostTag[]
+  postTagStatus PostTagStatus @default(PENDING)
   bookmarks    BookmarkPost[]
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt

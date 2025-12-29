@@ -6,6 +6,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { slugify } from "../utils/slugify.js";
 import { uploadToCloudinary } from "../utils/cloudinary.js";
 import { generateAutoTags } from "../service/autoTagGenerator.service.js";
+import { tagQueue } from "../queue/tag.queue.js";
 
 export const createPost = asyncHandler(async (req, res) => {
   try {
@@ -51,6 +52,7 @@ export const createPost = asyncHandler(async (req, res) => {
         authorId: userID,
         slug: slug,
         coverImage: coverImageUpload?.secure_url || null,
+        postTagStatus: "PENDING",
       },
       select: {
         id: true,
@@ -67,33 +69,23 @@ export const createPost = asyncHandler(async (req, res) => {
       },
     });
 
-    let autoTag = [];
-    try {
-      const autoGenTag = await generateAutoTags({
+   console.log("post create done now move toward queues")
+
+
+    await tagQueue.add(
+      "generate-tags",
+      {
+        postId: post.id,
         description: sanitizeContent,
-      });
+      },
+      {
+        attempts: 3,
+        backoff: { type: "exponential", delay: 5000 },
+        removeOnComplete: true,
+      }
+    );
 
-      autoTag = autoGenTag;
-    } catch (error) {
-      console.error("Auto-tag generation failed:", error);
-      autoTag = [];
-    }
-
-    for (const tagName of autoTag) {
-      const sanitizeTags = sanitizeInput(tagName);
-      const createdTags = await prisma.tag.upsert({
-        where: { name: sanitizeTags },
-        update: {},
-        create: { name: sanitizeTags },
-      });
-
-      await prisma.postTag.create({
-        data: {
-          postId: post.id,
-          tagId: createdTags.id,
-        },
-      });
-    }
+    console.log("✅ Tag job added for post:", post.id);
 
     return res
       .status(201)
@@ -293,7 +285,7 @@ export const getFeedPost = asyncHandler(async (req, res) => {
     let posts = [];
     try {
       posts = await prisma.post.findMany({
-        take: limit + 1, // Fetch one extra to check if there are more posts
+        take: limit + 1,
         ...(cursor && { skip: 1, cursor: { id: Number(cursor) } }),
         orderBy: { createdAt: "desc" },
         select: {
@@ -318,6 +310,7 @@ export const getFeedPost = asyncHandler(async (req, res) => {
               },
             },
           },
+          postTagStatus: true,
           postLikes: userId
             ? {
                 where: { userId: userId },
@@ -351,11 +344,9 @@ export const getFeedPost = asyncHandler(async (req, res) => {
       });
     } catch (error) {
       if (error.code === "P2025") {
-        // Cursor was invalid (post deleted), fetch from beginning
         posts = await prisma.post.findMany({
           take: limit,
           orderBy: { createdAt: "desc" },
-          // ... rest of query without cursor
         });
       } else {
         throw error;

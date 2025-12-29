@@ -2,7 +2,7 @@ import ollama from "ollama";
 
 const SYSTEM_PROMPT = `
 You are an expert content classifier and tag generator.
-OUTPUT ONLY a JSON array of 3–5 concise, highly relevant tags.
+OUTPUT ONLY a JSON array of 5 concise, highly relevant tags.
 DO NOT include any explanations, text, markdown, or code fences.
 Each tag must reflect the main or nuanced topics in the blog content.
 Prefer multi-word descriptive tags when appropriate (e.g., "Civic Engagement" instead of "Politics").

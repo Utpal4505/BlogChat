@@ -1,7 +1,6 @@
 import { useContext, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
-// eslint-disable-next-line no-unused-vars
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
 
@@ -13,14 +12,12 @@ const LoginPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
 
-  // NEW: error states
-  const [errors, setErrors] = useState({}); // { username: "...", password: "..." }
-  const [generalError, setGeneralError] = useState(""); // top-level errors like "Invalid Credentials"
+  const [errors, setErrors] = useState({}); 
+  const [generalError, setGeneralError] = useState("");
 
   const { login, loginWithGoogle } = useContext(AuthContext);
   const navigate = useNavigate();
 
-  //General error showing on toast
   useEffect(() => {
     generalError && toast.error(generalError);
   }, [generalError]);
@@ -32,8 +29,8 @@ const LoginPage = () => {
     setGeneralError("");
 
     try {
-      await login({ username: username.trim().toLowerCase(), password }); // call backend login
-      navigate("/home", { replace: true }); // redirect on success
+      await login({ username: username.trim().toLowerCase(), password });
+      navigate("/home", { replace: true });
     } catch (err) {
       console.error("Login error raw:", err);
 
@@ -85,7 +82,6 @@ const LoginPage = () => {
     }
   };
 
-  // helpers to clear relevant errors while typing
   const onUsernameChange = (e) => {
     setUsername(e.target.value);
     setErrors((prev) => {
