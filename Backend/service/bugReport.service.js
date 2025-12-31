@@ -4,6 +4,7 @@ import axios from "axios";
 import { sanitizeInput } from "../utils/HtmlSanitize.js";
 import { createGitHubIssue } from "./githubIssueService.service.js";
 import { googleSheetIssueService } from "./gsheetIssueService.service.js";
+import { bugReportQueue } from "../queue/queue.js";
 
 export const createBugReport = asyncHandler(async (req, res) => {
   try {
@@ -50,7 +51,6 @@ export const createBugReport = asyncHandler(async (req, res) => {
         score: verification.score,
       });
 
-    // 📎 Use uploaded URLs from frontend
     const attachmentsUpload = Array.isArray(bugPayload.Attachments)
       ? bugPayload.Attachments
       : [];
@@ -75,15 +75,25 @@ export const createBugReport = asyncHandler(async (req, res) => {
       },
     });
 
-    const githubIssue = await createGitHubIssue(createBug);
+    // adding queue job to process bug report
 
-    await googleSheetIssueService({ bugReport: createBug, githubIssueNumber: githubIssue.number });
+    await bugReportQueue.add(
+      "bug-report-processing",
+      {
+        bugReportId: createBug.id,
+      },
+      {
+        attempts: 3,
+        backoff: { type: "exponential", delay: 10000 },
+        removeOnComplete: true,
+        removeOnFail: false,
+      }
+    )
 
     return res.status(201).json({
       success: true,
       message: "Bug report created successfully",
       bugId: createBug.id,
-      githubIssueUrl: githubIssue.html_url,
     });
   } catch (error) {
     console.error("Something went wrong while creating Bug", error);

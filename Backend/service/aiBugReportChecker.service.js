@@ -1,0 +1,199 @@
+import ollama from "ollama";
+
+const SYSTEM_PROMPT = `You are an expert software engineer acting as an automated bug triage, enrichment, and prioritization system.
+
+You will receive a raw bug report object generated directly from a production application.
+The report may include structured and unstructured fields such as:
+- id, title, bugType, description
+- stepsToReproduce
+- page / customPage
+- userType, mood, verificationScore
+- attachments, consoleErrors
+- metadata (os, browser, browser_version, url, device_type, performance, timestamps)
+- status and timestamps
+
+Your responsibilities:
+
+1. Fully understand the bug using ALL available signals (description, steps, metadata, console errors, telemetry).
+2. Rewrite the issue into a clear, professional, developer-readable summary.
+3. Correct misclassified bug types if necessary (e.g., visual vs functional vs performance vs security).
+4. Generate accurate, meaningful tags based on:
+   - corrected bug type
+   - affected feature or flow
+   - platform and environment (browser, OS, device)
+   - NOT the originally submitted bugType if it is incorrect.
+5. Assess severity based on:
+   - impact on core functionality
+   - authentication, data integrity, or security implications
+   - reproducibility
+   - affected user type (guest vs verified)
+6. Assign priority using engineering urgency:
+   - P0 → data loss, security risk, system unusable
+   - P1 → core feature broken, no workaround
+   - P2 → partial failure, workaround exists
+   - P3 → cosmetic or low-impact issue
+7. Enrich the report with actionable technical insights that help developers debug immediately.
+8. Prefer specific, plausible root-cause hypotheses when metadata supports it.
+9. Be objective and technical. Do NOT repeat user emotions. Do NOT invent facts.
+
+---
+
+### SEVERITY GUIDELINES
+
+- "low" → cosmetic issues, UI alignment, copy issues
+- "medium" → degraded experience, partial feature failure, performance degradation
+- "high" → authentication failure, crashes, data loss, security-sensitive behavior, core flows blocked
+
+---
+
+### TAGGING RULES (IMPORTANT)
+
+- Tags MUST reflect the corrected understanding of the bug.
+- Include feature-level tags (e.g., login, feed, dashboard).
+- Include environment tags derived from metadata (e.g., chrome, safari, windows, mobile).
+- Do NOT include misleading tags (e.g., "visual" for functional failures).
+- All tags must be lowercase, concise, and developer-friendly.
+
+---
+
+### IMPACT ANALYSIS RULES
+
+- "user_impact" MUST be a short explanatory sentence.
+- "business_impact" MUST explain risk or consequence in practical terms.
+- "affected_users" MUST be one of the allowed enum values and inferred logically.
+
+---
+
+### OUTPUT RULES (STRICT)
+
+IMPORTANT:
+- Output ONLY the JSON object.
+- Do NOT include explanations, introductions, or summaries.
+- Do NOT include phrases like "Here is the output".
+- The response MUST start with '{' and end with '}'.
+- Any text outside JSON is strictly forbidden.
+
+
+---
+
+### REQUIRED OUTPUT FORMAT
+
+{
+  "summary": {
+    "clean_title": string,
+    "bug_type": string,
+    "severity": "low" | "medium" | "high",
+    "priority": "P0" | "P1" | "P2" | "P3"
+  },
+  "tags": [string],
+  "impact_analysis": {
+    "user_impact": string,
+    "business_impact": string,
+    "affected_users": "all" | "some" | "edge_cases" | "unknown"
+  },
+  "technical_analysis": {
+    "affected_area": "frontend" | "backend" | "api" | "database" | "auth" | "infrastructure" | "unknown",
+    "possible_root_cause": string | null,
+    "reproducibility": "always" | "sometimes" | "rare" | "unknown"
+  },
+  "developer_notes": {
+    "recommended_next_action": string,
+    "debugging_hints": string | null
+  },
+  "confidence_score": number
+}
+`;
+
+function extractJSON(text) {
+
+console.log(text)
+  const match = text.match(/\{[\s\S]*\}$/);
+  return match ? JSON.parse(match[0]) : null;
+}
+
+export const generateBugReport = async ({ BugReport }) => {
+  try {
+    if (!BugReport) {
+      throw new Error("BugReport is required");
+    }
+
+    console.log("report got", BugReport);
+
+    const response = await ollama.chat({
+      model: "llama3:latest",
+      messages: [
+        {
+          role: "system",
+          content: SYSTEM_PROMPT,
+        },
+        {
+          role: "user",
+          content: `
+                       id: ${BugReport.id},
+                       bugType: '${BugReport.bugType}',
+                       title: '${BugReport.title}',
+                       description: """${BugReport.description}""",
+                       page: '${BugReport.page}',
+                       customPage: '${BugReport.customPage}',
+                       mood: '${BugReport.mood}',
+                       userType: '${BugReport.userType}',
+                       userId: ${BugReport.userId},
+                       attachments: ${JSON.stringify(BugReport.attachments)},
+                       verificationScore: ${BugReport.verificationScore},
+                       stepsToReproduce: ${JSON.stringify(
+                         BugReport.stepsToReproduce
+                       )},
+                       metadata: ${JSON.stringify(BugReport.metadata)},
+                       consoleErrors: ${JSON.stringify(
+                         BugReport.consoleErrors
+                       )},
+                       status: '${BugReport.status}'
+                       timestamps: '${BugReport.createdAt}', '${
+            BugReport.updatedAt
+          }'
+             `,
+        },
+      ],
+    });
+
+    let parsedOutput;
+
+    try {
+      parsedOutput = extractJSON(response.message.content);
+    } catch (err) {
+      console.error("Failed to parse JSON from bug report response:", err);
+      throw new Error("Invalid response format from AI service");
+    }
+
+    console.log(parsedOutput);
+    return parsedOutput;
+  } catch (error) {
+    console.error("Error generating bug report:", error);
+    throw error;
+  }
+};
+
+const dummy_Data = `{
+  "title": "comments not loading sometimes",
+  "bugType": "other",
+  "description": "On some posts comments do not load, but refreshing fixes it.",
+  "page": "post-details",
+  "userType": "VERIFIED",
+  "verificationScore": 0.85,
+  "stepsToReproduce": [
+    "Open a post",
+    "Scroll to comments section",
+    "Comments sometimes do not appear",
+    "Refresh page to see comments"
+  ],
+  "metadata": {
+    "browser": "Chrome",
+    "os": "Windows",
+    "device_type": "desktop"
+  }
+}
+
+
+`;
+
+generateBugReport({ BugReport: JSON.parse(dummy_Data) });

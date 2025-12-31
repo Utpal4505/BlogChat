@@ -3,6 +3,9 @@ import IORedis from "ioredis";
 import { generateAutoTags } from "../service/autoTagGenerator.service.js";
 import prisma from "../config/db.config.js";
 import { sanitizeInput, sanitizePosts } from "../utils/HtmlSanitize.js";
+import { generateBugReport } from "../service/aiBugReportChecker.service.js";
+import { createGitHubIssue } from "../service/githubIssueService.service.js";
+import { googleSheetIssueService } from "../service/gsheetIssueService.service.js";
 
 const connection = new IORedis({
   host: "127.0.0.1",
@@ -10,10 +13,11 @@ const connection = new IORedis({
   maxRetriesPerRequest: null,
 });
 
+console.log("Worker is running");
+
 export const autoTagWorker = new Worker(
   "tag-generation",
   async (job) => {
-
     const { postId } = job.data;
 
     const post = await prisma.post.findUnique({
@@ -76,6 +80,44 @@ export const autoTagWorker = new Worker(
       });
 
       throw err;
+    }
+  },
+  {
+    connection,
+  }
+);
+
+export const bugReportWorker = new Worker(
+  "bug-report-processing",
+  async (job) => {
+    try {
+      console.log("bug report process start");
+      const { bugReportId } = job.data;
+
+      const ReportedBug = await prisma.bugReport.findUnique({
+        where: {
+          id: bugReportId,
+        },
+      });
+
+      if (!ReportedBug) {
+        throw new Error(`Bug Report with ID ${bugReportId} not found.`);
+      }
+
+      // calling ai for generate report
+
+      // const aiGeneratedReport = await generateBugReport({
+      //   BugReport: ReportedBug,
+      // });
+
+      const githubIssue = await createGitHubIssue(createBug);
+
+      await googleSheetIssueService({
+        bugReport: createBug,
+        githubIssueNumber: githubIssue.number,
+      });
+    } catch (error) {
+      console.error("Error processing bug report job:", error);
     }
   },
   {

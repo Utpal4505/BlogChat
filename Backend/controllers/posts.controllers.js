@@ -5,8 +5,7 @@ import { sanitizeInput, sanitizePosts } from "../utils/HtmlSanitize.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { slugify } from "../utils/slugify.js";
 import { uploadToCloudinary } from "../utils/cloudinary.js";
-import { generateAutoTags } from "../service/autoTagGenerator.service.js";
-import { tagQueue } from "../queue/tag.queue.js";
+import { tagQueue } from "../queue/queue.js";
 
 export const createPost = asyncHandler(async (req, res) => {
   try {
@@ -69,23 +68,18 @@ export const createPost = asyncHandler(async (req, res) => {
       },
     });
 
-   console.log("post create done now move toward queues")
-
-
     await tagQueue.add(
       "generate-tags",
       {
         postId: post.id,
-        description: sanitizeContent,
       },
       {
         attempts: 3,
         backoff: { type: "exponential", delay: 5000 },
         removeOnComplete: true,
+        removeOnFail: false,
       }
     );
-
-    console.log("✅ Tag job added for post:", post.id);
 
     return res
       .status(201)

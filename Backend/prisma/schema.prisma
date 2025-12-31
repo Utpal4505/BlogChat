@@ -52,6 +52,13 @@ enum BugStatus {
   IGNORED
 }
 
+enum BugReportQueueStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
 enum PostTagStatus {
   PENDING
   READY
@@ -239,6 +246,7 @@ model BugReport {
   metadata          Json
   consoleErrors     Json
   status            BugStatus @default(OPEN)
+  queueStatus      BugReportQueueStatus @default(PENDING)
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
 
