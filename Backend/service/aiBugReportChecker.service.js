@@ -105,8 +105,6 @@ IMPORTANT:
 `;
 
 function extractJSON(text) {
-
-console.log(text)
   const match = text.match(/\{[\s\S]*\}$/);
   return match ? JSON.parse(match[0]) : null;
 }
@@ -117,10 +115,8 @@ export const generateBugReport = async ({ BugReport }) => {
       throw new Error("BugReport is required");
     }
 
-    console.log("report got", BugReport);
-
     const response = await ollama.chat({
-      model: "llama3:latest",
+      model: "mistral:7b",
       messages: [
         {
           role: "system",
@@ -165,7 +161,6 @@ export const generateBugReport = async ({ BugReport }) => {
       throw new Error("Invalid response format from AI service");
     }
 
-    console.log(parsedOutput);
     return parsedOutput;
   } catch (error) {
     console.error("Error generating bug report:", error);
@@ -173,27 +168,56 @@ export const generateBugReport = async ({ BugReport }) => {
   }
 };
 
-const dummy_Data = `{
-  "title": "comments not loading sometimes",
-  "bugType": "other",
-  "description": "On some posts comments do not load, but refreshing fixes it.",
-  "page": "post-details",
-  "userType": "VERIFIED",
-  "verificationScore": 0.85,
-  "stepsToReproduce": [
-    "Open a post",
-    "Scroll to comments section",
-    "Comments sometimes do not appear",
-    "Refresh page to see comments"
+const dummyBugReport = {
+  id: "BUG-1027",
+  bugType: "visual", // intentionally wrong
+  title: "Dashboard freezes after clicking Export",
+  description: `
+When I click the Export button on the analytics dashboard, the page freezes.
+The spinner keeps loading forever and I have to refresh the page.
+After refresh, sometimes my filters are reset.
+This happens mostly in Chrome.
+`,
+  page: "/dashboard/analytics",
+  customPage: "analytics-export",
+  mood: "frustrated",
+  userType: "verified",
+  userId: 88421,
+  attachments: [
+    {
+      type: "screenshot",
+      url: "https://example.com/screenshots/export-freeze.png",
+    },
   ],
-  "metadata": {
-    "browser": "Chrome",
-    "os": "Windows",
-    "device_type": "desktop"
-  }
-}
+  verificationScore: 0.92,
+  stepsToReproduce: [
+    "Login as a verified user",
+    "Navigate to Analytics Dashboard",
+    "Apply date filter (last 30 days)",
+    "Click on Export → CSV",
+    "Observe spinner loading indefinitely",
+  ],
+  metadata: {
+    os: "Windows 11",
+    browser: "Chrome",
+    browser_version: "120.0.6099.71",
+    device_type: "desktop",
+    url: "https://app.example.com/dashboard/analytics",
+    performance: {
+      ttfb_ms: 180,
+      api_latency_ms: 4200,
+    },
+    timestamp: "2026-01-12T14:22:11.000Z",
+  },
+  consoleErrors: [
+    "POST https://api.example.com/export 504 (Gateway Timeout)",
+    "Uncaught (in promise) TypeError: Cannot read properties of undefined (reading 'status')",
+  ],
+  status: "open",
+  createdAt: "2026-01-12T14:22:11.000Z",
+  updatedAt: "2026-01-12T14:24:55.000Z",
+};
 
-
-`;
-
-generateBugReport({ BugReport: JSON.parse(dummy_Data) });
+generateBugReport({ BugReport: dummyBugReport })
+  .then((data) => console.log(data))
+  .catch(console.error);

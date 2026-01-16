@@ -106,21 +106,47 @@ export const bugReportWorker = new Worker(
 
       // calling ai for generate report
 
-      // const aiGeneratedReport = await generateBugReport({
-      //   BugReport: ReportedBug,
-      // });
+      const aiGeneratedReport = await generateBugReport({
+        BugReport: ReportedBug,
+      });
 
-      const githubIssue = await createGitHubIssue(createBug);
+      const githubIssue = await createGitHubIssue(
+        ReportedBug,
+        aiGeneratedReport
+      );
 
       await googleSheetIssueService({
-        bugReport: createBug,
+        bugReport: ReportedBug,
         githubIssueNumber: githubIssue.number,
+      });
+
+      await prisma.bugReport.update({
+        where: {
+          id: bugReportId,
+        },
+        data: {
+          githubIssueNumber: githubIssue.number,
+          queueStatus: "COMPLETED",
+        },
       });
     } catch (error) {
       console.error("Error processing bug report job:", error);
+
+      await prisma.bugReport.update(
+        {
+          where: {
+            id: job.data.bugReportId,
+          },
+          data: {
+            queueStatus: "FAILED",
+          },
+        },
+        {
+          connection,
+        }
+      );
     }
-  },
-  {
+  },{
     connection,
   }
 );

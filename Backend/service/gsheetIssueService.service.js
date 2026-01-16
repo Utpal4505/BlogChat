@@ -6,7 +6,7 @@ export const googleSheetIssueService = async ({
 }) => {
   try {
     const auth = new google.auth.GoogleAuth({
-      keyFile: "./gsheet_crendtial.json",
+      keyFile: "../gsheet_crendtial.json",
       scopes: ["https://www.googleapis.com/auth/spreadsheets"],
     });
 
