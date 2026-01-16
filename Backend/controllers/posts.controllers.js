@@ -68,6 +68,19 @@ export const createPost = asyncHandler(async (req, res) => {
       },
     });
 
+    await tagQueue.add(
+      "generate-tags",
+      {
+        postId: post.id,
+      },
+      {
+        attempts: 3,
+        backoff: { type: "exponential", delay: 5000 },
+        removeOnComplete: true,
+        removeOnFail: false,
+      }
+    );
+
     return res
       .status(201)
       .json(new ApiResponse(201, post, "✅ Post created Successfully"));
