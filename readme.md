@@ -483,7 +483,6 @@ For support, email uk9507855135@gmail.com or join our community chat.
 - [ ] Post scheduling
 - [ ] Content recommendation engine
 - [ ] Multi-language support
-- [ ] Dark mode preferences
 - [ ] Export posts to PDF/Markdown
 - [ ] Integration with more OAuth providers
 - [ ] WebSocket-based real-time features
